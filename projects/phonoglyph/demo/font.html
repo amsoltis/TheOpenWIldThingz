@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Phonoglyph — the REAL font</title>
+<title>Phonoglyph — the real font (no JavaScript)</title>
 <style>
   @font-face {
     font-family: "Phonoglyph";
@@ -13,54 +13,51 @@
   body { margin:0; font:16px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif;
          background:#0f1115; color:#e7e9ee; padding:2rem 1rem; max-width:760px; margin-inline:auto; }
   h1 { font-size:1.6rem; margin:0 0 .25rem; }
-  .sub { color:#9aa3b2; margin:0 0 1.5rem; }
-  textarea { width:100%; min-height:100px; padding:.9rem 1rem; border-radius:12px;
-             border:1px solid #2a2f3a; background:#171a21; color:#e7e9ee; font-size:1.05rem; }
-  .out { margin-top:1rem; padding:1.1rem 1.2rem; border-radius:12px; background:#12161d;
-         border:1px solid #232833; min-height:3rem;
-         font-family:"Phonoglyph", serif; font-size:1.9rem; line-height:1.7; }
-  .note { margin-top:1rem; color:#9aa3b2; font-size:.9rem; }
-  .warn { color:#e8c46a; }
-  a { color:#7ab7ff; }
-  .controls { margin-top:.8rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+  .sub { color:#9aa3b2; margin:0 0 1rem; }
+  .banner { background:#12261a; border:1px solid #1f5136; color:#8ee6b0; border-radius:10px;
+            padding:.6rem .9rem; font-size:.9rem; margin:0 0 1rem; }
+  /* THE demo: you type straight into this, and the font respells it live. No JS. */
+  .edit { font-family:"Phonoglyph", serif; font-size:1.9rem; line-height:1.7;
+          padding:1.1rem 1.2rem; border-radius:12px; background:#12161d; border:1px solid #232833;
+          min-height:4rem; outline:none; }
+  .edit:focus { border-color:#2e8f5b; }
+  .controls { margin-top:1rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
   button.speak { background:#1f6f43; color:#eafff2; border:1px solid #2e8f5b; border-radius:10px;
                  padding:.5rem .9rem; font-size:1rem; cursor:pointer; }
   button.speak:hover { background:#248050; }
-  .hint { color:#9aa3b2; font-size:.85rem; }
+  .hint, .note { color:#9aa3b2; font-size:.85rem; }
+  .note { margin-top:1rem; }
+  .warn { color:#e8c46a; }
+  code { background:#1d2530; padding:.05rem .35rem; border-radius:6px; }
+  a { color:#7ab7ff; }
 </style>
 </head>
 <body>
-  <h1>Phonoglyph — the actual font</h1>
-  <p class="sub">The text below is rendered in the compiled <code>Phonoglyph.ttf</code>. The
-  respelling is done <strong>by the font's GSUB table</strong> — no JavaScript touches the text.
-  <strong>Select the output and copy it → it pastes back as the original English.</strong></p>
+  <h1>Phonoglyph — the real font</h1>
+  <p class="sub">Type in the box below. The phonetic respelling is done <strong>by the font's
+  GSUB table</strong>. Select &amp; copy the text → it pastes back as the original English.</p>
 
-  <p style="font-size:.85rem;color:#9aa3b2">Type here (rendered in a normal font):</p>
-  <textarea id="in" spellcheck="false">The computer technology through this international information system is enough to show the whole nation how pronunciation and government work on a cold Wednesday.</textarea>
+  <div class="banner">✅ <strong>No JavaScript respells this text — the font does.</strong>
+  The only script on this page is the optional 🔊 button, and it does not touch the words.</div>
+
+  <div class="edit" id="edit" contenteditable="true" spellcheck="false">The computer technology through this international information system is enough to show the whole nation how pronunciation and government work on a cold Wednesday.</div>
 
   <div class="controls">
     <button class="speak" id="speak">🔊 Speak it</button>
-    <span class="hint">Hear the original English (browser voice, separate from the font).</span>
+    <span class="hint">Optional audio — your browser's built-in voice reads the original English.
+    (This button is the page's only JavaScript.)</span>
   </div>
 
-  <p style="font-size:.85rem;color:#9aa3b2">Rendered in Phonoglyph (the font respells it live):</p>
-  <div class="out" id="out"></div>
-
-  <p class="note">The ~2,000 most frequent English words are baked into this font. Rarer words
-  render unchanged here (the rule-based fallback isn't in the font yet — that's the next build).
-  <span class="warn">Works in Chrome / Firefox / Safari (HarfBuzz &amp; CoreText); not in Windows
-  DirectWrite apps.</span> See the <a href="../README.md">README</a>.</p>
-
-  <p class="note"><strong>The font is silent by design</strong> — it changes how text <em>looks</em>,
-  not sound. The 🔊 button is your browser's built-in speech voice (Web Speech API) reading the
-  original English; it is <em>not</em> part of the font.</p>
+  <p class="note">The ~2,000 most frequent English words are baked into this font; rarer words
+  render unchanged (the rule-based fallback isn't in the font yet). <span class="warn">Works in
+  Chrome / Firefox / Safari (HarfBuzz &amp; CoreText); not in Windows DirectWrite apps.</span>
+  If you opened this through a GitHub HTML-preview proxy and see plain text, the proxy likely
+  couldn't load <code>../Phonoglyph.ttf</code> — download the repo and open this file locally.
+  See the <a href="../README.md">README</a>.</p>
 
 <script>
-  const inp = document.getElementById('in'), out = document.getElementById('out');
-  const sync = () => { out.textContent = inp.value; };
-  inp.addEventListener('input', sync); sync();
-
-  // Text-to-speech via the browser's built-in Web Speech API (free, local, not the font)
+  // The ONLY JavaScript on this page: the optional Speak button. It reads the box's
+  // original English text (unchanged by the font) and uses the browser's built-in voice.
   let VOICE = null;
   function pickVoice(){
     if (!('speechSynthesis' in window)) return;
@@ -71,7 +68,7 @@
   document.getElementById('speak').addEventListener('click', () => {
     if (!('speechSynthesis' in window)){ alert('This browser has no speech synthesis.'); return; }
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(inp.value);
+    const u = new SpeechSynthesisUtterance(document.getElementById('edit').textContent);
     u.lang = 'en-US'; if (VOICE) u.voice = VOICE; u.rate = 0.95;
     speechSynthesis.speak(u);
   });

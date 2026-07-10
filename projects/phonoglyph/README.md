@@ -99,14 +99,16 @@ CMUdict + frequency list ──▶ arpabet_respell.py ──▶ respellings.json
 | `arpabet_respell.py` | ✅ runs today | ARPAbet → respelling converter used by `build_dictionary.py` |
 | `rules_fallback.py` | ✅ runs today | Approximate respelling for out-of-dictionary words (greedy digraph/vowel-team rules) |
 | `generate_fea.py` | ✅ emits real `.fea` | Turns `respellings.json` into GSUB rules (ligature-collapse → multiple-expand) |
-| `demo/index.html` | ✅ open in a browser | JS preview: dictionary (green, exact) + rule fallback (amber, approximate) |
+| `demo/font.html` | ✅ **the real, no-JS demo** | Type into a box styled with `Phonoglyph.ttf`; the **font** respells it (no JS). Optional 🔊 Speak button uses the browser voice. |
+| `demo/index.html` | ✅ JS **simulation** | Mockup of the logic in JavaScript, for when the font isn't installed: dictionary (green) + rule fallback (amber), click-a-word to hear it. |
 | `build_font.py` | ✅ builds a real font | Compiles **`Phonoglyph.ttf`** from DejaVu Sans + `respellings.json`, with boundary-guarded GSUB |
 | `verify_shaping.py` | ✅ **PASS** | Shapes test strings through **HarfBuzz** to prove it works (not just compiles) |
 | **`Phonoglyph.ttf`** | ✅ **real, HarfBuzz-verified** | The actual installable font (2,012 words). `through → throo`; guard: `through` does **not** fire inside `xthroughx` |
-| `demo/font.html` | ✅ open in a browser | The **real font** via `@font-face` — respelling done in GSUB, copy-paste returns English |
 
-The demo is a **preview** of what the font will render (same word→respelling map, in JS). The
-font is the actual artifact; the JS is the reference spec for its behavior.
+Two demos, and the difference matters: **`font.html` is the real thing** — the font does the
+respelling with **no JavaScript**. **`index.html` simulates it in JavaScript** so it still works
+where the font isn't installed. Audio in both is the browser's built-in speech voice (separate
+from the font, not part of it).
 
 ## Try the preview now
 
