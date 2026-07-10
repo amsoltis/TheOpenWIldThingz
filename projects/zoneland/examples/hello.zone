@@ -1,0 +1,19 @@
+# Anchors only -> spells HELLO on ANY date. Timezone offsets ARE the opcodes.
+#
+# run:  python3 zoneland.py run examples/hello.zone --date 2026-07-15
+America/Creston
+America/Creston
+Africa/Algiers
+Antarctica/Davis
+Asia/Tehran
+Australia/Eucla
+Etc/GMT+12
+Africa/Algiers
+America/Creston
+Australia/Eucla
+Africa/Algiers
+Africa/Algiers
+Australia/Eucla
+Etc/GMT+12
+Etc/GMT+12
+Africa/Algiers

@@ -1,0 +1,22 @@
+# Silent in winter, prints SUMMER in summer. Anchorage HALTs in January.
+#
+# run:  python3 zoneland.py run examples/summer.zone --date 2026-07-15
+America/Anchorage
+Australia/Eucla
+Etc/GMT+12
+Etc/GMT+12
+Etc/GMT+12
+Africa/Algiers
+Asia/Tehran
+America/Atikokan
+Etc/GMT+12
+Etc/GMT+12
+Africa/Algiers
+Africa/Blantyre
+Africa/Algiers
+Africa/Algiers
+Africa/Blantyre
+Africa/Algiers
+Australia/Eucla
+Asia/Calcutta
+Africa/Algiers

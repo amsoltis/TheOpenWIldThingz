@@ -1,0 +1,27 @@
+# Prints WINTER in winter, silent in summer. Adak HALTs in July.
+#
+# run:  python3 zoneland.py run examples/winter.zone --date 2026-07-15
+America/Adak
+Antarctica/Davis
+Australia/Eucla
+Etc/GMT-14
+Etc/GMT+12
+Etc/GMT+12
+Africa/Algiers
+America/Creston
+Asia/Tehran
+Africa/Algiers
+Australia/Eucla
+Africa/Blantyre
+Asia/Calcutta
+Africa/Algiers
+Antarctica/Davis
+Asia/Calcutta
+Africa/Algiers
+America/Creston
+Australia/Eucla
+Asia/Calcutta
+Africa/Algiers
+Australia/Eucla
+Asia/Calcutta
+Africa/Algiers

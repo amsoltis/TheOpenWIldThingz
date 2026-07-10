@@ -15,13 +15,19 @@ spawned.** Discovery on one side, real shipped code on the other.
 │   └── pipeline/                  # the multi-agent orchestration scripts
 │       ├── tool-discovery.mjs       # skim → verify → compose
 │       ├── whitespace-hunt.mjs      # invent → adversarial prior-art → keep survivors
-│       └── whitespace-loop.mjs      # self-refining loop w/ well-posedness gate
+│       ├── whitespace-loop.mjs      # self-refining loop w/ well-posedness gate
+│       └── scout.mjs                # triage → prior-art → spec the next build
+│
+├── discovery/NEXT-IDEAS.md        # the vetted ranking of what to build next
 │
 └── projects/
-    └── phonoglyph/                # ⭐ the standout idea, actually built
-        ├── README.md              # a self-pronouncing font: G2P computed inside GSUB
-        ├── Phonoglyph.ttf         # the real, HarfBuzz-verified font (2,012 words)
-        └── demo/font.html         # open in a browser — type English, watch it respell
+    ├── phonoglyph/                # ⭐ built #1: a self-pronouncing font (G2P in GSUB)
+    │   ├── Phonoglyph.ttf         # the real, HarfBuzz-verified font (2,026 words)
+    │   ├── demo/font.html         # type English, watch the font respell it
+    │   └── site/                  # deploy-ready landing page (phonotype.soltis.house)
+    └── zoneland/                  # ⭐ built #2: an esolang whose source is timezones
+        ├── zoneland.py            # the VM; opcodes are read live from UTC offsets
+        └── examples/summer.zone   # silent in winter, prints SUMMER in summer — same file
 ```
 
 ## 🔭 [`discovery/`](discovery/README.md) — the hunt
@@ -52,6 +58,23 @@ returns the original English.
 
 Built on the proof from [jimparis/qr-font](https://github.com/jimparis/qr-font) that fonts can
 compute; Phonoglyph is the first to point that at pronunciation.
+
+## ⭐ [`projects/zoneland/`](projects/zoneland/README.md) — the second thing we built
+
+The white-space scout's top pick (see [`discovery/NEXT-IDEAS.md`](discovery/NEXT-IDEAS.md)):
+**an esolang whose source code is a list of IANA timezone names.** Each line's opcode and operand
+are read *live* from that zone's UTC offset — and because a DST jump is +60 min and `60 mod 7 = 4`,
+**Daylight Saving silently rewrites the instruction set twice a year.**
+
+```
+$ python3 zoneland.py run examples/summer.zone --date 2026-01-15   → (silent)
+$ python3 zoneland.py run examples/summer.zone --date 2026-07-15   → SUMMER
+$ python3 zoneland.py transitions examples/summer.zone             → the real dates it flips
+```
+
+Same unchanged file, different behavior by season. Pure-stdlib Python, zero runtime deps, 7/7
+golden tests, and a synthesizer that spells words out of timezones. Well-posed (tzdata is a strict
+host), zero prior art found — the payoff, like Phonoglyph, is pure delight.
 
 ## How it was made
 
