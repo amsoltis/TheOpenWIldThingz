@@ -97,8 +97,11 @@ CMUdict + frequency list ──▶ arpabet_respell.py ──▶ respellings.json
 | `arpabet_respell.py` | ✅ runs today | ARPAbet → respelling converter to scale the dictionary from full CMUdict |
 | `rules_fallback.py` | ✅ runs today | Approximate respelling for out-of-dictionary words (greedy digraph/vowel-team rules) |
 | `generate_fea.py` | ✅ emits real `.fea` | Turns `respellings.json` into GSUB rules (ligature-collapse → multiple-expand) |
-| `demo/index.html` | ✅ open in a browser | Live preview: dictionary (green, exact) + rule fallback (amber, approximate) |
-| **the compiled `.otf`** | 🔨 the weekend's real work | Merging the `.fea` + intermediate glyphs into a base font, and getting **word-boundary** matching right in GSUB — this is the genuine "font hell," honestly not done yet |
+| `demo/index.html` | ✅ open in a browser | JS preview: dictionary (green, exact) + rule fallback (amber, approximate) |
+| `build_font.py` | ✅ builds a real font | Compiles **`Phonoglyph.ttf`** from DejaVu Sans + `respellings.json`, with boundary-guarded GSUB |
+| `verify_shaping.py` | ✅ **PASS** | Shapes test strings through **HarfBuzz** to prove it works (not just compiles) |
+| **`Phonoglyph.ttf`** | ✅ **real, HarfBuzz-verified** | The actual installable font. `through → throo`; `the` respells but does **not** fire inside `theory` |
+| `demo/font.html` | ✅ open in a browser | The **real font** via `@font-face` — respelling done in GSUB, copy-paste returns English |
 
 The demo is a **preview** of what the font will render (same word→respelling map, in JS). The
 font is the actual artifact; the JS is the reference spec for its behavior.
@@ -110,13 +113,25 @@ font is the actual artifact; the JS is the reference spec for its behavior.
 open demo/index.html      # or drag it into Chrome/Firefox
 ```
 
+## Build the real font (verified working)
+
+```
+pip install fonttools uharfbuzz
+python3 build_font.py                 # -> Phonoglyph.ttf (+ Phonoglyph.fea)
+python3 verify_shaping.py             # shapes test strings through HarfBuzz -> VERIFY: PASS
+open demo/font.html                   # see the real font respell live in a browser
+```
+
+`build_font.py` output on the seed set: **61 words baked, 61 control glyphs, GSUB verified.**
+The boundary guard (`ignore sub @letter <word>;`) is what makes `the` respell as a word but
+stay untouched inside `theory` — confirmed by `verify_shaping.py`.
+
 ## Scale the dictionary
 
 ```
 python3 arpabet_respell.py --selftest              # sanity-check the ARPAbet mapping
 python3 arpabet_respell.py cmudict.dict > respellings.full.json   # needs CMUdict
-python3 generate_fea.py respellings.json > respell.fea
-# then (the hard part, see limits): feaLib/fontTools merge into a base font
+python3 rules_fallback.py --selftest               # approximate OOV respelling
 ```
 
 ## Roadmap
@@ -124,8 +139,10 @@ python3 generate_fea.py respellings.json > respell.fea
 - [x] Respelling scheme + seed dictionary + live preview
 - [x] ARPAbet→respelling generator, `.fea` emitter
 - [x] Rule-based fallback for out-of-dictionary words
-- [ ] Compile a working `.otf` on a HarfBuzz base font (word-boundary GSUB context)
-- [ ] A `@font-face` web demo backed by the *real* font, not the JS preview
+- [x] **Compile a working, HarfBuzz-verified font with word-boundary GSUB guards** ✅
+- [x] A `@font-face` web demo backed by the *real* font (`demo/font.html`)
+- [ ] Bake the rule fallback into the font itself (so OOV words also respell in-font)
+- [ ] Scale the dictionary to the top ~2k words via `arpabet_respell.py` + CMUdict
 - [ ] Variable-font axis: respelling intensity (off → digraph hints → full respelling)
 
 ## License
