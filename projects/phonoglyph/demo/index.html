@@ -37,6 +37,14 @@
   .hint { color:#9aa3b2; font-size:.85rem; }
   .respelled, .approx { cursor:pointer; }
   .speaking { background:#2a3f30; border-radius:4px; }
+  .respelled:focus-visible, .approx:focus-visible, button:focus-visible { outline:2px solid #3a6; outline-offset:2px; }
+  @media (prefers-color-scheme: light) {
+    body { background:#f7f8fa; color:#1a1d23; }
+    textarea, .out { background:#fff; border-color:#d4d8e0; }
+    .plain { color:#1a1d23; }
+    .respelled { color:#1c8a54; } .approx { color:#a5730d; }
+    code { background:#eceff3; } a { color:#1a6fd6; }
+  }
 </style>
 </head>
 <body>
@@ -126,6 +134,15 @@ function speak(text, el){
   speechSynthesis.speak(u);
 }
 
+// make a respelled word keyboard- and mouse-activatable (speaks the original)
+function makeHearable(span, word){
+  span.tabIndex = 0;
+  span.setAttribute('role', 'button');
+  span.setAttribute('aria-label', 'hear ' + word);
+  span.onclick = () => speak(word, span);
+  span.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); speak(word, span); } };
+}
+
 function render(){
   const text = document.getElementById('in').value;
   const out = document.getElementById('out');
@@ -140,14 +157,14 @@ function render(){
       span.className = 'respelled hit';
       span.textContent = matchCase(tok, DICT[key]);
       span.title = tok + ' — click to hear';   // hover shows the real (copy-paste) text
-      span.onclick = () => speak(tok, span);
+      makeHearable(span, tok);
       out.appendChild(span);
     } else if (/^[a-z]+$/.test(key)){
       const span = document.createElement('span');
       span.className = 'approx hit';
       span.textContent = matchCase(tok, ruleRespell(key));
       span.title = tok + ' (approximate) — click to hear';
-      span.onclick = () => speak(tok, span);
+      makeHearable(span, tok);
       out.appendChild(span);
     } else {
       const span = document.createElement('span');

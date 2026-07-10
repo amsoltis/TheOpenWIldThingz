@@ -1,6 +1,29 @@
 # Phonoglyph — a self-pronouncing font
 
+> A font that respells English words phonetically as you type — entirely inside the font file,
+> no JavaScript, no server — and still copy-pastes back as normal English.
+
+![License OFL-1.1 / MIT](https://img.shields.io/badge/license-OFL--1.1%20%2F%20MIT-blue)
+![Status v0 preview](https://img.shields.io/badge/status-v0%20preview-orange)
+![Dictionary 2,026 words](https://img.shields.io/badge/dictionary-2%2C026%20words-green)
+
 *(consumer brand candidate: **Talking Font**; developer spec: a **G2P-in-GSUB** typeface)*
+
+<!-- TODO before public release: record demo/font.html (type → respell → select-copy-paste
+     reveal) as a ~10-15s GIF, save to demo/screenshot.gif, and embed it here. -->
+
+## Quickstart (30 seconds)
+
+No build, no install — just open the demo in a browser:
+
+```bash
+git clone <this-repo> && cd projects/phonoglyph
+open demo/index.html      # macOS; Linux: xdg-open; Windows: double-click
+```
+
+Type a sentence and watch it respell live (JS simulation — works with no font installed).
+Want the **real font** doing the work with zero JavaScript? [Install the font](#install-the-font),
+then open `demo/font.html`.
 
 **What it is:** an OpenType font that rewrites English words into their **phonetic respelling
 as you type** — `through → throo`, `cough → kof`, `nation → nay-shun` — with the computation
@@ -93,7 +116,7 @@ CMUdict + frequency list ──▶ arpabet_respell.py ──▶ respellings.json
 
 | File | Status | What it does |
 |---|---|---|
-| `respellings.json` | ✅ **2,012 words** | The baked dictionary: top ~2k frequent words (CMUdict) + hand-tuned irregulars |
+| `respellings.json` | ✅ **2,026 words** | The baked dictionary: top ~2k frequent words (CMUdict) + hand-tuned irregulars |
 | `respellings.seed.json` | ✅ 61 curated | Hand-tuned overrides for irregulars (`cough→kof`), always merged in |
 | `build_dictionary.py` | ✅ runs today | Scales `respellings.json` to top-N frequent words from CMUdict + a frequency list |
 | `arpabet_respell.py` | ✅ runs today | ARPAbet → respelling converter used by `build_dictionary.py` |
@@ -103,7 +126,7 @@ CMUdict + frequency list ──▶ arpabet_respell.py ──▶ respellings.json
 | `demo/index.html` | ✅ JS **simulation** | Mockup of the logic in JavaScript, for when the font isn't installed: dictionary (green) + rule fallback (amber), click-a-word to hear it. |
 | `build_font.py` | ✅ builds a real font | Compiles **`Phonoglyph.ttf`** from DejaVu Sans + `respellings.json`, with boundary-guarded GSUB |
 | `verify_shaping.py` | ✅ **PASS** | Shapes test strings through **HarfBuzz** to prove it works (not just compiles) |
-| **`Phonoglyph.ttf`** | ✅ **real, HarfBuzz-verified** | The actual installable font (2,012 words). `through → throo`; guard: `through` does **not** fire inside `xthroughx` |
+| **`Phonoglyph.ttf`** | ✅ **real, HarfBuzz-verified** | The actual installable font (2,026 words). `through → throo`; guard: `through` does **not** fire inside `xthroughx` |
 
 Two demos, and the difference matters: **`font.html` is the real thing** — the font does the
 respelling with **no JavaScript**. **`index.html` simulates it in JavaScript** so it still works
@@ -126,13 +149,32 @@ python3 verify_shaping.py             # shapes test strings through HarfBuzz -> 
 open demo/font.html                   # see the real font respell live in a browser
 ```
 
-`build_font.py` bakes **2,012 words** into 50 chunked GSUB lookups. The boundary guard
+`build_font.py` bakes **2,026 words** into 50 chunked GSUB lookups. The boundary guard
 (`ignore sub @letter <word>;`) makes a word respell only when whole — confirmed by
 `verify_shaping.py` (`xthroughx` stays `xthroughx`).
 
 > **Gotcha we hit:** one lookup holding all ~6,000 rules overflows the 16-bit GSUB subtable
 > offset (fontTools raises a cryptic `repeatIndex` error). Fix: split rules across many small
 > lookups (`COLLAPSE_CHUNK`/`EXPAND_CHUNK` in `build_font.py`).
+
+## Install the font
+
+A prebuilt `Phonoglyph.ttf` is included — you don't have to build it to try it.
+
+**macOS:** `open Phonoglyph.ttf` → Font Book → *Install Font*.
+**Windows:** right-click `Phonoglyph.ttf` → *Install*.
+**Linux:**
+```bash
+mkdir -p ~/.local/share/fonts && cp Phonoglyph.ttf ~/.local/share/fonts/ && fc-cache -f
+```
+**Web (`@font-face`)** — what `demo/font.html` uses:
+```css
+@font-face { font-family: "Phonoglyph"; src: url("Phonoglyph.ttf") format("truetype"); }
+.respell { font-family: "Phonoglyph", sans-serif; }
+```
+Any element styled with `font-family:"Phonoglyph"` renders its English respelled and still
+copy-pastes as the original. Works in Chrome/Firefox/Safari (HarfBuzz/CoreText); **not** in
+native Windows DirectWrite apps (see Honest limits #2).
 
 ## Scale the dictionary yourself
 

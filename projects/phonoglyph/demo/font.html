@@ -30,6 +30,17 @@
   .warn { color:#e8c46a; }
   code { background:#1d2530; padding:.05rem .35rem; border-radius:6px; }
   a { color:#7ab7ff; }
+  .edit:focus-visible, button:focus-visible { outline:2px solid #7ee0a8; outline-offset:2px; }
+  .paste { width:100%; min-height:3rem; margin-top:.6rem; padding:.8rem 1rem; border-radius:12px;
+           border:1px dashed #2a2f3a; background:#0d1016; color:#e7e9ee; font-size:1rem; }
+  .toast { color:#7ee0a8; font-size:.85rem; }
+  @media (prefers-color-scheme: light) {
+    body { background:#f7f8fa; color:#1a1d23; }
+    .edit, .paste { background:#fff; border-color:#d4d8e0; }
+    .banner { background:#e8f6ee; border-color:#bfe3cd; color:#1c6b3f; }
+    code { background:#eceff3; }
+    a { color:#1a6fd6; }
+  }
 </style>
 </head>
 <body>
@@ -40,13 +51,18 @@
   <div class="banner">✅ <strong>No JavaScript respells this text — the font does.</strong>
   The only script on this page is the optional 🔊 button, and it does not touch the words.</div>
 
-  <div class="edit" id="edit" contenteditable="true" spellcheck="false">The computer technology through this international information system is enough to show the whole nation how pronunciation and government work on a cold Wednesday.</div>
+  <div class="edit" id="edit" contenteditable="true" spellcheck="false"
+       role="textbox" aria-multiline="true" aria-label="Type English; the font shows the phonetic respelling">The computer technology through this international information system is enough to show the whole nation how pronunciation and government work on a cold Wednesday.</div>
 
   <div class="controls">
-    <button class="speak" id="speak">🔊 Speak it</button>
-    <span class="hint">Optional audio — your browser's built-in voice reads the original English.
-    (This button is the page's only JavaScript.)</span>
+    <button class="speak" id="speak" aria-label="Speak the text aloud">🔊 Speak it</button>
+    <button class="speak" id="copy" aria-label="Copy the text">📋 Copy</button>
+    <span class="hint">Speak = your browser's voice reads the original English. Copy, then paste
+    below — you get the English back, not the respelling. (These buttons are the page's only JS.)</span>
   </div>
+  <input class="paste" id="paste" placeholder="…paste here (Ctrl/⌘+V) to prove it — you'll see the original English"
+         aria-label="Paste target to demonstrate copy returns English">
+  <span class="toast" id="toast" role="status" aria-live="polite"></span>
 
   <p class="note">The ~2,000 most frequent English words are baked into this font; rarer words
   render unchanged (the rule-based fallback isn't in the font yet). <span class="warn">Works in
@@ -71,6 +87,15 @@
     const u = new SpeechSynthesisUtterance(document.getElementById('edit').textContent);
     u.lang = 'en-US'; if (VOICE) u.voice = VOICE; u.rate = 0.95;
     speechSynthesis.speak(u);
+  });
+
+  // Copy proves the point: the backing text is unchanged English (the font only swaps glyphs).
+  const toast = document.getElementById('toast');
+  document.getElementById('copy').addEventListener('click', async () => {
+    const text = document.getElementById('edit').textContent;
+    try { await navigator.clipboard.writeText(text); toast.textContent = '✓ Copied the original English — paste it anywhere.'; }
+    catch { toast.textContent = 'Clipboard blocked — select the text above and copy manually; you still get English.'; }
+    setTimeout(() => { toast.textContent = ''; }, 4000);
   });
 </script>
 </body>
