@@ -25,6 +25,26 @@ from arpabet_respell import respell
 HERE = os.path.dirname(os.path.abspath(__file__))
 ALPHA = re.compile(r"^[a-z]+$")
 
+# Web frequency lists are full of junk for a *spelling* dictionary: bare letters,
+# unit/format abbreviations, and brand/file-extension tokens that CMUdict happens
+# to have (mis)pronunciations for. Reject these from the auto-scaled pass; the
+# hand-curated seed is merged in unconditionally afterward, so real short words
+# (a, of, to, in, is, ...) are unaffected.
+MIN_WORD_LEN = 3
+NON_WORD_DENYLIST = {
+    "pdf", "xml", "html", "css", "url", "usb", "dvd", "cd", "tv", "pc",
+    "com", "www", "http", "https", "php", "ibm", "llc", "ltd", "inc",
+    "usa", "uk", "faq", "seo", "ceo", "cfo", "atm", "gps", "mp3", "sms",
+    "ebay", "aol", "url", "cnet", "url",
+    "mon", "tue", "wed", "thu", "fri", "sat", "sun",
+    "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "oct", "nov", "dec",
+    "st",
+}
+
+
+def _is_real_word(w):
+    return len(w) >= MIN_WORD_LEN and w not in NON_WORD_DENYLIST
+
 
 def load_cmudict(path):
     d = {}
@@ -66,6 +86,8 @@ def main(argv):
         if added >= top_n:
             break
         if not ALPHA.match(w):
+            continue
+        if not _is_real_word(w):
             continue
         r = seed.get(w) or cmu.get(w)
         if not r:

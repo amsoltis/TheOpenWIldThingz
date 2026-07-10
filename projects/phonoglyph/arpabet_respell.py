@@ -110,7 +110,12 @@ def _parse_cmudict(path):
                 continue
             if not re.match(r"^[a-z']+$", word):
                 continue
-            out[word] = respell(parts[1:])
+            phones = []
+            for p in parts[1:]:
+                if p.startswith("#"):  # strip trailing comment (same as build_dictionary.py)
+                    break
+                phones.append(p)
+            out[word] = respell(phones)
     return out
 
 

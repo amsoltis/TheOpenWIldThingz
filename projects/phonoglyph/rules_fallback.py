@@ -41,8 +41,9 @@ RULES = [
 
 def respell_word(word):
     w = word.lower()
-    # drop a silent final 'e' after a consonant (cake -> cak..., approximate)
-    if len(w) > 2 and w.endswith("e") and w[-2] not in "aeiou":
+    # drop a silent final 'e' after a consonant (cake -> cak..., approximate).
+    # require len > 3 so 3-letter CCe words ("the"/"she"/"axe") keep their vowel.
+    if len(w) > 3 and w.endswith("e") and w[-2] not in "aeiou":
         w = w[:-1]
     out = []
     i = 0
