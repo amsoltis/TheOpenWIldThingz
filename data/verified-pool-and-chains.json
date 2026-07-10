@@ -1,0 +1,1593 @@
+{
+  "stats": {
+    "unique_candidates": 296,
+    "fields_covered": 193,
+    "shortlisted": 54,
+    "verified": 52,
+    "chains": 20
+  },
+  "verified_pool": [
+    {
+      "name": "VISLCG3 / CG-3 (GrammarSoft/cg3)",
+      "repo": "https://github.com/GrammarSoft/cg3",
+      "field": "constraint grammar parser | disambiguation, tagging (computational linguistics)",
+      "exists": true,
+      "stars": "~26",
+      "license": "GPL-3.0",
+      "last_commit": "2025-04",
+      "artifact_type": "tool",
+      "one_liner": "Rule-based constraint grammar parser (CG-3, feature-compatible with VISL CG-2/vislcg3) where linguist-written context-dependent rules assign/disambiguate/remove grammatical tags over variable distances in running tagged text.",
+      "speaks": [
+        "stdin/stdout pipe (reads a stream of pre-tagged tokens/cohorts, applies grammar rules, writes disambiguated stream)",
+        "newline/cohort text format",
+        "text-based rule grammar (pattern-engine over tag sequences)"
+      ],
+      "oddness": 5,
+      "verify_notes": "The candidate repo URL given (visl/constraint-grammar) does not exist; the real, canonical repo is GrammarSoft/cg3 (formerly vislcg3, forked by unhammer/vislcg3). ~26 stars, GPL-3.0, active as of a 2025-04 release. Confirmed as a constraint-grammar rule engine used widely in NLP pipelines (e.g., Apertium); exact stdin/stdout streaming interface not fully re-verified beyond doc excerpts but is the tool's well-documented mode of operation."
+    },
+    {
+      "name": "Nanocubes",
+      "repo": "https://github.com/laurolins/nanocube",
+      "field": "spatiotemporal analytics, visualization",
+      "exists": true,
+      "stars": "~730",
+      "license": "EPL-1.0",
+      "last_commit": "2019-05",
+      "artifact_type": "tool",
+      "one_liner": "In-memory hierarchical data-cube structure for interactive OLAP-style exploration of billions of spatiotemporal records, served over HTTP for browser-based heatmap/histogram visualization.",
+      "speaks": [
+        "http (query server, ports for data API and web viewer)",
+        "csv (input data + .map mapping config files)",
+        "data-file (.nanocube binary index)",
+        "cli (nanocube create / nanocube serve)"
+      ],
+      "oddness": 5,
+      "verify_notes": "Candidate repo 'nano-db/NanoCube' is not correct; canonical repo is laurolins/nanocube (AT&T Labs Research project). Confirmed ~730 stars, EPL-1.0 license, last release/commit around v4.0 in May 2019 (appears unmaintained since). Interface is CLI + HTTP server + CSV ingestion, not just abstract 'in-memory OLAP'."
+    },
+    {
+      "name": "jvarkit (bioalcidae / samjs / vcffilterjs)",
+      "repo": "https://github.com/lindenb/jvarkit",
+      "field": "bioinformatics / filtering",
+      "exists": true,
+      "stars": "~524",
+      "license": "MIT",
+      "last_commit": "2026-04",
+      "artifact_type": "tool",
+      "one_liner": "Java/htsjdk-based utilities (bioalcidae, samjs/SamJdk, vcffilterjs/VCFFilterJS) that let users write JavaScript (Nashorn) or Java expressions to filter and reformat SAM/BAM/VCF/FASTA/FASTQ files, functioning like awk for high-throughput sequencing data.",
+      "speaks": [
+        "cli (java command-line tools reading files or stdin)",
+        "stdin/stdout",
+        "parser (SAM/BAM/VCF/FASTA/FASTQ formats via htsjdk)",
+        "embedded JavaScript expression engine (not a generic scripting glue, but per-record filter/format expressions)"
+      ],
+      "oddness": 5,
+      "verify_notes": "Confirmed real, actively maintained repo (release dated 2026-04-30, i.e. very recently). ~524 stars, MIT license (confirmed via LICENSE.txt). Corrected glue: not literally 'JavaScript, SAM, VCF, BAM, FASTA' as separate glue channels — it's Java CLI tools over htsjdk-parsed bioinformatics formats with an embedded per-record JS/Java expression engine, closer to awk-for-bioinformatics-files than a generic format list."
+    },
+    {
+      "name": "weron",
+      "repo": "https://github.com/pojntfx/weron",
+      "field": "networking",
+      "exists": true,
+      "stars": "~2.1k",
+      "license": "AGPL-3.0",
+      "last_commit": "unknown (197 commits on main; exact date not confirmed)",
+      "artifact_type": "tool",
+      "one_liner": "Go-based overlay networking toolkit that uses WebRTC (with STUN/TURN NAT traversal and a WebSocket signaling server) to build Layer 2 (Ethernet/TAP) and Layer 3 (IP/TUN) peer-to-peer VPNs, plus chat/latency/throughput utilities.",
+      "speaks": [
+        "webrtc",
+        "stun/turn",
+        "websocket (signaling server)",
+        "cli (weron signaler/manager/chat/utility/vpn subcommands)",
+        "go library/api"
+      ],
+      "oddness": 5,
+      "verify_notes": "Confirmed real, actively developed repo. Star count ~2.1k (higher than the awesome-tunneling source's likely older figure). License is AGPL-3.0, not unknown. Exact last-commit date not pinned down from the fetch (only commit count seen); everything else about WebRTC/STUN/TURN/overlay networking confirmed accurate to the one-liner."
+    },
+    {
+      "name": "bifrost",
+      "repo": "https://github.com/aperturerobotics/bifrost",
+      "exists": true,
+      "stars": "~580",
+      "license": "Apache-2.0",
+      "last_commit": "2026-07",
+      "field": "networking",
+      "one_liner": "Peer-to-peer communications engine with pluggable transports (WebRTC, QUIC, UDP) supporting RPC, PubSub, and stream multiplexing between peers",
+      "artifact_type": "tool",
+      "oddness": 4,
+      "speaks": [
+        "webrtc",
+        "quic",
+        "udp",
+        "p2p-transport",
+        "rpc"
+      ],
+      "verify_notes": "The candidate's repo field 'pojntfx/bifrost' is wrong/does not exist (404). The awesome-tunneling list actually links to aperturerobotics/bifrost, which is the real project: a Go networking engine with pluggable transports (UDP/QUIC, WebRTC, WebAssembly), confirmed via its README and pkg.go.dev. ~580 stars, Apache-2.0 license, very recent commits (as of 2026-07-10)."
+    },
+    {
+      "name": "Photo-map.ru",
+      "repo": "http://photo-map.ru/",
+      "exists": true,
+      "stars": "unknown",
+      "license": "unknown",
+      "last_commit": "unknown",
+      "field": "Social Media Geolocation",
+      "one_liner": "Web tool built on the VK API that maps recently geotagged photos posted publicly by VKontakte users, filterable by location/gender/status, for social-media geolocation (SOCMINT) research",
+      "artifact_type": "tool",
+      "oddness": 5,
+      "speaks": [
+        "http",
+        "web-ui",
+        "vk-api"
+      ],
+      "verify_notes": "Site resolves and is live (confirmed via search results and site title). Built by Yeldar Kurmangaliyev in 2014, powered by VK API. It is a hosted web GUI, not a downloadable tool/library, so there's no repo/stars/license/commit data — those are not applicable to this kind of public web service. WebFetch to the page itself returned 403 (likely bot-blocking), but existence/purpose is corroborated by multiple independent search results."
+    },
+    {
+      "name": "Schoenberg",
+      "repo": "https://github.com/TomerAberbach/schoenberg",
+      "exists": true,
+      "stars": "~3",
+      "license": "MIT",
+      "last_commit": "unknown",
+      "field": "esoteric-programming/music",
+      "one_liner": "Esoteric programming language whose programs are MIDI files; semantics mirror Brainfuck (memory tape, pointer, loops), named after Arnold Schoenberg because valid programs tend to be atonal",
+      "artifact_type": "notation/dsl",
+      "oddness": 5,
+      "speaks": [
+        "midi-file",
+        "cli"
+      ],
+      "verify_notes": "Confirmed via docs site tomeraberba.ch/schoenberg, its GitHub repo TomerAberbach/schoenberg (Rust, MIT license, ~3 stars, CLI with run/from-bf/to-bf commands, published on crates.io), an esolangs.org wiki entry, and Hacker News discussion. It reads/writes MIDI files and transpiles to/from Brainfuck; not a general 'programming' glue type but a MIDI-file-based DSL/interpreter."
+    },
+    {
+      "name": "Nallely",
+      "repo": "https://github.com/dr-schlange/nallely-midi",
+      "field": "modular-synthesis/live-coding",
+      "one_liner": "Open-source Python MIDI meta-synth platform for organic signal-based emergent behaviors, live coding, and multimodal art with websocket-based architecture.",
+      "oddness": 5,
+      "exists": true,
+      "stars": "~99",
+      "license": "BSD-3-Clause",
+      "last_commit": "2026-07",
+      "artifact_type": "tool",
+      "speaks": [
+        "websocket",
+        "midi",
+        "http (localhost web UI)",
+        "python-api"
+      ],
+      "verify_notes": "Confirmed real, active repo. Trevor protocol uses a websocket bus for remote control/external service registration; Trevor-UI is a web app on localhost:3000; MIDI I/O via device bridge; also has a Python scripting API for hot-patching."
+    },
+    {
+      "name": "SRAM Dumper (Namco System2x6)",
+      "repo": "https://github.com/PS2Homebrew-arcade/sram-dumper",
+      "field": "game/emulation (arcade hardware preservation)",
+      "one_liner": "Utility to dump SRAM memory from Namco System2x6 (System246) arcade boards for game settings preservation, outputting to USB/SD card/dongle.",
+      "oddness": 5,
+      "exists": true,
+      "stars": "~5",
+      "license": "MIT",
+      "last_commit": "2026-04",
+      "artifact_type": "firmware",
+      "speaks": [
+        "usb",
+        "sd_card (mmc)",
+        "file (sramX.bin dump files)"
+      ],
+      "verify_notes": "Confirmed real repo; PS2 IOP/PS2 homebrew ELF utility (C + assembly) that dumps arcade board SRAM to numbered .bin files on removable storage. 'dongle' is also a supported output target alongside USB/SD."
+    },
+    {
+      "name": "Reflexive Arcade Preservation Tools",
+      "repo": "https://github.com/banteg/reflexive",
+      "field": "game/emulation (2000s casual-game preservation)",
+      "one_liner": "Preservation toolkit for Reflexive Entertainment's defunct casual-games download portal: unwraps wrapped executables, patches out the registration shell, and generates valid registration/unlock codes using recovered RSA key material for 1,653 titles.",
+      "oddness": 5,
+      "exists": true,
+      "stars": "~39",
+      "license": "unknown",
+      "last_commit": "unknown",
+      "artifact_type": "tool",
+      "speaks": [
+        "file (.exe/Inno Setup installers, .reg files)",
+        "cli"
+      ],
+      "verify_notes": "Confirmed real, active Python CLI repo (91% Python, 8% C) with subcommands for downloading installers, unwrapping/extracting exes, patching registration shell, and keygen; depends on innoextract. No LICENSE file/field found in pyproject.toml or visible repo metadata, and exact last-commit date not surfaced by fetch (repo shows 92 commits)."
+    },
+    {
+      "name": "patat",
+      "repo": "https://github.com/jaspervdj/patat",
+      "field": "markdown-to-presentation (terminal)",
+      "one_liner": "Terminal-based presentation tool built on Pandoc, supporting markdown/reST/Org-mode input with incremental slides rendered via ANSI escape sequences.",
+      "oddness": 5,
+      "exists": true,
+      "stars": "~2.7k",
+      "license": "GPL-2.0",
+      "last_commit": "2025-08 (last release; repo shows recent main-branch activity beyond that)",
+      "artifact_type": "tool",
+      "speaks": [
+        "file",
+        "stdin",
+        "markdown",
+        "newline-text (ANSI terminal output)"
+      ],
+      "verify_notes": "Confirmed real, well-established repo. Reads markdown/rST/Org-mode files (via Pandoc) and renders directly to an ANSI terminal; supports live-reload, speaker notes, and YAML front-matter config."
+    },
+    {
+      "name": "Entangled",
+      "repo": "https://github.com/entangled/entangled",
+      "exists": true,
+      "field": "literate-programming",
+      "one_liner": "Bidirectional tangle daemon that keeps Markdown literate-programming documents and their extracted source code files in sync.",
+      "oddness": 5,
+      "stars": "~102",
+      "license": "Apache-2.0",
+      "last_commit": "2022-01 (last tagged release v1.3.0; repo has 322 commits, written mainly in Haskell)",
+      "artifact_type": "tool",
+      "speaks": [
+        "file",
+        "markdown",
+        "noweb-syntax",
+        "sqlite (internal db)"
+      ],
+      "source": "https://github.com/entangled/entangled ; https://entangled.github.io/",
+      "verify_notes": "Confirmed real, actively documented repo. Note: a separate Python port exists at entangled/entangled.py — original repo is Haskell-based, not Python as one might assume."
+    },
+    {
+      "name": "Chef",
+      "repo": "https://github.com/YeyoM/chef_interpreter",
+      "exists": true,
+      "field": "culinary esoteric language",
+      "one_liner": "Python interpreter for the Chef esoteric programming language, where programs are written as cooking recipes with mixing bowls as stacks.",
+      "oddness": 5,
+      "stars": "~2",
+      "license": "unknown",
+      "last_commit": "unknown",
+      "artifact_type": "tool",
+      "speaks": [
+        "file (.chef recipe files)",
+        "stdin (numeric input via 'Take ingredient from refrigerator')",
+        "stack-based execution"
+      ],
+      "source": "https://github.com/YeyoM/chef_interpreter/ ; https://esolangs.org/wiki/Chef",
+      "verify_notes": "Confirmed real but very small/low-traffic repo (~2 stars). License not specified on repo page. Many alternative Chef interpreters exist (joostrijneveld/Chef-Interpreter, derdon/chef, etc.) if a more established one is preferred."
+    },
+    {
+      "name": "Venti",
+      "repo": "part of Plan 9 from Bell Labs source tree (no single canonical standalone GitHub repo; mirrors include github.com/0intro/plan9, github.com/brho/plan9, github.com/plan9foundation/plan9, github.com/Plan9-Archive/memventi)",
+      "exists": true,
+      "field": "filesystems/storage",
+      "one_liner": "Network storage/archival block server that addresses data by SHA-1 content hash (a 'score'), enforcing write-once semantics and content deduplication; typically paired with the Fossil filesystem on Plan 9.",
+      "oddness": 5,
+      "stars": "unknown (no single canonical repo to count; mirrors have varying, generally small star counts)",
+      "license": "Lucent Public License 1.02 (original Bell Labs release) or GPL-2.0 (later brho/plan9 mirror release) depending on distribution",
+      "last_commit": "unknown (source is historical/archival Plan 9 code, largely dormant; individual mirror repos last touched years ago)",
+      "artifact_type": "tool",
+      "speaks": [
+        "network protocol (venti protocol)",
+        "SHA-1 content addressing",
+        "append-only log + index"
+      ],
+      "source": "https://en.wikipedia.org/wiki/Venti_(software) ; https://9fans.github.io/plan9port/man/man7/venti.html ; https://github.com/Plan9-Archive/memventi",
+      "verify_notes": "Real and well-documented historically, but it is not a single standalone repo — it lives inside the Plan 9 OS source tree, so stars/last_commit for 'the project' aren't meaningfully singular. Direct Wikipedia fetch was blocked (403) but corroborated via man pages and search snippets."
+    },
+    {
+      "name": "famfs (Fabric-Attached Memory File System)",
+      "repo": "https://github.com/cxl-micron-reskit/famfs",
+      "exists": true,
+      "field": "filesystems/storage",
+      "one_liner": "User-space filesystem (kernel module transitioning to FUSE) exposing shared memory from DAX devices as memory-mappable files at full memory speed, for CXL/fabric-attached memory use cases.",
+      "oddness": 5,
+      "stars": "~95",
+      "license": "Apache-2.0",
+      "last_commit": "unknown (repo shows 1,125+ commits on master; recent activity as of ~2025 per README notes on FUSE transition)",
+      "artifact_type": "tool",
+      "speaks": [
+        "FUSE",
+        "DAX",
+        "shared memory / mmap",
+        "kernel module (legacy, being deprecated in favor of FUSE)"
+      ],
+      "source": "https://github.com/cxl-micron-reskit/famfs ; https://lwn.net/Articles/983105/ ; https://www.phoronix.com/forums/forum/software/general-linux-open-source/1541770-famfs-ported-to-fuse-for-fabric-attached-memory-file-system",
+      "verify_notes": "Candidate's repo URL (github.com/linux-genz/fabric-attached-memory) does not exist / was not findable. Corrected to the actual canonical repo, cxl-micron-reskit/famfs (Micron-affiliated, matches candidate's 'Micron Technology' hint and FUSE/DAX description). Note there is also an unrelated HewlettPackard/FAMfs (Gen-Z based, GPL-2.0, ~3 stars) — a different, older project with similar name; do not conflate the two."
+    },
+    {
+      "name": "colibri-core",
+      "repo": "https://github.com/proycon/colibri-core",
+      "exists": true,
+      "stars": "~130",
+      "license": "GPL-3.0",
+      "last_commit": "2026-02",
+      "field": "n-gram extraction | skipgrams, flexgrams, pattern models",
+      "one_liner": "C++ library and command-line tool for extracting, building, and querying n-grams, skipgrams, and flexgrams in memory-efficient compressed binary pattern models.",
+      "oddness": 4,
+      "artifact_type": "tool",
+      "speaks": [
+        "binary pattern-model file",
+        "stdin/stdout (colibri-patternmodeller CLI)",
+        "Python library (colibricore via pip)",
+        "plain-text corpus input"
+      ],
+      "verify_notes": "Confirmed real, actively maintained (release Feb 2026). GPLv3. CLI is colibri-patternmodeller; also has Python bindings and C++ library. Corrects skimmer's guess of 'Docker' as primary glue — Docker is just a packaging option."
+    },
+    {
+      "name": "Morfessor",
+      "repo": "https://github.com/aalto-speech/morfessor",
+      "exists": true,
+      "stars": "~206",
+      "license": "BSD-2-Clause",
+      "last_commit": "unknown",
+      "field": "unsupervised morphological segmentation | semisupervised learning",
+      "one_liner": "Statistical tool for unsupervised and semi-supervised morphological segmentation using MAP estimation, useful for morphologically rich languages (Finnish, Estonian, German, Turkish).",
+      "oddness": 4,
+      "artifact_type": "tool",
+      "speaks": [
+        "Python library (importable module)",
+        "command-line scripts (installed via setuptools)",
+        "plain-text/word-list files"
+      ],
+      "verify_notes": "Confirmed real, 206 stars, BSD-2-Clause license. Pure Python (100%). Docs at morfessor.readthedocs.org. Exact last-commit date could not be confirmed (GitHub API blocked by proxy); page did not surface a precise date."
+    },
+    {
+      "name": "PaulStretch / PaulXStretch",
+      "repo": "https://github.com/paulnasca/paulstretch_cpp",
+      "exists": true,
+      "stars": "~827",
+      "license": "GPL-2.0",
+      "last_commit": "2011-03",
+      "field": "audio/DSP",
+      "one_liner": "Extreme time-stretching audio processor (C++ port) with GUI, JACK support, and file-based batch processing; unmaintained since 2011.",
+      "oddness": 4,
+      "artifact_type": "tool",
+      "speaks": [
+        "file (WAV/Ogg Vorbis/MP3 in, WAV/Ogg out)",
+        "CLI arguments",
+        "JACK audio",
+        "GUI (FLTK)"
+      ],
+      "verify_notes": "Confirmed real repo (paulnasca/paulstretch_cpp), 827 stars, GPL-2.0, legacy/unmaintained (last release v2.2-2, March 2011). This is the original C++ port, not the actively maintained 'PaulXStretch' fork which adds WASM/VST — candidate as given only maps to this repo; WASM claim in apparent_glue is NOT confirmed here and should be dropped."
+    },
+    {
+      "name": "FreqTweak",
+      "repo": "https://github.com/essej/freqtweak",
+      "exists": true,
+      "stars": "~42",
+      "license": "GPL-2.0",
+      "last_commit": "2002-10",
+      "field": "audio/DSP",
+      "one_liner": "Real-time audio spectral manipulation tool with interactive wxWindows GUI, JACK I/O, and high-resolution FFT-based frequency-domain filtering (EQ, pitch scaling, gating, delay, compression).",
+      "oddness": 4,
+      "artifact_type": "tool",
+      "speaks": [
+        "JACK audio I/O",
+        "GUI (wxWindows/wxGTK)",
+        "spectral/FFT filtering (in-process, not a file/network protocol)"
+      ],
+      "verify_notes": "Confirmed real repo (essej/freqtweak), 42 stars, GPL-2.0, very old/legacy (README dated Oct 2002, no recent commits). GUI toolkit is wxWindows, not generic 'GUI' — corrected. FFTW as specific dependency not confirmed in fetched text, so omitted to avoid overclaiming."
+    },
+    {
+      "name": "pixelsort",
+      "repo": "https://github.com/Void-ux/pixelsort",
+      "field": "image/graphics",
+      "one_liner": "CLI image manipulation tool to pixel sort images for glitch art effects",
+      "oddness": 4,
+      "exists": true,
+      "stars": "~50",
+      "license": "MIT",
+      "last_commit": "2024-02",
+      "artifact_type": "tool",
+      "speaks": [
+        "file",
+        "cli-args"
+      ],
+      "verify_notes": "Rust CLI, operates on PNG/WebP/JPEG files via -o output flag; no stdin/stdout piping mentioned."
+    },
+    {
+      "name": "Almonds",
+      "repo": "https://github.com/Tenchi2xh/Almonds",
+      "field": "image/graphics",
+      "one_liner": "Terminal Mandelbrot fractal viewer with Julia sets and interactive zoom navigation",
+      "oddness": 4,
+      "exists": true,
+      "stars": "~62",
+      "license": "MIT",
+      "last_commit": "unknown",
+      "artifact_type": "tool",
+      "speaks": [
+        "terminal",
+        "interactive",
+        "file"
+      ],
+      "verify_notes": "Python terminal app; interactive keyboard nav, save/load viewport state files, PNG export via 'H' key. Exact last commit date not confirmed (repo shows mature/stable, ~123 commits, version 1.25b on PyPI, no precise date surfaced)."
+    },
+    {
+      "name": "stegify",
+      "repo": "https://github.com/DimitarPetrov/stegify",
+      "field": "image/graphics",
+      "one_liner": "Go tool for LSB steganography capable of hiding any file within images",
+      "oddness": 4,
+      "exists": true,
+      "stars": "~1.3k",
+      "license": "MIT",
+      "last_commit": "2020-03",
+      "artifact_type": "tool",
+      "speaks": [
+        "file",
+        "cli-args",
+        "library-api"
+      ],
+      "verify_notes": "Go CLI encode/decode via --carrier/--data/--result flags on image files; also usable as Go library (steg package) with Reader/Writer support. Appears inactive since v1.2 (March 2020)."
+    },
+    {
+      "name": "Sharp Frame Extractor",
+      "repo": "https://github.com/cansik/sharp-frame-extractor",
+      "field": "video",
+      "one_liner": "CLI tool that extracts the sharpest frame from video time blocks using Tenengrad focus measure scoring",
+      "oddness": 4,
+      "exists": true,
+      "stars": "~175",
+      "license": "MIT",
+      "last_commit": "2026-01",
+      "artifact_type": "tool",
+      "speaks": [
+        "file",
+        "cli-args"
+      ],
+      "verify_notes": "Python CLI (also on PyPI), takes video files (ffmpeg-supported formats) and outputs PNG frames to directories; --count/--every/--jobs flags. Actively maintained, v2.0.0 released Jan 2026."
+    },
+    {
+      "name": "VapourSynth",
+      "repo": "https://github.com/vapoursynth/vapoursynth",
+      "exists": true,
+      "field": "video processing",
+      "one_liner": "C++ core video processing framework with a Python scripting API for building frame-by-frame filter graphs, extensible via a C plugin ABI.",
+      "oddness": 4,
+      "artifact_type": "tool",
+      "stars": "~2.1k",
+      "license": "LGPL-2.1",
+      "last_commit": "2026-07",
+      "speaks": [
+        "python-api",
+        "c-plugin-abi (VapourSynth API)",
+        "stdin/stdout (y4m piping to media players/encoders)"
+      ],
+      "source": "https://github.com/vapoursynth/vapoursynth",
+      "verify_notes": "Confirmed via GitHub repo metadata (mcp github search_repositories) and vapoursynth.com. Stars 2054 (~2.1k), license LGPL-2.1 (not stated by skimmer), pushed_at 2026-07-08. Glue is Python scripting API driving a C++/C-ABI plugin core (VSScript/Python module), not raw stdin/stdout, though it can pipe y4m frames to stdout for encoders."
+    },
+    {
+      "name": "ImplicitCAD",
+      "repo": "https://github.com/Haskell-Things/ImplicitCAD",
+      "exists": true,
+      "field": "Haskell-based programmatic CAD",
+      "one_liner": "Math-inspired CAD program in Haskell using functional representations (f-reps) for CSG, bevels, and shells, with an OpenSCAD-like DSL (ExtOpenSCAD) and export to SVG/STL/GCode.",
+      "oddness": 4,
+      "artifact_type": "tool",
+      "stars": "~1.6k",
+      "license": "AGPL-3.0",
+      "last_commit": "2026-04",
+      "speaks": [
+        "dsl (ExtOpenSCAD text language)",
+        "file (STL/SVG/DXF/OBJ/GCode export)",
+        "haskell-api (Graphics.Implicit library)"
+      ],
+      "source": "https://github.com/Haskell-Things/ImplicitCAD",
+      "verify_notes": "Confirmed via mcp github search_repositories: stargazers_count 1560 (~1.6k), license AGPL-3.0, pushed_at 2026-04-13. Glue is primarily a text DSL (ExtOpenSCAD, OpenSCAD-compatible superset) compiled to geometry files, plus a native Haskell library API — not raw CSG plumbing alone."
+    },
+    {
+      "name": "LibFive",
+      "repo": "https://github.com/libfive/libfive",
+      "exists": true,
+      "field": "Functional CAD with Scheme/Python",
+      "one_liner": "C++ solid modeling library using functional representations (f-reps), exposed via a C API plus Guile Scheme and Python bindings, with the Studio GUI for live-coding.",
+      "oddness": 4,
+      "artifact_type": "tool",
+      "stars": "~1.6k",
+      "license": "MPL-2.0 (core/Python bindings); GPL-2.0-or-later (Guile bindings and Studio GUI)",
+      "last_commit": "2025-11",
+      "speaks": [
+        "c-api (libfive.h)",
+        "scheme/guile-repl",
+        "python-bindings",
+        "gui (Studio, live-coding)"
+      ],
+      "source": "https://github.com/libfive/libfive",
+      "verify_notes": "Confirmed via mcp github search_repositories: stargazers_count 1637 (~1.6k), pushed_at 2025-11-12. GitHub API license field was null (mixed licensing per subcomponent, as described in repo docs/WebFetch: MPL-2.0 for core+Python, GPL-2.0+ for Guile bindings and Studio GUI) — recorded as split license rather than a single SPDX id."
+    },
+    {
+      "name": "SedonaDB",
+      "repo": "https://github.com/apache/sedona-db",
+      "exists": true,
+      "field": "spatial SQL, analytics",
+      "one_liner": "Single-node Rust-powered columnar geospatial analytics engine (part of Apache Sedona) built on Arrow/DataFusion, queryable via SQL and Python/R/Rust APIs, with GeoParquet/WKT/WKB I/O.",
+      "oddness": 4,
+      "artifact_type": "tool",
+      "stars": "~475",
+      "license": "Apache-2.0",
+      "last_commit": "2026-07",
+      "speaks": [
+        "sql",
+        "arrow (zero-copy, PyArrow-compatible)",
+        "python-api",
+        "r-api",
+        "rust-api",
+        "data-file (GeoParquet/WKT/WKB)"
+      ],
+      "source": "https://github.com/apache/sedona-db",
+      "verify_notes": "Confirmed via mcp github search_repositories: stargazers_count 475, license Apache-2.0, pushed_at 2026-07-09. Repo created 2025-08-25 (young project). Note the task JSON listed repo as 'github.com/apache/sedona-db' without scheme; confirmed canonical URL is https://github.com/apache/sedona-db. GDAL/OGR was in apparent_glue but not confirmed as a direct dependency in fetched docs; raster support noted as 'coming soon' per fetched overview."
+    },
+    {
+      "name": "TauDEM",
+      "repo": "github.com/dtarb/TauDEM",
+      "exists": true,
+      "field": "hydrology, terrain analysis, DEM",
+      "one_liner": "Parallel CLI tool suite for hydrological terrain analysis, stream network extraction, and watershed delineation from DEMs using D-Infinity/D8 flow models.",
+      "artifact_type": "tool",
+      "stars": "~271",
+      "license": "GPL-3.0",
+      "last_commit": "2026-05 (v5.5.0 release)",
+      "oddness": 4,
+      "speaks": [
+        "CLI (MPI-parallel executables)",
+        "raster DEM (GeoTIFF) input/output",
+        "file"
+      ],
+      "source": "https://github.com/dtarb/TauDEM",
+      "verify_notes": "Confirmed real, active repo maintained by David Tarboton. GitHub shows 271 stars, GPLv3 license (GPLv3license.txt), latest release v5.5.0 dated 2026-05-23. Glue is CLI executables over raster DEM files, not a data pipeline format like jsonl/http."
+    },
+    {
+      "name": "QuackOSM",
+      "repo": "github.com/kraina-ai/quackosm",
+      "exists": true,
+      "field": "OSM data, spatial SQL, DuckDB",
+      "one_liner": "Python/CLI tool to convert OpenStreetMap PBF files to GeoParquet or DuckDB databases using DuckDB Spatial with tag and geometry filtering.",
+      "artifact_type": "tool",
+      "stars": "~372",
+      "license": "Apache-2.0",
+      "last_commit": "2026-06 (v0.18.0 release)",
+      "oddness": 4,
+      "speaks": [
+        "CLI",
+        "Python library",
+        "OSM PBF file input",
+        "GeoParquet/.parquet output",
+        "DuckDB (.duckdb) output",
+        "file"
+      ],
+      "source": "https://github.com/kraina-ai/quackosm",
+      "verify_notes": "Confirmed real, actively maintained (kraina-ai org). 372 stars, Apache-2.0 license, latest release 0.18.0 on 2026-06-22. Corrected glue: outputs GeoParquet or DuckDB DB files, not a generic 'DuckDB Spatial' API — it's file-in/file-out via CLI or Python."
+    },
+    {
+      "name": "Axiom (OpenAxiom fork, daly/axiom)",
+      "repo": "github.com/daly/axiom",
+      "exists": true,
+      "field": "symbolic math / computer algebra system",
+      "one_liner": "Long-running (since 1973) literate-programming computer algebra system with a strongly-typed mathematical hierarchy, interpreter, and compiler.",
+      "artifact_type": "tool",
+      "stars": "~393",
+      "license": "BSD (Modified BSD / \"Modified BSD-style license\" per repo docs)",
+      "last_commit": "unknown (repo shows ~2,952 commits but exact latest commit date could not be confirmed via page fetch)",
+      "oddness": 4,
+      "speaks": [
+        "interactive interpreter/REPL",
+        "Common Lisp source",
+        "compiler",
+        "file (literate .pamphlet source volumes)"
+      ],
+      "source": "https://github.com/daly/axiom",
+      "verify_notes": "Confirmed real repo maintained by Timothy Daly. 393 stars. License is Modified BSD, not GPL as the candidate's field guessed — corrected. Exact last-commit date not retrievable from rendered page (truncated); reported unknown rather than guessed. Note: 'OpenAxiom' is a related but distinct fork; this specific repo is daly/axiom."
+    },
+    {
+      "name": "odexp",
+      "repo": "github.com/samubernard/odexp",
+      "exists": true,
+      "field": "ODE/SDE/DDE solving and dynamical systems analysis",
+      "one_liner": "Interactive command-line ODE/SDE/DDE/finite-difference solver and viewer built on GNU Scientific Library (GSL), with linear stability analysis and gnuplot output.",
+      "artifact_type": "tool",
+      "stars": "~0",
+      "license": "unknown (repo contains a COPYING file but its exact license text/SPDX could not be confirmed; fetching it returned no readable content)",
+      "last_commit": "~2021-05 (most recent commit visible on commits page dated May 3, 2021)",
+      "oddness": 4,
+      "speaks": [
+        "CLI/interactive REPL",
+        "text file input (model definition files)",
+        "GSL backend (C library linkage)",
+        "gnuplot output"
+      ],
+      "source": "https://github.com/samubernard/odexp",
+      "verify_notes": "Confirmed real repo maintained by Samuel Bernard, ~809 commits, 0 stars. Appears largely dormant since ~2021. Could not confirm license text despite a COPYING file being present in the repo listing; reporting unknown rather than guessing."
+    },
+    {
+      "name": "SBML ODE Solver (SOSlib)",
+      "repo": "https://github.com/raim/SBML_odeSolver",
+      "field": "ODE solving / systems biology",
+      "exists": true,
+      "stars": "~24",
+      "license": "LGPL-2.1",
+      "last_commit": "2018-03",
+      "one_liner": "C library and CLI tool for symbolic and numerical analysis of ODE systems derived from SBML-encoded chemical reaction networks (uses libSBML + CVODES/SUNDIALS).",
+      "artifact_type": "tool",
+      "speaks": [
+        "SBML (XML file format)",
+        "CLI/command-line",
+        "C library API"
+      ],
+      "oddness": 4,
+      "verify_notes": "Confirmed real repo, 24 stars, LGPL-2.1 license, latest release v1.9.0 (2017-02), most recent commit 2018-03-15. Development moved here from SourceForge (sbmlsolver). Corrects skimmer's generic 'SBML format/C library/CLI tool' glue to be more precise: it's an SBML file parser plus C library plus interactive CLI, not a pipeline/stdin-stdout tool."
+    },
+    {
+      "name": "smof",
+      "repo": "https://github.com/incertae-sedis/smof",
+      "field": "bioinformatics / FASTA sequence analysis",
+      "exists": true,
+      "stars": "~17",
+      "license": "MIT",
+      "last_commit": "2024-08",
+      "one_liner": "UNIX-style command-line toolkit (subcommands) for exploring, filtering, tidying, and diagnosing FASTA sequence files, pipeline-friendly.",
+      "artifact_type": "tool",
+      "speaks": [
+        "stdin/stdout",
+        "FASTA (text file format)",
+        "CLI subcommands",
+        "GFF (optional input)"
+      ],
+      "oddness": 4,
+      "verify_notes": "Confirmed real repo, 17 stars, MIT license, actively maintained with most recent commit 2024-08-01 (v2.22.4). Also on bioconda/Anaconda. Glue as reported by skimmer (stdin/stdout, FASTA) confirmed accurate."
+    },
+    {
+      "name": "grabix",
+      "repo": "https://github.com/arq5x/grabix",
+      "field": "bioinformatics / file indexing",
+      "exists": true,
+      "stars": "~86",
+      "license": "MIT",
+      "last_commit": "2018-05",
+      "one_liner": "Small C++ tool for random access into BGZF-compressed text files: builds a .gbi index then extracts arbitrary/random lines via a 'grab' command.",
+      "artifact_type": "tool",
+      "speaks": [
+        "file (BGZF-compressed text)",
+        "binary index file (.gbi)",
+        "CLI"
+      ],
+      "oddness": 4,
+      "verify_notes": "Confirmed real repo, 86 stars, MIT license, most recent commit 2018-05-10 (v0.1.6 released 2015-05-20 is last formal release, but master had commits through 2018). Leverages the BGZF library from samtools. Glue confirmed as file+binary indexing."
+    },
+    {
+      "name": "zindex",
+      "repo": "https://github.com/mattgodbolt/zindex",
+      "field": "compression / text indexing",
+      "exists": true,
+      "stars": "~659",
+      "license": "BSD-2-Clause",
+      "last_commit": "2022-11",
+      "one_liner": "Builds a compact index (with decompression checkpoints) on a compressed line-based text file for near-instant random-access line/field lookups, indexed by regex, field, or external program.",
+      "artifact_type": "tool",
+      "speaks": [
+        "file (gzip-compressed text)",
+        "binary index file",
+        "CLI",
+        "regex-based field extraction"
+      ],
+      "oddness": 4,
+      "verify_notes": "Confirmed real repo, 659 stars, BSD-2-Clause license, most recent commit 2022-11-01 (PR merge). Well beyond bioinformatics-only use—general-purpose compressed text indexer built on zlib's zran.c technique. No formal GitHub releases published but active commit history."
+    },
+    {
+      "name": "bwtool",
+      "repo": "github.com/CRG-Barcelona/bwtool",
+      "exists": true,
+      "stars": "~118",
+      "license": "unknown (COPYING file present, likely BSD/permissive - not confirmed SPDX)",
+      "last_commit": "2017-09",
+      "field": "bioinformatics/bigwig",
+      "one_liner": "Command-line operations on bigWig files for genomic signal data",
+      "artifact_type": "tool",
+      "oddness": 4,
+      "speaks": [
+        "bigWig (binary file format)",
+        "command-line/file-based, no stdin/stdout streaming of genomic data"
+      ],
+      "source": "https://github.com/CRG-Barcelona/bwtool",
+      "verify_notes": "Real, active-looking C project (118 stars) but dormant since 2017. License file exists in repo but exact SPDX identifier not confirmed from fetch; report as unknown rather than guess. Reads/writes bigWig files via libbeato; not a stdin/stdout or streaming tool - pure file-in/file-out CLI."
+    },
+    {
+      "name": "xyz2mol",
+      "repo": "github.com/jensengroup/xyz2mol",
+      "exists": true,
+      "stars": "~300",
+      "license": "MIT",
+      "last_commit": "2022-01",
+      "field": "cheminformatics/conversion",
+      "one_liner": "Converts XYZ coordinate files to RDKit mol objects and SMILES",
+      "artifact_type": "tool",
+      "oddness": 4,
+      "speaks": [
+        "file (XYZ input)",
+        "Python library/API (RDKit mol objects)",
+        "SMILES/SDF text output"
+      ],
+      "source": "https://github.com/jensengroup/xyz2mol",
+      "verify_notes": "Confirmed real, 300 stars, MIT license, last release Jan 2022. Functions as both a CLI (xyz -> SMILES/SDF text) and a Python-importable module returning RDKit mol objects. Core algorithm has since been merged into RDKit itself (rdDetermineBonds)."
+    },
+    {
+      "name": "OpenLogicBit",
+      "repo": "github.com/ultraembedded/openlogicbit",
+      "exists": true,
+      "stars": "~174",
+      "license": "Apache-2.0",
+      "last_commit": "2021-06",
+      "field": "Logic Analyzer",
+      "one_liner": "Open-source FPGA gateware for logic analyzer implementation on development boards (Digilent Digital Discovery), 16-32 channel, 100MHz+ capture with Sigrok/PulseView integration",
+      "artifact_type": "firmware",
+      "oddness": 4,
+      "speaks": [
+        "FPGA gateware (Verilog/SystemVerilog)",
+        "USB (FTDI sync FIFO, FT232H/FT2232H)",
+        "sigrok/libsigrok protocol (via custom libsigrok fork) for PulseView"
+      ],
+      "source": "https://github.com/ultraembedded/openlogicbit",
+      "verify_notes": "Confirmed real repo, single initial-release burst of commits June 20-24 2021, no activity since. Apache-2.0 license confirmed. Not a generic file/VCD tool - it's FPGA gateware that talks to a host via FTDI USB and requires a custom libsigrok fork for PulseView integration, not upstream sigrok."
+    },
+    {
+      "name": "fx2lafw",
+      "repo": "github.com/sigrokproject/sigrok-firmware-fx2lafw",
+      "exists": true,
+      "stars": "~56",
+      "license": "GPL-2.0 / LGPL-2.1 (mixed)",
+      "last_commit": "2024-02",
+      "field": "Logic Analyzer Firmware",
+      "one_liner": "Open-source firmware for Cypress FX2(LP) USB chips turning them into logic analyzer/oscilloscope hardware; integrates with sigrok/PulseView",
+      "artifact_type": "firmware",
+      "oddness": 4,
+      "speaks": [
+        "USB firmware (device-side, talks to host over USB bulk transfers)",
+        "sigrok libsigrok driver protocol"
+      ],
+      "source": "https://sigrok.org/wiki/Fx2lafw",
+      "verify_notes": "The candidate repo given (github.com/oxyum/fx2lafw) is a stale personal fork/mirror; the canonical, actively maintained repo is sigrokproject/sigrok-firmware-fx2lafw (mirror of official sigrok.org git), confirmed via sigrok.org wiki. 56 stars, mixed GPL-2.0/LGPL-2.1 license, active as of Feb 2024 (added Hantek PSO2020 support). Not a generic file-glue tool - it is embedded C/assembly firmware flashed onto FX2 hardware that exposes a USB protocol consumed by sigrok drivers."
+    },
+    {
+      "name": "papyrix-flasher",
+      "repo": "https://github.com/bigbag/papyrix-flasher",
+      "field": "Firmware Flasher",
+      "one_liner": "Cross-platform Python CLI for flashing Xteink X4 e-paper reader (ESP32-C3) firmware over serial, with auto-detection, embedded bootloader, MD5 verification, and progress display",
+      "oddness": 4,
+      "exists": true,
+      "stars": "~23",
+      "license": "MIT",
+      "last_commit": "2026-03 (v0.4.0 release)",
+      "speaks": [
+        "serial (SLIP framing over UART at 921600 baud, ESP32 ROM bootloader protocol)",
+        "CLI"
+      ],
+      "artifact_type": "tool",
+      "source": "https://github.com/bigbag/papyrix-flasher",
+      "verify_notes": "Confirmed via WebFetch of repo README. Actually communicates using SLIP-framed serial protocol with XOR checksums implementing the ESP32 ROM bootloader protocol, not generic JSON as skimmer guessed."
+    },
+    {
+      "name": "gr-nrf24-sniffer",
+      "repo": "https://github.com/kittennbfive/gr-nrf24-sniffer",
+      "field": "RF Protocol Sniffer",
+      "one_liner": "GNU Radio flowgraph + C decoder for passively capturing and decoding nRF24L01(+) wireless traffic via HackRF SDR, piped through a named FIFO for protocol analysis",
+      "oddness": 4,
+      "exists": true,
+      "stars": "~31",
+      "license": "AGPL-3.0",
+      "last_commit": "unknown (repo shows ~8 commits, exact date not retrievable via search)",
+      "speaks": [
+        "named pipe/FIFO (GNU Radio -> /tmp/fifo_grc -> C decoder)",
+        "raw SDR signal samples",
+        "C stdin/stdout"
+      ],
+      "artifact_type": "tool",
+      "source": "https://github.com/kittennbfive/gr-nrf24-sniffer",
+      "verify_notes": "Confirmed via WebFetch. Linux-only, tested on Debian 11, requires GNU Radio 3.8 + HackRF One. Glue is named-pipe (FIFO) between GNU Radio GUI flowgraph and a separate C decoder program, matching apparent_glue reasonably well."
+    },
+    {
+      "name": "netsniff-ng",
+      "repo": "https://github.com/netsniff-ng/netsniff-ng",
+      "field": "networking",
+      "one_liner": "Linux network analysis toolkit ('Swiss army knife for network packets') bundling zero-copy packet sniffing/pcap capture-replay, packet generation, BPF compilation, and an encrypted tunnel tool",
+      "oddness": 4,
+      "exists": true,
+      "stars": "~1.4k",
+      "license": "GPL-2.0",
+      "last_commit": "2025-01 (v0.6.9 release)",
+      "speaks": [
+        "raw sockets / zero-copy ring buffers",
+        "pcap files",
+        "CLI/stdin-stdout for its 8 sub-tools (netsniff-ng, trafgen, mausezahn, ifpps, curvetun, astraceroute, flowtop, bpfc)"
+      ],
+      "artifact_type": "tool",
+      "source": "https://github.com/netsniff-ng/netsniff-ng",
+      "verify_notes": "Confirmed via WebFetch. Well-established, longstanding project; matches described functionality closely."
+    },
+    {
+      "name": "Aletheia",
+      "repo": "https://github.com/daniellerch/aletheia",
+      "field": "steganography/steganalysis",
+      "one_liner": "Open-source Python image steganalysis toolbox using ML models to detect hidden messages from methods like F5, Steghide, LSB replacement/matching, and adaptive schemes",
+      "oddness": 4,
+      "exists": true,
+      "stars": "~209",
+      "license": "MIT",
+      "last_commit": "unknown (latest confirmed release v0.3, 2024-01)",
+      "speaks": [
+        "CLI (Python script aletheia.py)",
+        "image files (JPEG/PNG)",
+        "pre-trained ML model files"
+      ],
+      "artifact_type": "tool",
+      "source": "https://github.com/daniellerch/aletheia",
+      "verify_notes": "Confirmed via WebFetch; also has an associated JOSS publication (Jan 2024). Note field is better described as steganalysis/forensics tool rather than pure 'tool' but artifact_type tool fits (CLI application), not a dataset despite bundling pretrained models."
+    },
+    {
+      "name": "dwarf2json",
+      "repo": "github.com/volatilityfoundation/dwarf2json",
+      "exists": true,
+      "stars": "~154",
+      "license": "Volatility Software License (VSL) v1.0 (custom copyleft, not OSI-standard SPDX)",
+      "last_commit": "2024-10 (v0.9.0 release)",
+      "field": "memory forensics/symbol resolution",
+      "artifact_type": "tool",
+      "one_liner": "Go CLI converting ELF/DWARF debug information (and System.map) into Volatility3 Intermediate Symbol File (ISF) JSON for Linux/macOS memory analysis.",
+      "oddness": 4,
+      "speaks": [
+        "cli",
+        "file (ELF/DWARF/System.map input)",
+        "json (ISF output)"
+      ],
+      "source": "https://github.com/volatilityfoundation/dwarf2json",
+      "verify_notes": "Confirmed real, active repo. 100% Go. License is a custom Volatility-specific copyleft license, not MIT/Apache/GPL — flagged since not a standard SPDX identifier."
+    },
+    {
+      "name": "StegExpose",
+      "repo": "github.com/b3dk7/StegExpose",
+      "exists": true,
+      "stars": "~240",
+      "license": "unknown (no license file found; repo appears to have no declared license)",
+      "last_commit": "2021-06 (archived, read-only; ~52 commits on master)",
+      "field": "steganography/LSB detection",
+      "artifact_type": "tool",
+      "one_liner": "Java CLI steganalysis tool for bulk detection of LSB steganography in PNG/BMP images, fusing Sample Pairs, RS Analysis, Chi-Square, and Primary Sets detectors.",
+      "oddness": 4,
+      "speaks": [
+        "cli",
+        "file (PNG/BMP images, directory batch)",
+        "stdout (report)"
+      ],
+      "source": "https://github.com/b3dk7/StegExpose",
+      "verify_notes": "Confirmed real repo, archived since June 2021. 100% Java. No license declared per repo/kandi search — treat as all-rights-reserved unless a LICENSE file is found."
+    },
+    {
+      "name": "OpenForensics",
+      "repo": "github.com/ethanbayne/OpenForensics",
+      "exists": true,
+      "stars": "~24",
+      "license": "Apache-2.0 (plus bundled LGPL-2.1 Cudafy.NET library)",
+      "last_commit": "unknown (157 commits on master, exact date not shown; 4 release tags)",
+      "field": "digital forensics/GPU acceleration",
+      "artifact_type": "tool",
+      "one_liner": "C#/.NET GUI+CLI GPU-accelerated file carving and pattern-matching tool using OpenCL (via Cudafy.NET) and an optimized PFAC algorithm for forensic disk/data analysis.",
+      "oddness": 4,
+      "speaks": [
+        "gui (Windows app)",
+        "cli",
+        "file (disk images/binary data)",
+        "opencl"
+      ],
+      "source": "https://github.com/ethanbayne/OpenForensics",
+      "verify_notes": "Confirmed real repo with academic publication backing it (Digital Investigation journal, ScienceDirect). Corrected artifact_type note: it's a Windows GUI app with file-carving CLI use, not purely CLI-only. Low star count, unclear last-commit recency."
+    },
+    {
+      "name": "Siembol",
+      "repo": "github.com/gresearch/siembol",
+      "exists": true,
+      "stars": "~210",
+      "license": "Apache-2.0",
+      "last_commit": "2025-04 (archived/read-only; last release v2.6.0 Feb 2023)",
+      "field": "log parsing/SIEM analytics",
+      "artifact_type": "tool",
+      "one_liner": "G-Research's open-source, big-data-based real-time SIEM with chained parsers (JSON, CSV, syslog, NetFlow v9, generic text) for field extraction, enrichment, and Sigma-rule-based alerting at scale.",
+      "oddness": 4,
+      "speaks": [
+        "http",
+        "json",
+        "csv",
+        "syslog",
+        "netflow",
+        "kafka/stream processing"
+      ],
+      "source": "https://github.com/G-Research/siembol",
+      "verify_notes": "Confirmed real, notable project (Black Hat USA 2021 presentation, All Things Open talk). Now explicitly marked 'no longer maintained' by G-Research as of archival in April 2025 — flag as inactive/unmaintained despite decent star count."
+    },
+    {
+      "name": "Creepy (GeoCreepy)",
+      "repo": "github.com/ilektrojohn/creepy",
+      "exists": true,
+      "stars": "~1.5k",
+      "license": "GPL-3.0",
+      "last_commit": "2014-02",
+      "artifact_type": "tool",
+      "field": "Geolocation OSINT",
+      "one_liner": "Python app that aggregates geotagged data from Twitter, Instagram and Flickr and plots it on a map, exporting results to CSV/KML.",
+      "speaks": [
+        "GUI (desktop app)",
+        "file export (CSV/KML)",
+        "plugin API (Twitter/Instagram/Flickr)"
+      ],
+      "oddness": 4,
+      "verify_notes": "Confirmed via github.com/ilektrojohn/creepy. ~1.5k stars, GPL-3.0, last real commit/release Feb 2014 — project is dead/unmaintained. It's a desktop GUI tool, not primarily stdin-driven."
+    },
+    {
+      "name": "Pastvu.com",
+      "repo": "github.com/PastVu/pastvu (site: pastvu.com)",
+      "exists": true,
+      "stars": "~161",
+      "license": "AGPL-3.0",
+      "last_commit": "2026-06",
+      "artifact_type": "public-feed",
+      "field": "Archival/Geolocation",
+      "one_liner": "Crowdsourced online platform for gathering, geotagging and discussing historical photos on an interactive world map.",
+      "speaks": [
+        "http (web app)",
+        "map interface",
+        "open-source codebase since 2020 (Node.js/MongoDB/Leaflet)"
+      ],
+      "oddness": 4,
+      "verify_notes": "Confirmed live site pastvu.com and open-source repo github.com/PastVu/pastvu, actively maintained (commit June 2026), AGPL-3.0, ~161 stars. Primarily a public web service/dataset-like archive, not a CLI/API tool with stdin/CSV glue."
+    },
+    {
+      "name": "Justlog",
+      "repo": "github.com/gempir/justlog (site: justlog.xyz)",
+      "exists": true,
+      "stars": "~179",
+      "license": "MIT",
+      "last_commit": "2026-01",
+      "artifact_type": "tool",
+      "field": "Stream Archival",
+      "one_liner": "Twitch IRC bot/service that logs channel chat and exposes an HTTP API to retrieve full chat histories by username or channel.",
+      "speaks": [
+        "http (REST API)",
+        "IRC (Twitch chat ingestion)",
+        "file export via API endpoints"
+      ],
+      "oddness": 4,
+      "verify_notes": "Confirmed via github.com/gempir/justlog. ~179 stars, MIT license, last commit Jan 2026 but repo is archived/no longer maintained — author recommends successor 'rustlog'. Exposes an HTTP API, not primarily a database/text-export tool as guessed."
+    },
+    {
+      "name": "ExoneraTor",
+      "repo": "https://github.com/torproject/exonerator (unofficial mirror; canonical: https://gitlab.torproject.org/tpo/network-health/exonerator, live at https://exonerator.torproject.org/)",
+      "exists": true,
+      "field": "Network Intelligence",
+      "one_liner": "Historical database answering whether a given IP address was running a Tor relay/exit node on a specific date, used for network attribution and abuse-report defense.",
+      "oddness": 4,
+      "stars": "~7 (GitHub mirror; not the primary metric since canonical repo is on Tor Project GitLab)",
+      "license": "unknown (not displayed on GitHub mirror; Tor Project projects are typically BSD-3-Clause, unconfirmed for this repo)",
+      "last_commit": "unknown (not visible via GitHub mirror fetch; project is actively maintained by Tor Project as of forum discussion in 2022 about uptime)",
+      "artifact_type": "tool",
+      "speaks": [
+        "http",
+        "web form/query interface",
+        "backed by a Java/Tomcat web app; no public JSON API documented, results are HTML pages"
+      ],
+      "verify_notes": "Confirmed live official service at exonerator.torproject.org and metrics.torproject.org/exonerator.html. Canonical source is Tor Project's GitLab (gitlab.torproject.org); GitHub repo (torproject/exonerator) is an unofficial mirror with only 7 stars, used for issue/PR reporting only. Interface is a web query tool (enter IP + date), not a documented public JSON API as the skimmer guessed — it's Tomcat-backed HTML."
+    },
+    {
+      "name": "Prot1ntelligence",
+      "repo": "https://github.com/C3n7ral051nt4g3ncy/Prot1ntelligence",
+      "exists": true,
+      "field": "Email/Crypto Intelligence",
+      "one_liner": "Python CLI OSINT tool that investigates ProtonMail addresses/domains — checks catch-all config, retrieves PGP key metadata (creation date, RSA/ECC type) for a given ProtonMail address.",
+      "oddness": 4,
+      "stars": "~180",
+      "license": "MIT",
+      "last_commit": "2023-06 (v2.2 release per GitHub fetch)",
+      "artifact_type": "tool",
+      "speaks": [
+        "cli",
+        "stdin/stdout (python3 protintel.py, prompts for email/domain input)",
+        "queries ProtonMail's public API under the hood"
+      ],
+      "verify_notes": "Confirmed real GitHub repo by C3n7ral051nt4g3ncy, MIT licensed, ~180 stars, last activity around v2.2 in June 2023. It is a command-line Python script, not a website named 'prot1ntelligence.com' as the candidate's repo field implied — no such domain was found; corrected repo/glue accordingly."
+    }
+  ],
+  "chains": [
+    {
+      "chain_name": "Watershed of Meaning",
+      "tools": [
+        "imagemagick",
+        "TauDEM",
+        "SedonaDB"
+      ],
+      "domains_bridged": [
+        "hydrology / terrain analysis",
+        "ML embeddings / image",
+        "spatial SQL"
+      ],
+      "roles": "source: a 2D density/saliency/embedding raster (UMAP kernel-density, attention map, loss landscape) exported as GeoTIFF -> transform: TauDEM treats scalar intensity as elevation and runs pit-fill + D-infinity flow accumulation + stream/watershed extraction -> sink: SedonaDB ingests the basin polygons (GeoParquet) for SQL queries over cluster catchments",
+      "glue": "hop1: raster written as single-band GeoTIFF with a fabricated affine geotransform (magick convert map.png -depth 32 gray:- then wrap with a .tfw/gdal_translate; TauDEM only needs a valid GeoTIFF, not real georeferencing). hop2: TauDEM file chain of GeoTIFFs (fel/ang/sca/src) + net.shp vector. hop3: net.shp / watershed w.tif -> polygonized GeoParquet read by SedonaDB via ST_Read/GeoParquet",
+      "emergent_capability": "Unsupervised, parameter-light hierarchical cluster segmentation of any 2D field by literally computing its ridgelines and drainage basins.",
+      "sketch": "magick saliency.png -colorspace Gray -depth 32 gray.tif; gdal_translate -a_srs EPSG:3857 -a_ullr 0 1000 1000 0 gray.tif dem.tif; mpiexec -n 4 pitremove -z dem.tif -fel fel.tif; mpiexec -n 4 dinfflowdir -fel fel.tif -ang ang.tif -slp slp.tif; mpiexec -n 4 areadinf -ang ang.tif -sca sca.tif; mpiexec -n 4 threshold -ssa sca.tif -src src.tif -thresh 200; mpiexec -n 4 streamnet -fel fel.tif -p p.tif -ad8 sca.tif -src src.tif -ord ord.tif -tree tree.dat -coord coord.dat -net net.shp -w w.tif  # then SELECT * FROM sedona.read_geoparquet('basins.parquet') in SedonaDB",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 4,
+        "crossdomain": 5,
+        "payoff": 4,
+        "feasibility": 3
+      },
+      "pattern": "wrong-domain-as-substrate (treat a non-terrain scalar field as a DEM)",
+      "verdict": "good-wild",
+      "verdict_reason": "Emergence is real: watershed/flow-accumulation gives a physically-grounded hierarchical partition (basins nest, ridgelines are exact separatrices) that neither k-means nor a saliency tool produces; who it's for = ML/vis researchers wanting deterministic, tuning-free cluster boundaries; not novelty-from-friction because the hydrology and the density-topology genuinely share the ridge/basin abstraction.",
+      "fragile_seam": "The fabricated geotransform must keep pixel spacing sane or D-infinity slope angles distort; noisy rasters over-segment, so a pre-smoothing/pit-depth threshold is doing real work.",
+      "confidence": "plausible",
+      "batch": "cross-domain"
+    },
+    {
+      "chain_name": "The Linguist in the Genome",
+      "tools": [
+        "smof",
+        "awk",
+        "colibri-core"
+      ],
+      "domains_bridged": [
+        "computational linguistics (skipgram/flexgram modeling)",
+        "bioinformatics (FASTA / motif discovery)"
+      ],
+      "roles": "source: smof filters/tidies a FASTA file to a clean set of sequences -> transform: awk tokenizes each sequence into a space-separated codon (or fixed-k) 'sentence', then colibri-core builds a compressed pattern model and extracts skipgrams/flexgrams -> sink: a ranked list of spaced sequence motifs (fixed anchors with variable gaps)",
+      "glue": "hop1: smof stdout FASTA -> hop2: awk emits one whitespace-tokenized line per record (a 'corpus'); colibri-classencode corpus.txt -> corpus.colibri.cls + .colibri.dat -> hop3: colibri-patternmodeller consumes the binary .dat/.cls and prints skipgrams",
+      "emergent_capability": "A Finnish-morphology-grade skipgram engine becomes a de novo spaced-motif finder for DNA/protein, because a flexgram (fixed tokens + variable-width gap) is exactly a biological spaced motif.",
+      "sketch": "smof filter -l 60 seqs.fa | smof clean | awk '/^>/{if(s)print s; s=\"\"; next}{gsub(/.{3}/,\"& \"); s=s $0}END{print s}' > corpus.txt; colibri-classencode corpus.txt; colibri-patternmodeller -f corpus.txt.colibri.dat -c corpus.txt.colibri.cls -t 3 -l 6 -s -P   # -s skipgrams, -t occurrence threshold, -l max length, -P print (see colibri-core docs)",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 4,
+        "crossdomain": 5,
+        "payoff": 4,
+        "feasibility": 4
+      },
+      "pattern": "isomorphic-abstraction transplant (flexgram == spaced motif)",
+      "verdict": "good-wild",
+      "verdict_reason": "Emergence is real: colibri's flexgrams natively model gapped patterns that plain n-gram counting can't, giving motif candidates without an HMM or MEME run; for bioinformaticians wanting a cheap, memory-efficient first pass on repeats/binding sites; the weirdness is a true abstraction match, not a gimmick.",
+      "fragile_seam": "Tokenization choice (codon frame vs fixed-k vs amino acids) determines everything; wrong frame yields garbage, and colibri has no biological alphabet awareness so reverse-complement motifs are invisible unless you also feed the RC strand.",
+      "confidence": "plausible",
+      "batch": "cross-domain"
+    },
+    {
+      "chain_name": "Grammar of Packets",
+      "tools": [
+        "netsniff-ng",
+        "VISLCG3 / CG-3",
+        "Siembol"
+      ],
+      "domains_bridged": [
+        "computational linguistics (constraint grammar disambiguation)",
+        "network security / traffic analysis"
+      ],
+      "roles": "source: netsniff-ng captures and its fields are rendered as a token stream -> transform: each packet becomes a CG-3 'cohort' (surface form + candidate 'readings' = possible flow roles), and hand-written constraint-grammar rules disambiguate a packet's role using variable-distance context (SELECT/REMOVE readings if a SYN appears N cohorts back, etc.) -> sink: the disambiguated tagged stream feeds Siembol as enriched events for alerting",
+      "glue": "hop1: netsniff-ng / tshark field export -> awk formats CG cohort text (one packet = a \"<pkt>\" line, readings as tab-indented \\\"role\\\" TAGS). hop2: vislcg3 -g flows.cg3 reads cohort stdin, writes disambiguated cohort stdout. hop3: parse tags back to JSON -> Siembol Kafka/JSON ingestion",
+      "emergent_capability": "Stateful, context-sensitive flow classification over arbitrary packet distances written as declarative linguistic rules instead of a DPI signature engine or a stream-processor state machine.",
+      "sketch": "netsniff-ng --in eth0 --out - -s | tshark -r - -T fields -e frame.number -e ip.src -e tcp.flags | awk '{print \"\\\"<p\"$1\">\\\"\"; print \"\\t\\\"handshake\\\" SYN\"; print \"\\t\\\"data\\\" PSH\"}' | vislcg3 -g flows.cg3   # rule e.g.:  SELECT (data) IF (-1* (handshake) BARRIER (reset)) ;  (see cg3 docs for exact rule syntax)",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 4,
+        "crossdomain": 5,
+        "payoff": 3,
+        "feasibility": 3
+      },
+      "pattern": "rule-engine repurposing (disambiguator as classifier over non-text cohorts)",
+      "verdict": "good-wild",
+      "verdict_reason": "Emergence is real: CG-3's BARRIER / variable-distance context operators express 'this packet is X only if no RST intervenes since a SYN' far more concisely than regex or awk, and no single pool tool does context-window disambiguation; for a threat hunter who wants human-auditable, order-sensitive flow labels; not friction-novelty because CG cohorts and packet-with-candidate-roles are the same data shape.",
+      "fragile_seam": "The cohort serialization throughput bottleneck — CG-3 is line-oriented text, so wire-speed capture must be batched/sampled, and readings must be pre-enumerated before rules can prune them.",
+      "confidence": "plausible",
+      "batch": "cross-domain"
+    },
+    {
+      "chain_name": "Motion Vectors of a Simulation",
+      "tools": [
+        "imagemagick",
+        "VapourSynth",
+        "ffmpeg"
+      ],
+      "domains_bridged": [
+        "video processing (motion-compensated denoise)",
+        "scientific / heatmap imaging"
+      ],
+      "roles": "source: a time-ordered stack of scientific rasters (Nanocubes heatmap exports, DEM time-series, microscopy, sensor fields) normalized to an image sequence -> transform: VapourSynth loads them as 'video frames' and runs mvtools motion estimation + temporal degrain, treating physical drift as camera motion -> sink: cleaned frames / y4m out to ffmpeg for an inspection movie or back to TIFF",
+      "glue": "hop1: magick normalizes each frame to same-size 16-bit PNG sequence frame%05d.png. hop2: VapourSynth script uses core.imwri.Read(sequence) -> core.mv.Analyse/core.mv.Degrain2 -> y4m via vspipe. hop3: vspipe script.vpy - --y4m | ffmpeg -i - out.mp4 (or imwri.Write back to tiff)",
+      "emergent_capability": "Motion-compensated video denoising (which averages along estimated motion, not naively across time) cleans scientific time-series while preserving moving fronts that a plain temporal mean would smear.",
+      "sketch": "magick mogrify -path seq -depth 16 -resize 512x512! frames/*.tif; cat > dn.vpy <<'PY'\nimport vapoursynth as vs\nc=vs.core\nclip=c.imwri.Read(['seq/%05d.png'%i for i in range(200)])\nsup=c.mv.Super(clip); bv=c.mv.Analyse(sup,isb=True); fv=c.mv.Analyse(sup,isb=False)\nclip=c.mv.Degrain1(clip,sup,bv,fv,thsad=400)\nclip.set_output()\nPY\nvspipe dn.vpy - --y4m | ffmpeg -i - denoised.mp4",
+      "scores": {
+        "nonobvious": 4,
+        "emergence": 3,
+        "crossdomain": 4,
+        "payoff": 4,
+        "feasibility": 4
+      },
+      "pattern": "cross-domain filter-graph reuse (video temporal ops on non-video stacks)",
+      "verdict": "good-wild",
+      "verdict_reason": "Emergence is real: mvtools follows optical-flow motion so a propagating wavefront/plume stays sharp where a boxcar temporal average destroys it, and no imaging/vis tool in the pool does motion-compensated temporal filtering; for a scientist with noisy time-lapse fields; not friction because the 'frames are a movie' framing is legitimate and buys real motion estimation.",
+      "fragile_seam": "mvtools assumes photometric constancy and small inter-frame motion; if the physical field changes intensity (not just moves) or jumps between frames, motion vectors are wrong and it hallucinates smearing.",
+      "confidence": "verified",
+      "batch": "cross-domain"
+    },
+    {
+      "chain_name": "The Atonal Payload",
+      "tools": [
+        "Schoenberg",
+        "Nallely",
+        "PaulStretch"
+      ],
+      "domains_bridged": [
+        "esoteric programming / music",
+        "covert channels / steganography",
+        "audio DSP"
+      ],
+      "roles": "source: a Brainfuck program that prints a secret, assembled into a MIDI file whose note events encode the BF opcodes -> transform: the single MIDI file is polysemous — Schoenberg interprets it as a program that emits the secret, while Nallely plays it as (atonal) generative music -> sink: recipient runs schoenberg on the shared 'music' MIDI to recover the message; optionally PaulStretch smears the rendered audio into an ambient drone as the public cover performance",
+      "glue": "hop1: BF ops -> MIDI note-on sequence (Schoenberg's Brainfuck-to-MIDI mapping). hop2a: schoenberg run secret.mid -> stdout text; hop2b: MIDI over Nallely's MIDI/websocket in to a synth voice. hop3: render WAV -> PaulStretch WAV in/out for the ambient cover",
+      "emergent_capability": "One MIDI file is simultaneously a shareable piece of music and an executable that prints a hidden message — executable steganography inside a score.",
+      "sketch": "schoenberg run secret.mid            # prints the hidden string (CLI per repo; exact subcommand see docs)\n# perform it:  aplaymidi -p Nallely secret.mid   then  paulstretch performance.wav drone.wav -s 20 (see paulstretch args)",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 4,
+        "crossdomain": 4,
+        "payoff": 3,
+        "feasibility": 2
+      },
+      "pattern": "polysemy / dual-interpretation artifact (same bytes read two ways)",
+      "verdict": "wildcard",
+      "verdict_reason": "Emergence is real: neither a stego tool nor a synth produces a file that is both valid music and a self-printing program — the covert channel lives in the interpretation, not in appended bytes, so it defeats byte-level stegdetectors; for CTF authors and hacktivist artists ('the recital contained the manifesto'); the risk is tooling, not concept.",
+      "fragile_seam": "There may be no ready BF->MIDI assembler in the Schoenberg repo, so the note sequence encoding the program likely has to be hand-crafted or scripted, and any MIDI-editing/transposition by an intermediary corrupts the opcodes.",
+      "confidence": "speculative",
+      "batch": "cross-domain"
+    },
+    {
+      "chain_name": "Density of the Photographable Past",
+      "tools": [
+        "Pastvu (public feed)",
+        "jq",
+        "Nanocubes",
+        "caddy"
+      ],
+      "glue": "Pastvu HTTP API returns JSON photo records with {geo:[lat,lon], year} -> jq flattens to CSV rows (lat,lon,year,type) -> hand-written Nanocubes .map config declares a spatial dim (lat/lon quadtree), a temporal dim (year), and categorical dims -> `nanocube create` builds the binary .nanocube index -> `nanocube serve` exposes the OLAP query API over HTTP -> browser heatmap.",
+      "emergent_capability": "Turns a crowdsourced historical-photo archive into a billion-scale interactive spatiotemporal density surface you can time-brush and drill, which Pastvu's own point-plot Leaflet map cannot do.",
+      "sketch": "curl 'https://pastvu.com/api2?method=photo.getByBounds¶ms={...bbox...}' | jq -r '.result.photos[] | [.geo[0],.geo[1],.year,.type] | @csv' > past.csv; nanocube create past.csv past.map past.nanocube; nanocube serve past.nanocube --port 51234  (exact .map field syntax: see nanocube docs)",
+      "scores": {
+        "nonobvious": 4,
+        "emergence": 4,
+        "crossdomain": 4,
+        "payoff": 4,
+        "feasibility": 4
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "Emergence is real: multiscale density + temporal histograms are a different analytic object than a pin map. So-what survives: urban historians and preservationists get 'when was this block most photographed' at interactive speed. Not friction-weird.",
+      "pattern": "feed-as-fuel -> OLAP cube",
+      "domains_bridged": [
+        "archival/historical geolocation",
+        "spatiotemporal OLAP analytics"
+      ],
+      "roles": "source: Pastvu API feed -> transform: jq to CSV + .map schema -> sink: Nanocubes HTTP heatmap",
+      "emergent_capability_note": "",
+      "fragile_seam": "Pastvu API pagination/rate limits and the year field being coarse or missing on many photos; sparse temporal data weakens the cube's histogram dimension.",
+      "confidence": "plausible",
+      "batch": "artifact-crossing"
+    },
+    {
+      "chain_name": "Atonal Turing Sieve",
+      "tools": [
+        "Lakh MIDI Dataset (public dataset)",
+        "Schoenberg",
+        "xargs",
+        "patat"
+      ],
+      "glue": "A large corpus of ordinary human-composed .mid files (never intended as code) is streamed one file at a time into Schoenberg, whose semantics interpret note events as a Brainfuck tape/pointer/loop program: each .mid -> `schoenberg run` -> stdout bytes + halt/nonhalt behavior -> a driver filters for files that halt AND emit non-empty, non-trivial output -> the surviving 'found programs' are rendered as a slideshow.",
+      "emergent_capability": "Mines a music corpus for MIDI files that are accidentally valid, halting, output-producing Brainfuck programs — 'found computation' latent in human melody.",
+      "sketch": "find lakh/ -name '*.mid' | xargs -I{} sh -c 'timeout 2 schoenberg run \"{}\" 2>/dev/null | grep -q . && echo FOUND {}' ; curate hits into found.md and present with `patat found.md`  (schoenberg run/exec subcommand: see repo docs)",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 4,
+        "crossdomain": 5,
+        "payoff": 2,
+        "feasibility": 3
+      },
+      "verdict": "wildcard",
+      "verdict_reason": "Genuine idea-collision (an esolang's parser weaponizes a music dataset as a program search space), and no single tool does it. But the payoff is aesthetic/curiosity for esolang and generative-art people, not utilitarian — honestly a wildcard, not a workhorse.",
+      "pattern": "artifact-as-program-space (semantic misuse)",
+      "domains_bridged": [
+        "algorithmic music / MIDI corpora",
+        "esoteric programming / computation theory"
+      ],
+      "roles": "source: MIDI dataset -> transform: Schoenberg BF interpreter + halt/output filter -> sink: patat curated deck",
+      "fragile_seam": "Almost all MIDI either fails to parse as a well-formed program or trivially halts with empty output; the yield of interesting hits may be near-zero without loosening 'non-trivial'.",
+      "confidence": "plausible",
+      "batch": "artifact-crossing"
+    },
+    {
+      "chain_name": "Detector Judo",
+      "tools": [
+        "stegify",
+        "Aletheia (pre-trained ML models)",
+        "awk/xargs",
+        "StegExpose"
+      ],
+      "glue": "stegify embeds a payload into a cover image via LSB -> the stego image is scored by Aletheia's pre-trained steganalysis model (`aletheia.py auto`), whose numeric detection probability is parsed from stdout -> a driver loop treats that probability as a fitness/loss signal, perturbing cover choice and embedding density to minimize it -> the best evaders are cross-checked against StegExpose's independent statistical-fusion detector to test whether evasion generalizes beyond the one model.",
+      "emergent_capability": "Repurposes a steganalysis detector's own trained model as the fitness function of an evolutionary evasion attack — a detector becomes an evader-factory.",
+      "sketch": "for c in covers/*.png; do stegify encode --carrier $c --data secret.zip --result out.png; s=$(python3 aletheia.py auto out.png | awk '/prob/{print $NF}'); echo \"$s $c\"; done | sort -n | head; java -jar StegExpose.jar bestdir/  (exact stegify subcommand flags & aletheia model name: see docs)",
+      "scores": {
+        "nonobvious": 4,
+        "emergence": 5,
+        "crossdomain": 5,
+        "payoff": 4,
+        "feasibility": 3.5
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "A detector run backwards as an optimizer is real emergence no single tool ships. So-what survives: steganalysis researchers and red teams get a concrete robustness benchmark and adversarial-example generator. The two-judge cross-check kills the 'you only fooled one model' objection.",
+      "pattern": "discriminator-as-fitness-oracle (adversarial loop)",
+      "domains_bridged": [
+        "LSB steganography",
+        "adversarial machine learning / steganalysis"
+      ],
+      "roles": "source: stegify stego images -> transform: Aletheia model score -> loop back to stegify params -> sink: StegExpose generalization test",
+      "fragile_seam": "Aletheia's score is only differentiable-by-search here (black-box), so convergence is slow; and gains against the ML model may not transfer to StegExpose's statistical detectors, exposing overfitting to one judge.",
+      "confidence": "plausible",
+      "batch": "artifact-crossing"
+    },
+    {
+      "chain_name": "SRAM Rosetta",
+      "tools": [
+        "SRAM Dumper firmware (Namco System2x6, dump artifacts)",
+        "od/xxd",
+        "colibri-core",
+        "dot (graphviz)"
+      ],
+      "glue": "The dumper firmware emits many sramX.bin snapshots taken across different arcade settings/states (the binary dumps are the fuel) -> each dump is tokenized into a text stream of fixed-width byte 'words' (od -> whitespace-separated hex tokens, one line per record window) -> `colibri-classencode` + `colibri-patternmodeller -s` build a compressed pattern model over that byte-token corpus, mining recurring n-grams AND skipgrams -> stable n-grams reveal headers/magic, skipgrams ('fixed ... variable ... fixed') reveal record framing and checksum positions -> pattern graph rendered with dot.",
+      "emergent_capability": "Unsupervised reverse-engineering of an undocumented arcade SRAM layout by treating firmware dumps as a language and letting an NLP skipgram miner surface the record grammar.",
+      "sketch": "for f in sram*.bin; do od -An -tx1 -w16 $f | awk '{print}'; done > corpus.txt; colibri-classencode corpus.txt; colibri-patternmodeller -f corpus.colibri.dat -c corpus.colibri.cls -t 2 -l 8 -s -P  (skipgram threshold/length flags: see colibri-core docs)",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 4,
+        "crossdomain": 5,
+        "payoff": 3,
+        "feasibility": 2.5
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "Skipgrams are literally the right shape for 'fixed field / variable body / checksum', and nobody reaches for a Finnish-morphology-era NLP tool to crack arcade SRAM. So-what survives: hardware preservationists get candidate field boundaries without a datasheet. Emergence is real (colibri finds structure od alone never surfaces).",
+      "pattern": "binary-as-corpus (linguistic structure discovery)",
+      "domains_bridged": [
+        "arcade hardware preservation / firmware",
+        "computational linguistics (pattern models)"
+      ],
+      "roles": "source: firmware .bin dumps -> transform: byte tokenization -> colibri skipgram model -> sink: graphviz format map",
+      "fragile_seam": "Tokenization window/alignment choice dominates results — pick the wrong byte stride and real records straddle token boundaries, so every discovered 'pattern' is an artifact of the window, not the format.",
+      "confidence": "speculative",
+      "batch": "artifact-crossing"
+    },
+    {
+      "chain_name": "Morphology of the Emote Tongue",
+      "tools": [
+        "Justlog (Twitch-chat public feed)",
+        "jq",
+        "Morfessor",
+        "fzf"
+      ],
+      "glue": "Justlog's REST API serves full channel/user chat histories as JSON -> jq extracts message text and collapses it to a frequency word-list (word<TAB>count) -> `morfessor-train` runs MAP-estimation unsupervised segmentation over that word-list, learning morpheme boundaries with no dictionary -> `morfessor-segment` splits novel emote-compounds and spam-mutations into morphemes -> fzf lets you interactively browse the learned segmentation of internet-native neologisms.",
+      "emergent_capability": "Discovers the productive morphology of a live online micro-dialect (emote compounding, suffix spam, meme derivations) straight from raw chat, with zero lexicon.",
+      "sketch": "curl 'https://logs.justlog.xyz/channel/CH/user/U?json' | jq -r '.messages[].text' | tr ' ' '\\n' | sort | uniq -c | awk '{print $2\" \"$1}' > words.txt; morfessor-train words.txt -s emote.model; morfessor-segment -l emote.model words.txt | fzf  (endpoint & flags: see justlog/morfessor docs)",
+      "scores": {
+        "nonobvious": 4,
+        "emergence": 4,
+        "crossdomain": 4,
+        "payoff": 3,
+        "feasibility": 4
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "A morphological-segmentation model built for Finnish/Turkish aimed at PogChampionship-style emote agglutination is a real collision, and Morfessor surfaces structure a word-count never would. So-what survives: sociolinguists and platform-culture researchers get quantitative morpheme inventories of a dialect with no dictionary.",
+      "pattern": "feed-as-corpus (unsupervised segmentation misuse)",
+      "domains_bridged": [
+        "stream archival / internet culture",
+        "computational morphology"
+      ],
+      "roles": "source: Justlog chat feed -> transform: jq word-list -> Morfessor model -> sink: fzf segmentation browser",
+      "fragile_seam": "Chat is noisy (URLs, unicode spam, code-switching); without aggressive frequency thresholding Morfessor learns junk morphemes, and per-channel emote sets may not generalize across communities.",
+      "confidence": "plausible",
+      "batch": "artifact-crossing"
+    },
+    {
+      "chain_name": "Genomic Grammar: DNA disambiguated by a linguist's rules",
+      "tools": [
+        "smof",
+        "colibri-core",
+        "VISLCG3 / CG-3",
+        "awk"
+      ],
+      "roles": "source: smof streams codons out of a FASTA genome -> transform A: colibri-core mines flexgrams (variable-gap motifs) to derive candidate 'grammar' rules -> transform B: awk reshapes codons into CG-3 cohort text -> sink: vislcg3 applies context-dependent rules to disambiguate/annotate ambiguous reading frames and motif boundaries",
+      "glue": "smof stdout (FASTA/plain text) -> awk emits CG-3 cohort format ('\"<AGT>\"' header line, then TAB-indented readings '\\t\"AGT\" CODON START?'); vislcg3 -g grammar.cg3 reads that cohort stream on stdin and writes an annotated cohort stream on stdout. colibri-core is fed the same corpus via colibri-classencode -> colibri-patternmodeller (-s skipgrams) and its high-frequency flexgrams are hand-lifted into CG-3 REMOVE/SELECT rules.",
+      "emergent_capability": "Reading-frame and motif-boundary disambiguation on DNA using the exact context-over-distance machinery built for resolving grammatical ambiguity in human language.",
+      "sketch": "smof translate -f genome.fna \\\n | awk '{for(i=1;i<=length($0)-2;i+=3){c=substr($0,i,3); print \"\\\"<\"c\">\\\"\"; print \"\\t\\\"\"c\"\\\" CODON\"}}' > codons.cg\n# derive candidate rules from variable-gap motifs\ncolibri-classencode corpus.txt && colibri-patternmodeller -f corpus.colibri.dat -t 2 -l 9 -s -P\n# apply the hand-written constraint grammar (SELECT/REMOVE over distance)\nvislcg3 -g motif.cg3 < codons.cg > annotated.cg   # see cg3 docs for rule syntax",
+      "pattern": "misapplied-engine (pattern-over-distance solver transplanted to a non-language token stream)",
+      "domains_bridged": [
+        "computational linguistics / constraint grammar",
+        "bioinformatics / sequence annotation"
+      ],
+      "emergent_capability_note": "",
+      "fragile_seam": "CG-3 rules assume linguistic locality; biological long-range dependencies (enhancers, secondary structure) blow past the window the grammar can express, and codon-to-cohort framing bakes in a frame assumption the grammar is supposed to be discovering.",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 4,
+        "crossdomain": 5,
+        "payoff": 3,
+        "feasibility": 3
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "Real emergence: neither smof nor cg3 alone annotates motifs by learned context; the colliding idea (grammar disambiguation == frame disambiguation) is genuine, and the audience is clear — computational biologists who want interpretable, rule-based motif calls instead of a black-box HMM.",
+      "confidence": "plausible",
+      "glue_confidence": "plausible",
+      "batch": "wildcards"
+    },
+    {
+      "chain_name": "Cartography of the Wire: browsing a billion packets as IP-space geography",
+      "tools": [
+        "netsniff-ng",
+        "awk",
+        "Nanocubes",
+        "caddy"
+      ],
+      "roles": "source: netsniff-ng zero-copy captures/replays packets to pcap and prints per-packet fields -> transform: awk maps 32-bit src/dst IPs onto a Hilbert-curve (x,y) 'continent' and emits time,x,y,bytes CSV + a .map -> sink: Nanocubes indexes the CSV into an in-memory cube served over HTTP, browsed as a zoomable heatmap where geography IS the IPv4 address space",
+      "glue": "netsniff-ng --in cap.pcap --out - (printed packet records) -> awk (Hilbert encode IP octets -> x,y) -> CSV rows time,lat=x,lon=y,bytes; nanocube create consumes CSV + .map schema and nanocube serve exposes the HTTP query/tile API that caddy fronts to the browser viewer.",
+      "emergent_capability": "Interactive spatiotemporal OLAP over raw traffic where scan sweeps, DDoS fan-in and botnet C2 appear as literal geographic clusters and migrations in IP-space-time.",
+      "sketch": "netsniff-ng --in cap.pcap --out - -s \\\n | awk '/IP/{ip=$srcfield; split(ip,o,\".\"); \\\n # hilbert_d2xy(o[1..4]) -> x,y  (see xkcd 195 / Hilbert IP map)\n print ts\",\"x\",\"y\",\"len}' > wire.csv\nnanocube create wire.csv wire.map wire.nanocube   # per pool CLI; see nanocube docs\nnanocube serve wire.nanocube & caddy reverse-proxy --to :29512",
+      "pattern": "coordinate-remap (project a non-geographic key space into lat/lon so a geo-analytics engine becomes a general OLAP surface)",
+      "domains_bridged": [
+        "network forensics / packet capture",
+        "spatiotemporal analytics & visualization"
+      ],
+      "fragile_seam": "Parsing netsniff-ng's printed record format and computing a correct Hilbert d2xy in awk is brittle; getting the .map cardinality/quadtree depth right for a 32-bit synthetic coordinate space is the make-or-break step.",
+      "scores": {
+        "nonobvious": 4,
+        "emergence": 4,
+        "crossdomain": 4,
+        "payoff": 4,
+        "feasibility": 3
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "A single tool can't do it — Nanocubes needs geo coordinates, netsniff-ng has none, and the Hilbert remap is the emergent bridge that makes billions of packets navigable; it serves SOC/threat-hunt analysts who already think in the xkcd IP-map mental model.",
+      "confidence": "plausible",
+      "glue_confidence": "plausible",
+      "batch": "wildcards"
+    },
+    {
+      "chain_name": "Dead-Drop Hunter: steganalysis over a public geotagged photo archive",
+      "tools": [
+        "Creepy (GeoCreepy)",
+        "curl",
+        "StegExpose",
+        "Aletheia",
+        "SedonaDB",
+        "Nanocubes"
+      ],
+      "roles": "source: Creepy/Pastvu aggregate geotagged public photos to CSV/KML with coordinates -> transform A: curl bulk-fetches the images -> transform B: StegExpose fuses RS/Sample-Pairs/Chi-Square for a fast bulk suspicion score, Aletheia's ML models confirm the survivors -> sink: SedonaDB joins suspicion scores back to coordinates and Nanocubes renders where/when covert-carrier images cluster",
+      "glue": "Creepy file export (CSV/KML) -> curl -O per URL -> local image dir -> java -jar StegExpose.jar dir default report.csv (stdout/CSV) -> Aletheia auto on flagged files -> SedonaDB reads the CSV as a table, spatial-joins to photo coords (WKT), exports GeoParquet/CSV -> nanocube create for the time-animated heatmap.",
+      "emergent_capability": "Turns an open crowdsourced photo map into a counter-intelligence sensor that surfaces likely steganographic dead-drops by their geographic and temporal clustering.",
+      "sketch": "# 1 harvest coords\ncreepy  # export targets.csv (lat,lon,url,time)\n# 2 pull images\nawk -F, 'NR>1{print $3}' targets.csv | xargs -P8 -I{} curl -sO {}\n# 3 bulk + confirm\njava -jar StegExpose.jar ./imgs default stego.csv\naletheia.py auto ./imgs   # ML confirmation, see aletheia docs\n# 4 map suspects\nduckdb/sedona: SELECT * FROM 'stego.csv' s JOIN targets t USING(fname) WHERE s.above_thr;\nnanocube create suspects.csv suspects.map suspects.nanocube",
+      "pattern": "cross-corpus-detector (harvest one domain's public exhaust, run another domain's forensic classifier, re-project the hits)",
+      "domains_bridged": [
+        "geolocation OSINT / SOCMINT",
+        "image steganalysis"
+      ],
+      "fragile_seam": "StegExpose/Aletheia false-positive rates are high on heavily recompressed social-media JPEGs, so the geographic 'cluster' can be an artifact of one camera/app pipeline rather than a real dead-drop — the join is only as honest as the steganalysis threshold.",
+      "scores": {
+        "nonobvious": 4,
+        "emergence": 4,
+        "crossdomain": 5,
+        "payoff": 4,
+        "feasibility": 4
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "Emergence is real (no tool in the pool both harvests geo-photos and steganalyzes them at scale), the 'so what' survives — CI researchers and abuse teams genuinely hunt image-based dead-drops — and the weirdness is idea-collision, not friction.",
+      "confidence": "plausible",
+      "glue_confidence": "plausible",
+      "batch": "wildcards"
+    },
+    {
+      "chain_name": "Atonal Computation Drone: hear a Brainfuck program run, stretched to a cathedral",
+      "tools": [
+        "Schoenberg",
+        "fluidsynth",
+        "PaulStretch / PaulXStretch",
+        "FreqTweak"
+      ],
+      "roles": "source: a MIDI file that is simultaneously a Schoenberg (Brainfuck-semantics) program -> transform A: Schoenberg executes it for the computational output -> transform B: fluidsynth renders the same MIDI to audio -> transform C: PaulStretch time-stretches it 20x into an ambient drone -> optional sink: FreqTweak sculpts the spectrum live over JACK",
+      "glue": "program.mid is one file feeding two consumers: node schoenberg run program.mid (tape/pointer/loop execution -> stdout) AND fluidsynth -F out.wav sf2 program.mid (MIDI -> WAV); PaulStretch reads WAV, writes stretched WAV; FreqTweak takes it over JACK audio I/O.",
+      "emergent_capability": "A single artifact that is at once source code, a running computation, and a piece of drone music — you literally listen to the atonal texture of an algorithm executing.",
+      "sketch": "node schoenberg run add.mid          # executes as Brainfuck; prints result (see schoenberg docs)\nfluidsynth -F add.wav /usr/share/sf2/FluidR3.sf2 add.mid\npaulstretch add.wav drone.wav -s 20.0 -w 0.5   # extreme stretch; see paulstretch_cpp docs\n# optional live spectral sculpt over JACK:\nfreqtweak   # connect drone.wav playback -> freqtweak in",
+      "pattern": "dual-representation (one file inhabits two incompatible semantics — executable and musical — at once)",
+      "domains_bridged": [
+        "esoteric programming / computation",
+        "audio DSP / generative music"
+      ],
+      "fragile_seam": "MIDI-to-audio synthesis is the whole hinge: without a soundfont + fluidsynth (ffmpeg alone won't synth MIDI), there's no waveform to stretch; and a program optimized to compute is not optimized to sound good, so 'delightful' is not guaranteed.",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 5,
+        "crossdomain": 5,
+        "payoff": 2,
+        "feasibility": 2
+      },
+      "verdict": "wildcard",
+      "verdict_reason": "Barely practical but genuinely beautiful: the emergence (code == music == computation in one object) cannot be faked by any single tool, and it's for sound artists / esolang lovers who want to perform an algorithm. Weirdness is pure idea-collision.",
+      "confidence": "speculative",
+      "glue_confidence": "plausible",
+      "batch": "wildcards"
+    },
+    {
+      "chain_name": "Rivers of the Face: watershed hydrology run on a photograph",
+      "tools": [
+        "ImageMagick (magick)",
+        "TauDEM",
+        "pixelsort"
+      ],
+      "roles": "source: any photo -> transform A: magick converts brightness to a floating-point grayscale 'elevation' GeoTIFF (fake DEM) -> transform B: TauDEM runs pit-removal, D-Infinity flow direction, and flow accumulation as if the image were terrain -> sink: magick/pixelsort renders the extracted stream network back as generative glitch art of rivers that never existed",
+      "glue": "magick portrait.jpg -colorspace Gray -depth 32 -define quantum:format=floating-point dem.tif (GeoTIFF the DEM) -> TauDEM MPI executables consume/emit GeoTIFF rasters (pitremove -> dinfflowdir -> areadinf) -> magick -auto-level on the flow-accumulation raster -> pixelsort along the drainage lines for the final image.",
+      "emergent_capability": "D-Infinity watershed delineation becomes a generative-art engine: the 'rivers', ridgelines and basins of a human face emerge from real hydrological math applied to luminance-as-topography.",
+      "sketch": "magick portrait.jpg -colorspace Gray -depth 32 -define quantum:format=floating-point dem.tif\n# TauDEM needs a georeferenced GeoTIFF; stamp a synthetic transform (see TauDEM docs)\npitremove -z geo.tif -fel fel.tif\ndinfflowdir -fel fel.tif -ang ang.tif -slp slp.tif\nareadinf -ang ang.tif -sca sca.tif           # flow accumulation = river brightness\nmagick sca.tif -auto-level rivers.png && pixelsort rivers.png -o final.png",
+      "pattern": "domain-transplant (feed a physics/GIS solver an input from a domain where its governing equations are meaningless, harvest the aesthetics of the misapplication)",
+      "domains_bridged": [
+        "hydrology / terrain analysis",
+        "glitch art / image processing"
+      ],
+      "fragile_seam": "TauDEM expects a properly georeferenced GeoTIFF with a valid geotransform; a magick-written TIFF usually lacks one, so without a gdal_translate -a_srs/-a_ullr step the MPI tools refuse or produce degenerate flow — the georef stamp is the crux.",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 5,
+        "crossdomain": 5,
+        "payoff": 3,
+        "feasibility": 2
+      },
+      "verdict": "wildcard",
+      "verdict_reason": "Absurd-but-beautiful and irreducible to one tool: TauDEM has no notion of art, magick has no notion of watersheds, and the collision (luminance == elevation) produces imagery neither could. For generative artists and cartography nerds who want hydrologically 'true' fictional maps.",
+      "confidence": "speculative",
+      "glue_confidence": "plausible",
+      "batch": "wildcards"
+    },
+    {
+      "chain_name": "Cartographer of the Genome",
+      "tools": [
+        "duckdb",
+        "jvarkit (bioalcidaejdk)",
+        "Nanocubes"
+      ],
+      "roles": "SOURCE: jvarkit/bioalcidae streams per-variant records out of a VCF via a JS/Java expression -> TRANSFORM: duckdb projects genomic (contig,start,AF) into a synthetic (lat,lon,time,category) tuple space and emits CSV + .map -> SINK: Nanocubes builds an in-memory hierarchical cube and serves it as a browser heatmap/histogram over HTTP.",
+      "glue": "hop1: jvarkit stdout = CSV lines (one per variant); hop2: duckdb reads CSV, writes Nanocubes-shaped CSV + a .map field-mapping file (file); hop3: nanocube reads CSV+.map, serves an HTTP query API + web viewer.",
+      "pattern": "store-and-query",
+      "domains_bridged": [
+        "bioinformatics / variant calling",
+        "spatiotemporal OLAP visualization"
+      ],
+      "emergent_capability": "Pan/zoom a billion genomic variants at 60fps with live brushed histograms, using a geo-heatmap engine that has never heard of DNA.",
+      "sketch": "java -jar bioalcidaejdk.jar -e 'stream().forEach(V->println(V.getContig()+\",\"+V.getStart()+\",\"+V.getAttributeAsString(\"AF\",\"0\")))' in.vcf > v.csv\nduckdb -c \"COPY (SELECT (start % 1000000)/10000.0 - 50 AS lat, (start / 1000000) % 360 - 180 AS lon, contig AS cat, make_timestamp(2000,1,1,0,0, CAST(af AS DOUBLE)*1e6) AS t FROM read_csv_auto('v.csv',names=['contig','start','af'])) TO 'nc.csv' (HEADER)\"\nnanocube create nc.csv nc.map out.nanocube && nanocube serve out.nanocube   # exact create/serve flags + .map schema: see docs (github.com/laurolins/nanocube)",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 4,
+        "crossdomain": 5,
+        "payoff": 4,
+        "feasibility": 3
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "Emergence is real (no single genomics browser gives billion-scale interactive cube brushing for free); the 'so what' survives — population geneticists get IGV-at-scale exploration; weirdness is from the geo-cube/DNA collision, not friction.",
+      "fragile_seam": "The coordinate embedding: you must map genomic coordinates into valid, non-colliding lat/lon/time bins, and the exact `nanocube create` CLI + .map column-type schema is under-documented and version-sensitive.",
+      "confidence": "plausible",
+      "batch": "hub-leverage"
+    },
+    {
+      "chain_name": "The Grammarian's Wiretap",
+      "tools": [
+        "awk",
+        "netsniff-ng",
+        "VISLCG3 / CG-3"
+      ],
+      "roles": "SOURCE: netsniff-ng dissects live packets to stdout -> TRANSFORM: awk rewrites each packet as a CG-3 'cohort' (a surface token + a bag of tags like proto/flags/port) -> ENGINE/SINK: vislcg3 runs a constraint grammar as a long-lived stream filter, applying context-dependent rules that reason ACROSS packets (variable distance) to add/remove classification tags, emitting a disambiguated alert stream.",
+      "glue": "hop1: netsniff-ng human-readable per-packet dissection on stdout; hop2: awk emits CG cohort text (\"<10.0.0.1>\\n\\t\\\"tcp\\\" SYN sport:443\\n\"); hop3: vislcg3 -g reads the cohort stream from the pipe and writes tagged cohorts to stdout — cg3 is the daemonized long-running process.",
+      "pattern": "sidecar/daemonize",
+      "domains_bridged": [
+        "rule-based computational linguistics",
+        "network security / flow analysis"
+      ],
+      "emergent_capability": "Write TCP-flow intrusion logic as linguist-style context rules ('REMOVE Benign IF (-1 SYN)(0 SYNACK)(1 ACK) far to the left'), getting cross-packet stateful reasoning with zero imperative code.",
+      "sketch": "netsniff-ng -i eth0 --notouch-irq 2>/dev/null \\\n | awk -f pkt2cohort.awk \\\n | vislcg3 -g flow.cg3 > /var/log/flow-alerts    # flow.cg3: REMOVE (@benign) IF (-2 (\\\"tcp\\\" SYN)) (-1 (\\\"tcp\\\" SYNACK)) (0 (\\\"tcp\\\" ACK)) ; cg3 flag -g/--grammar is verified, cohort format per cg3 docs",
+      "scores": {
+        "nonobvious": 5,
+        "emergence": 5,
+        "crossdomain": 5,
+        "payoff": 4,
+        "feasibility": 3
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "A constraint-grammar disambiguator doing stateful packet-flow classification is a genuine idea collision, not plumbing; audience is DFIR/SOC engineers who want declarative multi-packet rules. Neither tool alone reasons over both grammar-distance and packet order.",
+      "fragile_seam": "netsniff-ng's dissection output is human-readable, not a stable machine format, so the awk cohort-izer is brittle; cg3's left/right context rules assume in-order tokens, so any reordering or drop corrupts the 'sentence'.",
+      "confidence": "plausible",
+      "batch": "hub-leverage"
+    },
+    {
+      "chain_name": "Red Queen's Darkroom",
+      "tools": [
+        "watchexec",
+        "stegify",
+        "Aletheia"
+      ],
+      "roles": "TRANSFORM/RED: stegify LSB-embeds a payload into a carrier image -> WATCHER: watchexec fires on every new carrier/payload combo -> BLUE/SINK: Aletheia's ML steganalysis scores the stego image, and the score is appended to a growing labeled dataset that drives the next payload-size choice.",
+      "glue": "hop1: stegify encode writes stego.png (file); hop2: watchexec -w watches the carriers/ dir and re-runs the pair on change (process spawn); hop3: Aletheia reads stego.png + pretrained model, prints detection probability to stdout appended to scores.tsv (file).",
+      "pattern": "watcher-triggered",
+      "domains_bridged": [
+        "LSB steganography (offense)",
+        "ML steganalysis (defense)"
+      ],
+      "emergent_capability": "A self-playing red/blue loop that auto-discovers the exact payload capacity threshold where LSB hiding becomes ML-detectable — and drops a labeled ROC dataset as a byproduct.",
+      "sketch": "watchexec -w carriers/ -w payloads/ -- '\\\n for c in carriers/*.png; do\\\n   stegify encode --carrier \"$c\" --data payloads/next.bin --result out/$(basename $c) &&\\\n   python3 aletheia.py auto out/$(basename $c) | tee -a scores.tsv;\\\n done'   # stegify encode/decode subcommands verified; aletheia.py auto/detector cmd: see docs (daniellerch/aletheia)",
+      "scores": {
+        "nonobvious": 4,
+        "emergence": 5,
+        "crossdomain": 3,
+        "payoff": 4,
+        "feasibility": 4
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "Neither tool self-plays; wiring them through a watcher creates an adversarial threshold-finder and free training data. For steganalysis researchers and CTF authors this is directly useful, not novelty-from-friction.",
+      "fragile_seam": "Aletheia's pretrained models are method-specific; if 'auto' picks the wrong detector for stegify's exact LSB scheme the scores are meaningless, and nothing guarantees the payload-tuning loop converges rather than oscillates.",
+      "confidence": "plausible",
+      "batch": "hub-leverage"
+    },
+    {
+      "chain_name": "Every Roof a Watershed",
+      "tools": [
+        "duckdb",
+        "QuackOSM",
+        "TauDEM"
+      ],
+      "roles": "SOURCE-A: QuackOSM extracts buildings/waterways from an OSM PBF to GeoParquet -> SOURCE-B: TauDEM runs D-infinity pit-fill/flow/watershed on a DEM raster to delineate basins -> JOIN/SINK: duckdb spatial does ST_Within to assign every OSM building to its hydrological basin and rank flood exposure.",
+      "glue": "hop1: quackosm writes .parquet (GeoParquet, EPSG:4326); hop2: TauDEM CLI chain reads GeoTIFF DEM, writes basins raster + stream shapefile (file); hop3: duckdb LOAD spatial reads both and joins with ST_Within (SQL over Arrow-backed geometry).",
+      "pattern": "store-and-query",
+      "domains_bridged": [
+        "OpenStreetMap vector data engineering",
+        "parallel hydrological terrain analysis"
+      ],
+      "emergent_capability": "Turn a raw OSM extract + a raw DEM into per-building flood-basin exposure with one SQL join — no desktop GIS, no manual digitizing.",
+      "sketch": "quackosm region.osm.pbf --geom-filter-file bbox.geojson > osm.parquet   # buildings/waterways\nmpiexec -n 8 pitremove -z dem.tif -fel fel.tif\nmpiexec -n 8 dinfflowdir -fel fel.tif -ang ang.tif -slp slp.tif\nmpiexec -n 8 areadinf -ang ang.tif -sca sca.tif\nstreamnet -fel fel.tif -p p.tif -ad8 ad8.tif -src src.tif -ord ord.tif -tree tree.txt -coord coord.txt -net stream.shp -w basins.tif\nduckdb -c \"INSTALL spatial;LOAD spatial; SELECT b.osm_id, r.basin FROM 'osm.parquet' b, ST_Read('basins.tif') r WHERE ST_Within(b.geometry, r.geom)\"",
+      "scores": {
+        "nonobvious": 3,
+        "emergence": 4,
+        "crossdomain": 3,
+        "payoff": 5,
+        "feasibility": 4
+      },
+      "verdict": "good-wild",
+      "verdict_reason": "The fusion (OSM assets scored against MPI-parallel D-infinity basins, joined in-process) is not something one tool does; audience is flood insurers and municipal planners without ArcGIS budgets. Payoff is concrete and the seam is real work.",
+      "fragile_seam": "CRS and resolution alignment — OSM is lon/lat EPSG:4326 while the DEM/basins raster is usually projected; ST_Within silently returns nothing if projections aren't reconciled first.",
+      "confidence": "plausible",
+      "batch": "hub-leverage"
+    },
+    {
+      "chain_name": "The Living Manuscript of Motion",
+      "tools": [
+        "watchexec",
+        "Entangled",
+        "odexp"
+      ],
+      "roles": "SOURCE/SYNC: Entangled tangles a Markdown literate document into an odexp model file (and stitches results back) -> WATCHER: watchexec re-fires on every save of the .md -> SOLVER/SINK: odexp re-solves the ODE/SDE/DDE, runs linear stability analysis, and emits a gnuplot figure that Entangled stitches back into the prose.",
+      "glue": "hop1: Entangled tangle writes model.ode from fenced code blocks (file, noweb); hop2: watchexec -w model.md -e md spawns the pipeline on save (fs event); hop3: odexp -f model.ode reads the model + a batch command file, writes gnuplot PNG/data (file), then entangled stitch pulls outputs back into the Markdown.",
+      "pattern": "watcher-triggered",
+      "domains_bridged": [
+        "literate programming / bidirectional tangle",
+        "numerical dynamical-systems analysis"
+      ],
+      "emergent_capability": "A prose document where editing the sentence next to a differential equation instantly re-solves it and re-renders its phase portrait and stability class inline — a live bifurcation notebook built from a tangle daemon and a REPL solver.",
+      "sketch": "watchexec -w model.md -e md -- '\\\n entangled tangle && \\\n odexp -f lorenz.ode < replot.cmds && \\\n entangled stitch'   # Entangled tangle/stitch + watch daemon: see docs (entangled.github.io); odexp batch/stability + gnuplot output: see docs (github.com/samubernard/odexp)",
+      "scores": {
+        "nonobvious": 4,
+        "emergence": 4,
+        "crossdomain": 4,
+        "payoff": 3,
+        "feasibility": 4
+      },
+      "verdict": "wildcard",
+      "verdict_reason": "Real emergence — Entangled only syncs text and odexp only solves; together, gated by a watcher, they become a live computational essay with stability analysis, which neither offers. Slightly niche audience (dynamical-systems educators/researchers) keeps it a wildcard rather than a slam-dunk.",
+      "fragile_seam": "odexp is interactive-first; driving it non-interactively to produce a deterministic figure per save (the batch command file + gnuplot handoff) is the weak joint, and Entangled's stitch must re-absorb a binary/image output it was designed for text around.",
+      "confidence": "plausible",
+      "batch": "hub-leverage"
+    }
+  ]
+}
