@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phonoglyph — self-pronouncing font (preview)</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font: 16px/1.5 -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: #0f1115; color: #e7e9ee; padding: 2rem 1rem; max-width: 760px; margin-inline: auto;
+  }
+  h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+  .sub { color: #9aa3b2; margin: 0 0 1.5rem; }
+  textarea {
+    width: 100%; min-height: 120px; padding: .9rem 1rem; border-radius: 12px;
+    border: 1px solid #2a2f3a; background: #171a21; color: #e7e9ee; font-size: 1.05rem; resize: vertical;
+  }
+  .out {
+    margin-top: 1rem; padding: 1rem 1.1rem; border-radius: 12px; background: #12161d;
+    border: 1px solid #232833; font-size: 1.5rem; line-height: 1.9; min-height: 3rem;
+  }
+  .respelled { color: #7ee0a8; }
+  .plain { color: #e7e9ee; }
+  .hit { border-bottom: 2px dotted #3a6; }
+  .note { margin-top: 1rem; color: #9aa3b2; font-size: .9rem; }
+  .badge { display:inline-block; background:#1d2530; border:1px solid #2a3442; color:#9fd; padding:.1rem .5rem; border-radius:999px; font-size:.75rem; margin-left:.4rem;}
+  code { background:#1d2530; padding:.05rem .35rem; border-radius:6px; }
+  a { color:#7ab7ff; }
+</style>
+</head>
+<body>
+  <h1>Phonoglyph <span class="badge">preview</span></h1>
+  <p class="sub">A font that respells English phonetically <em>inside itself</em>. This page is a
+  JavaScript <strong>preview</strong> of the font's logic — the real artifact does this in GSUB,
+  and copy-paste returns the original text. Type below.</p>
+
+  <textarea id="in" spellcheck="false">Reading through this is enough to show the nation how typography and pronunciation behave on a cold Wednesday island.</textarea>
+  <div class="out" id="out"></div>
+  <p class="note">Green = respelled from the dictionary. Grey = passed through (out-of-dictionary
+  words await the rule-based fallback). Homograph-blind by design — see the
+  <a href="../README.md">README</a> for honest limits.</p>
+
+<script>
+// Seed dictionary — mirror of ../respellings.json, inlined so this works from file://
+const DICT = {
+  "the":"thuh","be":"bee","to":"too","of":"uv","and":"and","a":"uh","in":"in","that":"that",
+  "have":"hav","it":"it","for":"for","not":"not","on":"on","with":"with","he":"hee","as":"az",
+  "you":"yoo","do":"doo","at":"at","this":"this","but":"but","his":"hiz","by":"by","from":"from",
+  "they":"thay","we":"wee","say":"say","her":"hur","she":"shee","or":"or","will":"wil","one":"wun",
+  "all":"awl","would":"wood","there":"thair","their":"thair","what":"whut","people":"pee-pul",
+  "water":"waw-tur","because":"bee-cuz","through":"throo","cough":"kof","though":"thoh",
+  "thought":"thawt","enough":"ee-nuf","laughter":"laf-tur","colonel":"kur-nul","yacht":"yot",
+  "choir":"kwyr","island":"eye-lund","knife":"nyf","gnome":"nohm","wednesday":"wenz-day",
+  "february":"feb-roo-air-ee","pronunciation":"pruh-nun-see-ay-shun","typography":"ty-pog-ruh-fee",
+  "nation":"nay-shun","question":"kwes-chun","sword":"sord","subtle":"sut-ul","receipt":"ree-seet",
+  "reading":"ree-ding","show":"shoh","how":"how","behave":"bee-hayv","cold":"kohld","this":"this"
+};
+
+function matchCase(src, respell){
+  if (src === src.toUpperCase() && src.length > 1) return respell.toUpperCase();
+  if (src[0] === src[0].toUpperCase()) return respell[0].toUpperCase() + respell.slice(1);
+  return respell;
+}
+
+function render(){
+  const text = document.getElementById('in').value;
+  const out = document.getElementById('out');
+  out.innerHTML = '';
+  // split into word / non-word tokens, preserving separators
+  const tokens = text.split(/([A-Za-z']+)/);
+  for (const tok of tokens){
+    if (!tok) continue;
+    const key = tok.toLowerCase();
+    if (/^[a-z']+$/.test(key) && DICT[key]){
+      const span = document.createElement('span');
+      span.className = 'respelled hit';
+      span.textContent = matchCase(tok, DICT[key]);
+      span.title = tok;               // hover shows the real (copy-paste) text
+      out.appendChild(span);
+    } else {
+      const span = document.createElement('span');
+      span.className = 'plain';
+      span.textContent = tok;
+      out.appendChild(span);
+    }
+  }
+}
+document.getElementById('in').addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
