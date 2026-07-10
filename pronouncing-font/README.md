@@ -95,8 +95,9 @@ CMUdict + frequency list ──▶ arpabet_respell.py ──▶ respellings.json
 |---|---|---|
 | `respellings.json` | ✅ real data | ~55 hand-tuned word→respelling pairs (the demo dictionary, incl. hard irregulars) |
 | `arpabet_respell.py` | ✅ runs today | ARPAbet → respelling converter to scale the dictionary from full CMUdict |
+| `rules_fallback.py` | ✅ runs today | Approximate respelling for out-of-dictionary words (greedy digraph/vowel-team rules) |
 | `generate_fea.py` | ✅ emits real `.fea` | Turns `respellings.json` into GSUB rules (ligature-collapse → multiple-expand) |
-| `demo/index.html` | ✅ open in a browser | Live preview: type English, watch it respell (reference implementation of the font's logic) |
+| `demo/index.html` | ✅ open in a browser | Live preview: dictionary (green, exact) + rule fallback (amber, approximate) |
 | **the compiled `.otf`** | 🔨 the weekend's real work | Merging the `.fea` + intermediate glyphs into a base font, and getting **word-boundary** matching right in GSUB — this is the genuine "font hell," honestly not done yet |
 
 The demo is a **preview** of what the font will render (same word→respelling map, in JS). The
@@ -122,8 +123,8 @@ python3 generate_fea.py respellings.json > respell.fea
 
 - [x] Respelling scheme + seed dictionary + live preview
 - [x] ARPAbet→respelling generator, `.fea` emitter
+- [x] Rule-based fallback for out-of-dictionary words
 - [ ] Compile a working `.otf` on a HarfBuzz base font (word-boundary GSUB context)
-- [ ] Rule-based fallback lookup for OOV words
 - [ ] A `@font-face` web demo backed by the *real* font, not the JS preview
 - [ ] Variable-font axis: respelling intensity (off → digraph hints → full respelling)
 

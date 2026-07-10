@@ -22,8 +22,10 @@
     border: 1px solid #232833; font-size: 1.5rem; line-height: 1.9; min-height: 3rem;
   }
   .respelled { color: #7ee0a8; }
+  .approx { color: #e8c46a; }
   .plain { color: #e7e9ee; }
   .hit { border-bottom: 2px dotted #3a6; }
+  .approx.hit { border-bottom: 2px dotted #a83; }
   .note { margin-top: 1rem; color: #9aa3b2; font-size: .9rem; }
   .badge { display:inline-block; background:#1d2530; border:1px solid #2a3442; color:#9fd; padding:.1rem .5rem; border-radius:999px; font-size:.75rem; margin-left:.4rem;}
   code { background:#1d2530; padding:.05rem .35rem; border-radius:6px; }
@@ -38,8 +40,9 @@
 
   <textarea id="in" spellcheck="false">Reading through this is enough to show the nation how typography and pronunciation behave on a cold Wednesday island.</textarea>
   <div class="out" id="out"></div>
-  <p class="note">Green = respelled from the dictionary. Grey = passed through (out-of-dictionary
-  words await the rule-based fallback). Homograph-blind by design — see the
+  <p class="note"><span style="color:#7ee0a8">Green</span> = exact, from the dictionary.
+  <span style="color:#e8c46a">Amber</span> = approximate, from the rule-based fallback
+  (mirrors <code>rules_fallback.py</code>). Homograph-blind by design — see the
   <a href="../README.md">README</a> for honest limits.</p>
 
 <script>
@@ -57,6 +60,33 @@ const DICT = {
   "nation":"nay-shun","question":"kwes-chun","sword":"sord","subtle":"sut-ul","receipt":"ree-seet",
   "reading":"ree-ding","show":"shoh","how":"how","behave":"bee-hayv","cold":"kohld","this":"this"
 };
+
+// Rule-based fallback — compact JS port of rules_fallback.py (canonical version is the .py)
+const RULES = [
+  ["tion","shun"],["sion","zhun"],["cious","shus"],["tious","shus"],
+  ["ough","aw"],["augh","aw"],["eigh","ay"],["igh","y"],
+  ["tch","ch"],["dge","j"],["ture","chur"],
+  ["ck","k"],["ph","f"],["wh","w"],["qu","kw"],["ch","ch"],["sh","sh"],
+  ["th","th"],["ng","ng"],["wr","r"],["kn","n"],["gn","n"],["gh",""],
+  ["ee","ee"],["ea","ee"],["oo","oo"],["ai","ay"],["ay","ay"],["oa","oh"],
+  ["ow","ow"],["ou","ow"],["oi","oy"],["oy","oy"],["au","aw"],["aw","aw"],
+  ["ew","oo"],["ey","ee"],["ie","ee"],["ar","ar"],["or","or"],["er","ur"],
+  ["ir","ur"],["ur","ur"],
+  ["a","a"],["e","e"],["i","i"],["o","o"],["u","uh"],["y","y"],["c","k"],
+  ["g","g"],["s","s"],["x","ks"],["b","b"],["d","d"],["f","f"],["h","h"],
+  ["j","j"],["k","k"],["l","l"],["m","m"],["n","n"],["p","p"],["r","r"],
+  ["t","t"],["v","v"],["w","w"],["z","z"],["q","k"]
+];
+function ruleRespell(word){
+  let w = word.toLowerCase();
+  if (w.length > 2 && w.endsWith("e") && !"aeiou".includes(w[w.length-2])) w = w.slice(0,-1);
+  let out = "", i = 0;
+  outer: while (i < w.length){
+    for (const [pat,rep] of RULES){ if (w.startsWith(pat,i)){ out += rep; i += pat.length; continue outer; } }
+    i++;
+  }
+  return out || word;
+}
 
 function matchCase(src, respell){
   if (src === src.toUpperCase() && src.length > 1) return respell.toUpperCase();
@@ -78,6 +108,12 @@ function render(){
       span.className = 'respelled hit';
       span.textContent = matchCase(tok, DICT[key]);
       span.title = tok;               // hover shows the real (copy-paste) text
+      out.appendChild(span);
+    } else if (/^[a-z]+$/.test(key)){
+      const span = document.createElement('span');
+      span.className = 'approx hit';
+      span.textContent = matchCase(tok, ruleRespell(key));
+      span.title = tok + ' (approximate)';
       out.appendChild(span);
     } else {
       const span = document.createElement('span');
