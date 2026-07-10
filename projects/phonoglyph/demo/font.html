@@ -22,6 +22,11 @@
   .note { margin-top:1rem; color:#9aa3b2; font-size:.9rem; }
   .warn { color:#e8c46a; }
   a { color:#7ab7ff; }
+  .controls { margin-top:.8rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+  button.speak { background:#1f6f43; color:#eafff2; border:1px solid #2e8f5b; border-radius:10px;
+                 padding:.5rem .9rem; font-size:1rem; cursor:pointer; }
+  button.speak:hover { background:#248050; }
+  .hint { color:#9aa3b2; font-size:.85rem; }
 </style>
 </head>
 <body>
@@ -33,6 +38,11 @@
   <p style="font-size:.85rem;color:#9aa3b2">Type here (rendered in a normal font):</p>
   <textarea id="in" spellcheck="false">The computer technology through this international information system is enough to show the whole nation how pronunciation and government work on a cold Wednesday.</textarea>
 
+  <div class="controls">
+    <button class="speak" id="speak">🔊 Speak it</button>
+    <span class="hint">Hear the original English (browser voice, separate from the font).</span>
+  </div>
+
   <p style="font-size:.85rem;color:#9aa3b2">Rendered in Phonoglyph (the font respells it live):</p>
   <div class="out" id="out"></div>
 
@@ -41,10 +51,30 @@
   <span class="warn">Works in Chrome / Firefox / Safari (HarfBuzz &amp; CoreText); not in Windows
   DirectWrite apps.</span> See the <a href="../README.md">README</a>.</p>
 
+  <p class="note"><strong>The font is silent by design</strong> — it changes how text <em>looks</em>,
+  not sound. The 🔊 button is your browser's built-in speech voice (Web Speech API) reading the
+  original English; it is <em>not</em> part of the font.</p>
+
 <script>
   const inp = document.getElementById('in'), out = document.getElementById('out');
   const sync = () => { out.textContent = inp.value; };
   inp.addEventListener('input', sync); sync();
+
+  // Text-to-speech via the browser's built-in Web Speech API (free, local, not the font)
+  let VOICE = null;
+  function pickVoice(){
+    if (!('speechSynthesis' in window)) return;
+    const vs = speechSynthesis.getVoices();
+    VOICE = vs.find(v => /en[-_]?US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || vs[0] || null;
+  }
+  if ('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+  document.getElementById('speak').addEventListener('click', () => {
+    if (!('speechSynthesis' in window)){ alert('This browser has no speech synthesis.'); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(inp.value);
+    u.lang = 'en-US'; if (VOICE) u.voice = VOICE; u.rate = 0.95;
+    speechSynthesis.speak(u);
+  });
 </script>
 </body>
 </html>

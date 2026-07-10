@@ -30,6 +30,13 @@
   .badge { display:inline-block; background:#1d2530; border:1px solid #2a3442; color:#9fd; padding:.1rem .5rem; border-radius:999px; font-size:.75rem; margin-left:.4rem;}
   code { background:#1d2530; padding:.05rem .35rem; border-radius:6px; }
   a { color:#7ab7ff; }
+  .controls { margin-top:.8rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+  button.speak { background:#1f6f43; color:#eafff2; border:1px solid #2e8f5b; border-radius:10px;
+                 padding:.5rem .9rem; font-size:1rem; cursor:pointer; }
+  button.speak:hover { background:#248050; }
+  .hint { color:#9aa3b2; font-size:.85rem; }
+  .respelled, .approx { cursor:pointer; }
+  .speaking { background:#2a3f30; border-radius:4px; }
 </style>
 </head>
 <body>
@@ -39,11 +46,18 @@
   and copy-paste returns the original text. Type below.</p>
 
   <textarea id="in" spellcheck="false">Reading through this is enough to show the nation how typography and pronunciation behave on a cold Wednesday island.</textarea>
+  <div class="controls">
+    <button class="speak" id="speak">🔊 Speak</button>
+    <span class="hint">…or click any respelled word to hear it.</span>
+  </div>
   <div class="out" id="out"></div>
   <p class="note"><span style="color:#7ee0a8">Green</span> = exact, from the dictionary.
   <span style="color:#e8c46a">Amber</span> = approximate, from the rule-based fallback
   (mirrors <code>rules_fallback.py</code>). Homograph-blind by design — see the
   <a href="../README.md">README</a> for honest limits.</p>
+  <p class="note"><strong>About the sound:</strong> the <em>font</em> only changes how text
+  <em>looks</em>. The audio is separate — your browser's built-in speech voice (Web Speech API,
+  free &amp; offline-capable) speaking the original English. It is <em>not</em> part of the font.</p>
 
 <script>
 // Seed dictionary — mirror of ../respellings.json, inlined so this works from file://
@@ -94,6 +108,23 @@ function matchCase(src, respell){
   return respell;
 }
 
+// --- Text-to-speech via the browser's built-in Web Speech API (free, local) ---
+let VOICE = null;
+function pickVoice(){
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices();
+  VOICE = vs.find(v => /en[-_]?US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || vs[0] || null;
+}
+if ('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(text, el){
+  if (!('speechSynthesis' in window)){ alert('This browser has no speech synthesis.'); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US'; if (VOICE) u.voice = VOICE; u.rate = 0.95;
+  if (el){ u.onstart = () => el.classList.add('speaking'); u.onend = () => el.classList.remove('speaking'); }
+  speechSynthesis.speak(u);
+}
+
 function render(){
   const text = document.getElementById('in').value;
   const out = document.getElementById('out');
@@ -107,13 +138,15 @@ function render(){
       const span = document.createElement('span');
       span.className = 'respelled hit';
       span.textContent = matchCase(tok, DICT[key]);
-      span.title = tok;               // hover shows the real (copy-paste) text
+      span.title = tok + ' — click to hear';   // hover shows the real (copy-paste) text
+      span.onclick = () => speak(tok, span);
       out.appendChild(span);
     } else if (/^[a-z]+$/.test(key)){
       const span = document.createElement('span');
       span.className = 'approx hit';
       span.textContent = matchCase(tok, ruleRespell(key));
-      span.title = tok + ' (approximate)';
+      span.title = tok + ' (approximate) — click to hear';
+      span.onclick = () => speak(tok, span);
       out.appendChild(span);
     } else {
       const span = document.createElement('span');
@@ -124,6 +157,7 @@ function render(){
   }
 }
 document.getElementById('in').addEventListener('input', render);
+document.getElementById('speak').addEventListener('click', () => speak(document.getElementById('in').value));
 render();
 </script>
 </body>
