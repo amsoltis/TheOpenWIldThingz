@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+# local data (users download these; see README)
+cmudict.dict
+freq.txt
+respellings.full.json
