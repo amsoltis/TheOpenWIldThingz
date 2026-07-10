@@ -199,6 +199,12 @@ python3 rules_fallback.py --selftest               # approximate OOV respelling 
 - [ ] Bake the rule fallback into the font itself (so OOV words also respell in-font)
 - [ ] Variable-font axis: respelling intensity (off → digraph hints → full respelling)
 
+## Show it off
+
+- [`site/`](site/) — a self-contained landing page (real font + live demo + a no-code explainer),
+  ready to deploy to Cloudflare Pages at `phonotype.soltis.house`. See [`site/DEPLOY.md`](site/DEPLOY.md).
+- [`LINKEDIN.md`](LINKEDIN.md) — post drafts for announcing it (link to the demo, no code).
+
 ## License
 
 Tooling: MIT (`LICENSE`). Any shipped font: **SIL OFL 1.1** (keeps it free and viral — that's

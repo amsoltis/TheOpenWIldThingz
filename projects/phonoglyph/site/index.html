@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phonotype — the font that pronounces itself</title>
+<meta name="description" content="Type English and it respells phonetically — live, entirely inside the font file, no JavaScript. Copy it and it pastes back as normal English. A demo of computation hidden inside a typeface.">
+<meta property="og:title" content="Phonotype — the font that pronounces itself">
+<meta property="og:description" content="A typeface that computes English pronunciation inside its own font tables. Type, watch it respell, copy it back as English.">
+<meta property="og:type" content="website">
+<style>
+  @font-face {
+    font-family: "Phonoglyph";
+    src: url("Phonoglyph.ttf") format("truetype");
+    font-display: swap;
+  }
+  :root{
+    --bg:#0e1016; --fg:#e9ecf2; --muted:#9aa3b5; --card:#151823; --line:#242938;
+    --accent:#5fd39a; --accent2:#7aa2ff; --warn:#e8c46a;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f7fb; --fg:#161922; --muted:#5c6272; --card:#ffffff; --line:#e4e7ef; --accent:#12925a; --accent2:#2f63d6; --warn:#9a6b00; }
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--bg); color:var(--fg);
+        font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+        -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:820px; margin:0 auto; padding:0 20px; }
+  header{ padding:22px 0; font-size:.9rem; color:var(--muted); letter-spacing:.02em; }
+  header b{ color:var(--fg); }
+  .hero{ padding:36px 0 8px; }
+  h1{ font-size:clamp(2rem,6vw,3.2rem); line-height:1.05; margin:.2em 0 .3em; letter-spacing:-.02em; }
+  .lede{ font-size:1.2rem; color:var(--muted); max-width:36ch; }
+  .accent{ color:var(--accent); }
+  section{ padding:34px 0; border-top:1px solid var(--line); }
+  section:first-of-type{ border-top:none; }
+  h2{ font-size:1.5rem; letter-spacing:-.01em; margin:0 0 .5em; }
+  p{ color:var(--fg); } .muted{ color:var(--muted); }
+
+  /* live demo */
+  .demo-label{ font-size:.82rem; color:var(--muted); margin:0 0 .4rem; text-transform:uppercase; letter-spacing:.08em; }
+  .stage{ font-family:"Phonoglyph", Georgia, serif; font-size:clamp(1.5rem,4.5vw,2.1rem); line-height:1.55;
+          background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 24px; outline:none; }
+  .stage:focus{ border-color:var(--accent); }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+  button{ font:inherit; font-size:1rem; cursor:pointer; border-radius:12px; padding:.6rem 1rem;
+          background:var(--accent); color:#08130d; border:1px solid transparent; font-weight:600; }
+  button.ghost{ background:transparent; color:var(--fg); border-color:var(--line); }
+  button:focus-visible{ outline:2px solid var(--accent2); outline-offset:2px; }
+  .paste{ width:100%; margin-top:10px; padding:.7rem 1rem; border-radius:12px; border:1px dashed var(--line);
+          background:transparent; color:var(--fg); font-size:1rem; }
+  .toast{ color:var(--accent); font-size:.9rem; min-height:1.2em; }
+
+  .cards{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  @media (max-width:640px){ .cards{ grid-template-columns:1fr; } }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .card .n{ color:var(--accent2); font-weight:700; font-size:.85rem; }
+  .card h3{ margin:.3em 0; font-size:1.05rem; }
+  .card p{ color:var(--muted); font-size:.95rem; margin:0; }
+
+  table{ width:100%; border-collapse:collapse; font-size:.95rem; }
+  td,th{ text-align:left; padding:.55rem .6rem; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ color:var(--muted); font-weight:600; }
+  .limit{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-top:12px; }
+  .limit b{ color:var(--warn); }
+  footer{ padding:40px 0 60px; color:var(--muted); font-size:.9rem; border-top:1px solid var(--line); }
+  a{ color:var(--accent2); }
+  .pill{ display:inline-block; font-size:.75rem; color:var(--accent); border:1px solid var(--line);
+         border-radius:999px; padding:.15rem .6rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header><b>phonotype</b> · a font that pronounces itself</header>
+
+  <div class="hero">
+    <span class="pill">a font-engineering experiment</span>
+    <h1>The font that <span class="accent">pronounces itself.</span></h1>
+    <p class="lede">Type English. It respells phonetically — <b>live, inside the font file itself</b>.
+    No JavaScript. Copy it, and it pastes back as normal English.</p>
+  </div>
+
+  <section>
+    <p class="demo-label">Type in the box — the font is doing this, not a script</p>
+    <div class="stage" id="stage" contenteditable="true" spellcheck="false"
+         role="textbox" aria-multiline="true" aria-label="Type English to see it respelled by the font">Through the night, enough people read the information and thought the pronunciation looked like a different language.</div>
+    <div class="row">
+      <button id="speak" aria-label="Speak the text aloud">🔊 Hear it</button>
+      <button class="ghost" id="copy" aria-label="Copy the text">📋 Copy it</button>
+      <span class="muted" style="font-size:.9rem">then paste below — you get the English back ↓</span>
+    </div>
+    <input class="paste" id="paste" placeholder="paste here (Ctrl/⌘+V) — the respelling was never in the text; only the shapes changed" aria-label="Paste target">
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </section>
+
+  <section>
+    <h2>How can a <em>font</em> do that?</h2>
+    <p class="muted">A font isn't just shapes — modern font files can run a small program while your
+    text is being laid out. People have hidden entire QR-code generators and a playable video game
+    inside single font files. Phonotype uses that same machinery for a new trick: English pronunciation.</p>
+    <div class="cards">
+      <div class="card"><div class="n">01</div><h3>Fonts can compute</h3>
+        <p>OpenType fonts carry substitution tables that swap and combine glyphs as text is shaped.
+        That mechanism is powerful enough to do real logic.</p></div>
+      <div class="card"><div class="n">02</div><h3>Pronunciation, baked in</h3>
+        <p>~2,000 common words (plus the nasty irregulars — <i>through, colonel, yacht</i>) and a
+        set of spelling→sound rules live inside the font as substitutions.</p></div>
+      <div class="card"><div class="n">03</div><h3>Only the shapes change</h3>
+        <p>It swaps glyphs at render time — the underlying text stays English. So select, copy, and
+        paste, and you get the original words back, untouched.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Why it's new</h2>
+    <p class="muted">Plenty of tools convert English to a pronunciation guide — but they're websites,
+    or fonts that only display symbols you already typed. None of them <b>compute the pronunciation
+    inside the font itself</b>. As far as I can tell, this is the first that does.</p>
+    <table>
+      <tr><th>What exists</th><th>Why it's not this</th></tr>
+      <tr><td>Web transcribers (paste text → get IPA)</td><td>External software; breaks copy-paste</td></tr>
+      <tr><td>IPA fonts</td><td>Only render symbols you already know; no conversion</td></tr>
+      <tr><td>Phonics / dyslexia fonts</td><td>Colour or weight letters; no contextual conversion</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>The honest catch</h2>
+    <p class="muted">Because it's a genuine experiment, not a magic wand:</p>
+    <div class="limit"><b>It's approximate.</b> English is full of words spelled the same but said
+    differently (<i>read</i>, <i>lead</i>, <i>live</i>) — no spelling-based system can resolve those
+    without understanding meaning. Phonotype picks each word's most common pronunciation. It's a
+    reading aid, not a dictionary.</div>
+    <div class="limit"><b>It runs in browsers, not everywhere.</b> The in-font computation works in
+    Chrome, Firefox, and Safari (and this page). Some native apps use a text engine that skips it.</div>
+    <p class="muted" style="margin-top:16px">The 🔊 button is your browser's own voice reading the
+    original English — a separate convenience. The font itself is silent; it changes how words look,
+    not sound.</p>
+  </section>
+
+  <footer class="wrap">
+    <p><b>Phonotype</b> — an experiment in hiding computation inside a typeface.
+    Built by Andrew Soltis · 2026. Code write-up coming soon.</p>
+  </footer>
+
+</div>
+
+<script>
+  // The page's only script: the optional "Hear it" + "Copy it" buttons. Neither does the
+  // respelling — that's the font. They read the box's underlying English text.
+  const stage = document.getElementById('stage'), toast = document.getElementById('toast');
+  let VOICE = null;
+  function pickVoice(){ if(!('speechSynthesis' in window)) return;
+    const vs = speechSynthesis.getVoices();
+    VOICE = vs.find(v=>/en[-_]?US/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || vs[0] || null; }
+  if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+  document.getElementById('speak').addEventListener('click', ()=>{
+    if(!('speechSynthesis' in window)){ toast.textContent='This browser has no speech voice.'; return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(stage.textContent);
+    u.lang='en-US'; if(VOICE) u.voice=VOICE; u.rate=.95; speechSynthesis.speak(u);
+  });
+  document.getElementById('copy').addEventListener('click', async ()=>{
+    try{ await navigator.clipboard.writeText(stage.textContent);
+      toast.textContent='✓ Copied the original English — paste it and see.'; }
+    catch{ toast.textContent='Select the text above and copy it manually — you still get English.'; }
+    setTimeout(()=>{ toast.textContent=''; }, 4500);
+  });
+</script>
+</body>
+</html>
