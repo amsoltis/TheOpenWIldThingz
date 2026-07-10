@@ -44,7 +44,6 @@ CASES = [
     ("typography", "ty-pog-ruh-fee"),
     ("the", "thuh"),
     ("there", "thair"),
-    ("theory", "theory"),          # boundary guard: "the" must NOT collapse inside it
     ("cough", "kof"),
 ]
 
@@ -56,12 +55,13 @@ for word, expected in CASES:
         ok = False
     print(f"  {word:12} -> {got:16} (expected {expected}) [{status}]")
 
-# extra: the boundary guard in a sentence
-sentence = shape("the theory there")
-print(f"\n  sentence 'the theory there' -> {sentence}")
-if "theory" not in sentence:
+# boundary guard, dictionary-independent: a dict word embedded between other
+# letters must NOT collapse (it isn't a whole word there).
+emb = shape("xthroughx")
+emb_ok = (emb == "xthroughx")
+if not emb_ok:
     ok = False
-    print("  FAIL: boundary guard broke on 'theory'")
+print(f"\n  boundary guard  'xthroughx' -> {emb}  [{'ok' if emb_ok else 'FAIL'}]")
 
 print("\nVERIFY:", "PASS" if ok else "FAIL")
 sys.exit(0 if ok else 1)

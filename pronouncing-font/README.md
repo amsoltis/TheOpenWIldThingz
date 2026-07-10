@@ -93,14 +93,16 @@ CMUdict + frequency list ──▶ arpabet_respell.py ──▶ respellings.json
 
 | File | Status | What it does |
 |---|---|---|
-| `respellings.json` | ✅ real data | ~55 hand-tuned word→respelling pairs (the demo dictionary, incl. hard irregulars) |
-| `arpabet_respell.py` | ✅ runs today | ARPAbet → respelling converter to scale the dictionary from full CMUdict |
+| `respellings.json` | ✅ **2,012 words** | The baked dictionary: top ~2k frequent words (CMUdict) + hand-tuned irregulars |
+| `respellings.seed.json` | ✅ 61 curated | Hand-tuned overrides for irregulars (`cough→kof`), always merged in |
+| `build_dictionary.py` | ✅ runs today | Scales `respellings.json` to top-N frequent words from CMUdict + a frequency list |
+| `arpabet_respell.py` | ✅ runs today | ARPAbet → respelling converter used by `build_dictionary.py` |
 | `rules_fallback.py` | ✅ runs today | Approximate respelling for out-of-dictionary words (greedy digraph/vowel-team rules) |
 | `generate_fea.py` | ✅ emits real `.fea` | Turns `respellings.json` into GSUB rules (ligature-collapse → multiple-expand) |
 | `demo/index.html` | ✅ open in a browser | JS preview: dictionary (green, exact) + rule fallback (amber, approximate) |
 | `build_font.py` | ✅ builds a real font | Compiles **`Phonoglyph.ttf`** from DejaVu Sans + `respellings.json`, with boundary-guarded GSUB |
 | `verify_shaping.py` | ✅ **PASS** | Shapes test strings through **HarfBuzz** to prove it works (not just compiles) |
-| **`Phonoglyph.ttf`** | ✅ **real, HarfBuzz-verified** | The actual installable font. `through → throo`; `the` respells but does **not** fire inside `theory` |
+| **`Phonoglyph.ttf`** | ✅ **real, HarfBuzz-verified** | The actual installable font (2,012 words). `through → throo`; guard: `through` does **not** fire inside `xthroughx` |
 | `demo/font.html` | ✅ open in a browser | The **real font** via `@font-face` — respelling done in GSUB, copy-paste returns English |
 
 The demo is a **preview** of what the font will render (same word→respelling map, in JS). The
@@ -122,16 +124,24 @@ python3 verify_shaping.py             # shapes test strings through HarfBuzz -> 
 open demo/font.html                   # see the real font respell live in a browser
 ```
 
-`build_font.py` output on the seed set: **61 words baked, 61 control glyphs, GSUB verified.**
-The boundary guard (`ignore sub @letter <word>;`) is what makes `the` respell as a word but
-stay untouched inside `theory` — confirmed by `verify_shaping.py`.
+`build_font.py` bakes **2,012 words** into 50 chunked GSUB lookups. The boundary guard
+(`ignore sub @letter <word>;`) makes a word respell only when whole — confirmed by
+`verify_shaping.py` (`xthroughx` stays `xthroughx`).
 
-## Scale the dictionary
+> **Gotcha we hit:** one lookup holding all ~6,000 rules overflows the 16-bit GSUB subtable
+> offset (fontTools raises a cryptic `repeatIndex` error). Fix: split rules across many small
+> lookups (`COLLAPSE_CHUNK`/`EXPAND_CHUNK` in `build_font.py`).
+
+## Scale the dictionary yourself
 
 ```
-python3 arpabet_respell.py --selftest              # sanity-check the ARPAbet mapping
-python3 arpabet_respell.py cmudict.dict > respellings.full.json   # needs CMUdict
-python3 rules_fallback.py --selftest               # approximate OOV respelling
+# 1. get the data
+curl -L -o cmudict.dict https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict
+curl -L -o freq.txt https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english-usa.txt
+# 2. rebuild the dictionary (top 2000 words + seed overrides), then the font
+python3 build_dictionary.py cmudict.dict freq.txt 2000 > respellings.json
+python3 build_font.py && python3 verify_shaping.py
+python3 rules_fallback.py --selftest               # approximate OOV respelling (JS demo only, for now)
 ```
 
 ## Roadmap
@@ -141,8 +151,8 @@ python3 rules_fallback.py --selftest               # approximate OOV respelling
 - [x] Rule-based fallback for out-of-dictionary words
 - [x] **Compile a working, HarfBuzz-verified font with word-boundary GSUB guards** ✅
 - [x] A `@font-face` web demo backed by the *real* font (`demo/font.html`)
+- [x] **Scale the dictionary to the top ~2k words** (CMUdict + frequency list) ✅
 - [ ] Bake the rule fallback into the font itself (so OOV words also respell in-font)
-- [ ] Scale the dictionary to the top ~2k words via `arpabet_respell.py` + CMUdict
 - [ ] Variable-font axis: respelling intensity (off → digraph hints → full respelling)
 
 ## License
