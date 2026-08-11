@@ -28,6 +28,12 @@ interface StatementZoneProps {
   stepTotal: number;
   /** Co-located lines the traveller will watch pull in and must not board. */
   ghosts?: readonly LineID[];
+  /**
+   * The prohibition, when the card has one. It lives on the colour rather than
+   * on the paper because it is the only thing on a card whose job is to stop
+   * something going wrong, and below the fold it cannot do that job.
+   */
+  warning?: string | undefined;
   /** Measured from the card, so the headline can be fitted to the real column. */
   width: number;
   minHeight: number;
@@ -53,6 +59,7 @@ export function StatementZone({
   stepIndex,
   stepTotal,
   ghosts = [],
+  warning,
   width,
   minHeight,
 }: StatementZoneProps): ReactElement {
@@ -155,12 +162,39 @@ export function StatementZone({
         </View>
       ) : null}
 
+      {warning ? <WarningPlate text={warning} /> : null}
+
       <SegmentedRail
         index={stepIndex}
         total={stepTotal}
         color={ink}
         style={[styles.rail, { left: margin, right: margin }]}
       />
+    </View>
+  );
+}
+
+/**
+ * The prohibition, set on the black plate.
+ *
+ * The plate is the one thing in this interface that belongs to neither the
+ * colour system nor the paper system — it is a picture of a real object, and it
+ * therefore reads on top of any of the twenty-three line colours without being
+ * restyled for each. That is exactly what a warning needs: yellow is the field
+ * where every tinted panel fails, and a warning that disappears on the Broadway
+ * lines is worse than no warning at all.
+ *
+ * Set in full white on black rather than in the danger red. On a red field, red
+ * is invisible; on yellow it is illegible. The plate carries the alarm by being
+ * the only black rectangle on a wall of colour.
+ */
+function WarningPlate({ text }: { text: string }): ReactElement {
+  return (
+    <View style={styles.warning} accessibilityRole="alert">
+      <Text style={styles.warningCaption} allowFontScaling={false}>
+        DO NOT
+      </Text>
+      <Text style={styles.warningText}>{text}</Text>
     </View>
   );
 }
@@ -419,6 +453,25 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     marginTop: 2,
+  },
+  warning: {
+    backgroundColor: PaperTheme.colors.plate,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginTop: 20,
+  },
+  warningCaption: {
+    color: '#FF6B5E',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.6,
+    marginBottom: 5,
+  },
+  warningText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 22,
   },
   rail: {
     position: 'absolute',

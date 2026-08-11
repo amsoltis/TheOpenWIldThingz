@@ -6,7 +6,6 @@ import type { LineID, RouteCard } from '@streetlevel/shared';
 import { LINE_COLORS, PaperTheme } from '@streetlevel/shared';
 
 import { MarkdownText } from './MarkdownText';
-import { PaperNotice } from './PaperNotice';
 import { StatementZone } from './StatementZone';
 import { statementFor } from '../lib/statement';
 import { EntranceApproachBody } from './phases/EntranceApproachBody';
@@ -101,6 +100,11 @@ export function RouteCardView({
           stepIndex={stepIndex}
           stepTotal={stepTotal}
           ghosts={card.targetLineFocus?.coLocatedLinesToDim ?? []}
+          warning={
+            PHASES_PLACING_THEIR_OWN_ALERT.has(card.phaseType)
+              ? undefined
+              : card.criticalAvoidanceNotes
+          }
           width={box.width}
           minHeight={statementHeight}
         />
@@ -120,18 +124,11 @@ export function RouteCardView({
             secondaryColor={PaperTheme.colors.inkMuted}
           />
 
-          {/* Directly under the instruction on every phase. This is the "do not
-              walk down those stairs" text and it is worthless below a fold.
-
-              The exception is the train: there the warning is about the very
-              first stop, so the ladder places it on that stop itself rather
-              than floating it above and pushing all fourteen stops out of
-              view. */}
-          {card.criticalAvoidanceNotes && !PHASES_PLACING_THEIR_OWN_ALERT.has(card.phaseType) ? (
-            <View style={styles.avoidance}>
-              <PaperNotice caption="DO NOT" text={card.criticalAvoidanceNotes} />
-            </View>
-          ) : null}
+          {/* The prohibition is not printed here. It rides in the colour zone
+              above, where it cannot fall below the fold — a warning you have to
+              scroll to find is a warning for people who were not in a hurry.
+              The train is the exception: there it is about the very first stop,
+              so the ladder places it on that stop itself. */}
 
           <PhaseBody
             card={card}
