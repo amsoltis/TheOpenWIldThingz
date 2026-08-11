@@ -8,6 +8,7 @@ import { normaliseGtfsRouteId } from '@streetlevel/shared';
 
 import { gtfsTimeToSeconds, headerIndex, parseCsv, parseCsvLine } from './csv.js';
 import { boroughFor } from './geo.js';
+import { loadPathwayDataset } from './pathways.js';
 import type {
   DirectionCode,
   LinePattern,
@@ -312,6 +313,12 @@ export async function buildNetwork(opts: BuildOptions): Promise<SubwayNetwork> {
     station.lines.sort();
   }
 
+  /* --- indoor navigation, when the feed carries it ---------------------- */
+  // Optional by design. Every agency ships schedules; almost none ship
+  // pathways yet, so its absence degrades the product to station-level
+  // guidance rather than failing the build.
+  const pathways = await loadPathwayDataset(gtfsDir);
+
   /* --- meta ------------------------------------------------------------ */
   const feedInfo = parseCsv(await read('feed_info.txt'))[0] ?? {};
 
@@ -335,6 +342,7 @@ export async function buildNetwork(opts: BuildOptions): Promise<SubwayNetwork> {
     edges,
     transfers,
     patterns,
+    pathways,
   };
 }
 

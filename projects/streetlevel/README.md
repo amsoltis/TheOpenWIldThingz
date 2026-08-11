@@ -45,7 +45,55 @@ seriously, so before anything else:
 | Live service-alert ingestion | **Provider seam only.** The MTA's realtime endpoint is not reachable from this environment; the GTFS‑Realtime→`ServiceAlert` adapter is deliberately not written. |
 | Docker image | **Not built.** The Docker CLI exists here but there is no daemon. |
 
-### The micro-navigation gap, stated plainly
+### Where the authoritative indoor data actually is
+
+"Enter at this corner, take this staircase, use this elevator" is not something
+that has to be invented. It is a solved, standardised problem —
+**GTFS-Pathways**, an extension of the same specification the schedule feed
+already uses. It models exactly this:
+
+| GTFS-Pathways gives you | The product uses it for |
+|---|---|
+| `location_type = 2` entrance nodes with coordinates | which street-level structure to walk to |
+| `pathway_mode` — walkway, stairs, escalator, elevator, fare gate, **exit gate** | "take the escalator down", and warning that a gate is one-way |
+| `stair_count` (signed) | "24 steps down" — and it flips correctly when walking back |
+| `traversal_time` | whether a passage is worth mentioning at all |
+| **`signposted_as`** | the text printed on the sign above the passage |
+| `levels.txt` | "you want the level marked Mezzanine" |
+
+`signposted_as` is the single most valuable field in the specification for this
+product. Every instruction the app gives is trying to name something the
+traveller can physically read, and that field is that text, from the agency,
+verbatim.
+
+So `packages/data/src/pathways.ts` models the standard rather than a private
+schema, and `buildNetwork` picks up `pathways.txt` / `levels.txt` automatically
+if a feed carries them. 22 tests pin the importer against the specification's
+own field shapes.
+
+**What the MTA currently publishes, verified rather than assumed:**
+
+```
+$ npm run build:dataset --workspace=@streetlevel/data
+pathways in current MTA feed: 0 | levels: 0 | entrances: 0
+```
+
+Both reachable feeds — `gtfs_subway.zip` and the daily `gtfs_supplemented.zip` —
+carry only `location_type` 1 (stations) and blank (platforms). No entrance
+nodes, no `pathways.txt`, no `levels.txt`. The agency *does* publish entrance
+and elevator/escalator inventories, and live equipment-outage feeds, but on
+open-data hosts this build environment cannot reach, and in their own shapes
+rather than as GTFS-Pathways. Adapting those into this model is a known,
+bounded piece of work; it is not done, and the importer has never been
+exercised against real agency data.
+
+**One thing genuinely has no authoritative source:** which car to board for the
+best exit. No transit authority publishes it. It exists only as survey
+knowledge — someone rode every line with a notebook — which is why the
+commercial products that have it built it that way. That part of the micro-nav
+layer cannot be solved by finding a better feed.
+
+### The rest of the micro-navigation gap, stated plainly
 
 The product's whole pitch is knowing *which staircase*. That data does not
 exist in any public feed — GTFS knows a station has platforms; it does not know

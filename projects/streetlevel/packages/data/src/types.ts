@@ -1,5 +1,7 @@
 import type { LineID, StationID } from '@streetlevel/shared';
 
+import type { PathwayDataset } from './pathways.js';
+
 export type BoroughCode = 'M' | 'B' | 'Q' | 'X' | 'SI';
 
 export interface StationNode {
@@ -85,4 +87,10 @@ export interface SubwayNetwork {
   edges: TrackEdge[];
   transfers: TransferEdge[];
   patterns: Record<string, Partial<Record<DirectionCode, LinePattern>>>;
+  /**
+   * GTFS-Pathways indoor navigation, when the feed carries it. Empty against
+   * the MTA's current feeds — see `pathways.ts` for what the agency does and
+   * does not publish.
+   */
+  pathways: PathwayDataset;
 }
