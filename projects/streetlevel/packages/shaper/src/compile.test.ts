@@ -369,3 +369,78 @@ describe('isSafeRewrite', () => {
     expect(isSafeRewrite(original, { primaryInstructionMarkdown: original.primaryInstructionMarkdown, visualAnchors: [] })).toBe(false);
   });
 });
+
+describe('fare-linked connectors on the cards', () => {
+  let cards: TransitPacket['outboundJourney']['navigationCards'];
+
+  beforeAll(async () => {
+    const packet = await compilePacket({
+      originAddress: 'Times Square',
+      destinationAddress: 'Roosevelt Island',
+      departAt: '2026-08-11T14:00:00-04:00',
+      returnAt: '2026-08-11T18:00:00-04:00',
+      geocoder,
+      packetId: 'pkt_tram',
+      now: NOW,
+      // Without the 63 St tunnel the tram is the only way across, which is
+      // exactly the trip worth compiling.
+      alerts: [
+        {
+          alertId: 'a1',
+          affectedLineIds: ['F', 'M'],
+          affectedStationIds: [],
+          activeFrom: '2026-08-11T00:00:00-04:00',
+          activeUntil: '2026-08-12T00:00:00-04:00',
+          effect: 'NO_SERVICE',
+          headerPlainText: 'No F or M trains',
+        },
+      ],
+    });
+    cards = packet.outboundJourney.navigationCards;
+  });
+
+  const text = (c: { primaryInstructionMarkdown: string; visualAnchors: string[]; criticalAvoidanceNotes?: string }) =>
+    [c.primaryInstructionMarkdown, ...c.visualAnchors, c.criticalAvoidanceNotes ?? ''].join('\n');
+
+  it('names the Tramway rather than describing it as a walk', () => {
+    const named = cards.filter((c) => text(c).includes('Roosevelt Island Tramway'));
+    expect(named.length).toBeGreaterThan(0);
+  });
+
+  it('puts the traveller aboard the Tramway on a card of its own', () => {
+    const ride = cards.find(
+      (c) => c.phaseType === 'ON_TRAIN' && c.primaryInstructionMarkdown.includes('Roosevelt Island Tramway'),
+    );
+    expect(ride).toBeDefined();
+    expect(ride!.primaryInstructionMarkdown).toMatch(/^Ride the/);
+  });
+
+  // The user-facing point of the whole feature: the tram is the same fare.
+  it('says the fare is already paid before the traveller reaches the turnstile', () => {
+    const boarding = cards.find((c) => text(c).includes('Roosevelt Island Tramway'))!;
+    expect(text(boarding)).toMatch(/same (fare|OMNY|tap)/i);
+    expect(boarding.criticalAvoidanceNotes).toMatch(/Do not buy a separate ticket/);
+  });
+
+  // Counting is the stop detector's whole job, and it has no signal to count
+  // here. A promised count it cannot verify is worse than no count at all.
+  it('does not hand the stop detector a count it cannot verify', () => {
+    const ride = cards.find(
+      (c) => c.phaseType === 'ON_TRAIN' && c.primaryInstructionMarkdown.includes('Roosevelt Island Tramway'),
+    )!;
+    expect(ride.offlineSensorValidation).toBeUndefined();
+  });
+
+  it('does not tell somebody arriving by cable car to come up the stairs', () => {
+    const exit = cards.at(-1)!;
+    expect(exit.phaseType).toBe('EXIT_SURFACING');
+    expect(text(exit)).not.toMatch(/stairs/i);
+    expect(text(exit)).toContain('Roosevelt Island Tramway');
+  });
+
+  it('never claims the river crossing kept you inside one fare-paid complex', () => {
+    for (const card of cards) {
+      expect(text(card)).not.toMatch(/same station complex/);
+    }
+  });
+});

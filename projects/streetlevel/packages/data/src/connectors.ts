@@ -39,6 +39,22 @@ export interface Connector {
   /** Endpoint coordinates, for drawing. */
   fromPoint: { latitude: number; longitude: number };
   toPoint: { latitude: number; longitude: number };
+  /**
+   * How to get from each paired subway station to the connector's own doors.
+   * A connector is joined to the graph at the nearest station, and "nearest"
+   * can still be several blocks at street level — so the walk is written down
+   * rather than left for the traveller to discover.
+   */
+  fromApproach: string;
+  toApproach: string;
+  /**
+   * What happens at the fare gate, stated plainly.
+   *
+   * The single most likely way to lose money here is not knowing the fare
+   * already covers it. Tapping again is not paying again, and a tourist has no
+   * way to know that from the turnstile.
+   */
+  fareNote: string;
   /** What the traveller should expect, in the product's voice. */
   note: string;
   provenance: 'HAND_AUTHORED' | 'AGENCY_FEED';
@@ -58,6 +74,16 @@ export const CONNECTORS: Connector[] = [
     includedInSubwayFare: true,
     fromPoint: { latitude: 40.7614, longitude: -73.9640 },
     toPoint: { latitude: 40.7573, longitude: -73.9538 },
+    fromApproach:
+      'The Tramway station is at 59 St and 2 Av, about two blocks east of the subway. You come up ' +
+      'to the street to reach it, and the cabin is visible from the corner.',
+    toApproach:
+      'The Tramway station on Roosevelt Island is a few minutes from the subway station and is ' +
+      'signed from the street. We have not surveyed the walk, so follow the signs rather than ' +
+      'guessing at a corner.',
+    fareNote:
+      'You tap again at the Tramway turnstile with the same OMNY card, phone or MetroCard you used ' +
+      'for the subway. Tapping again is not paying again — the transfer is free.',
     note:
       'A cable car over the East River, and part of the subway fare — the same tap, and the ' +
       'transfer is free. It runs every 7 to 15 minutes, and the view is the reason many people ' +
@@ -68,6 +94,21 @@ export const CONNECTORS: Connector[] = [
 
 export function connectorsAt(stationId: StationID): Connector[] {
   return CONNECTORS.filter((c) => c.fromStationId === stationId || c.toStationId === stationId);
+}
+
+/**
+ * The connector joining two stations, in either direction.
+ *
+ * Matched on endpoints rather than name because that is what a routed leg
+ * actually knows, and because a name is a label while the endpoints are the
+ * thing the router reasoned about.
+ */
+export function connectorBetween(from: StationID, to: StationID): Connector | undefined {
+  return CONNECTORS.find(
+    (c) =>
+      (c.fromStationId === from && c.toStationId === to) ||
+      (c.fromStationId === to && c.toStationId === from),
+  );
 }
 
 /**

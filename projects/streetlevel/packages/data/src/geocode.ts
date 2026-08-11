@@ -74,7 +74,13 @@ export const LANDMARK_GAZETTEER: Record<string, { label: string; point: LatLon }
   'citi field': { label: 'Citi Field', point: { latitude: 40.7571, longitude: -73.8458 } },
   'flushing meadows': { label: 'Flushing Meadows Corona Park', point: { latitude: 40.7458, longitude: -73.8458 } },
   'astoria': { label: 'Astoria', point: { latitude: 40.7644, longitude: -73.9235 } },
-  'roosevelt island tram': { label: 'Roosevelt Island Tramway', point: { latitude: 40.7614, longitude: -73.964 } },
+  // Two entries, because these are two different places and the substring
+  // fallback would otherwise resolve "Roosevelt Island" to the *Manhattan*
+  // tram station and route somebody to a destination on the wrong side of the
+  // river — a boarding point is not a destination.
+  'roosevelt island': { label: 'Roosevelt Island', point: { latitude: 40.7595, longitude: -73.9535 } },
+  'roosevelt island tram': { label: 'Roosevelt Island Tramway (Manhattan side)', point: { latitude: 40.7614, longitude: -73.964 } },
+  'roosevelt island tramway': { label: 'Roosevelt Island Tramway (Manhattan side)', point: { latitude: 40.7614, longitude: -73.964 } },
   // Airports resolve to the transit connection a traveller actually uses, not
   // the terminal building: no subway line reaches either airport directly.
   'jfk airport': { label: 'JFK Airport (AirTrain connection at Sutphin Blvd)', point: { latitude: 40.7003, longitude: -73.8076 } },

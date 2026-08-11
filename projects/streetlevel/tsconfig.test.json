@@ -1,0 +1,19 @@
+{
+  // Tests are excluded from every package's build tsconfig, because they must
+  // not end up in dist/. The side effect was that nothing typechecked them at
+  // all — and an untypechecked test is worse than no test, because it passes.
+  //
+  // This caught a real one: a routing test handed `planRoute` an alert object
+  // with invented field names, the alert resolver quietly ignored it, and the
+  // assertion passed against a route that had no disruption applied.
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node", "vitest/globals"],
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM"],
+    "allowJs": true
+  },
+  "include": ["packages/*/src/**/*.test.ts", "server/src/**/*.test.ts"]
+}

@@ -81,7 +81,9 @@ describe('planRoute', () => {
     }
   });
 
-  it('never begins or ends a plan with a transfer', () => {
+  // A fare-linked connector is exempt: it is a ride, not a leftover walk, and
+  // the tram is legitimately the last leg of a trip to Roosevelt Island.
+  it('never begins or ends a plan with a walking transfer', () => {
     const plan = planRoute(stationId('Times Sq-42 St'), stationId('Bedford Av'), {
       at: WEEKDAY_AFTERNOON,
     });
@@ -196,5 +198,92 @@ describe('planTripFromStation', () => {
     expect(trip.walkToStationMinutes).toBe(0);
     expect(trip.boardStationId).toBe(stationId('Bedford Av'));
     expect(rides(trip.route.legs).length).toBeGreaterThan(0);
+  });
+});
+
+describe('fare-linked connectors', () => {
+  const LEX_59 = 'R11';
+  const ROOSEVELT_ISLAND = 'B06';
+
+  // The 63 St tunnel is the only train across to Roosevelt Island. With it
+  // shut, the tram is the whole reason somebody is not stranded.
+  const SUSPEND_F_AND_M = [
+    {
+      alertId: 'a1',
+      affectedLineIds: ['F' as const, 'M' as const],
+      affectedStationIds: [],
+      activeFrom: '2026-08-11T00:00:00-04:00',
+      activeUntil: '2026-08-12T00:00:00-04:00',
+      effect: 'NO_SERVICE' as const,
+      headerPlainText: 'No F or M trains',
+    },
+  ];
+
+  it('routes onto the Roosevelt Island Tramway', () => {
+    const route = planRoute(LEX_59, ROOSEVELT_ISLAND, { at: WEEKDAY_AFTERNOON });
+    expect(route).not.toBeNull();
+    const leg = route!.legs.at(-1);
+    expect(leg?.kind).toBe('TRANSFER');
+    expect(leg && leg.kind === 'TRANSFER' && leg.connectorName).toBe('Roosevelt Island Tramway');
+  });
+
+  // The trailing-transfer trim exists to drop a dangling walk at the
+  // destination. A connector is the trip's last leg, not a leftover, and
+  // trimming it would silently delete the river crossing.
+  it('does not trim the connector off the end of a plan', () => {
+    const route = planRoute(LEX_59, ROOSEVELT_ISLAND, { at: WEEKDAY_AFTERNOON });
+    expect(route!.legs.length).toBeGreaterThan(0);
+  });
+
+  it('lets a traveller get off a train and onto the tram', () => {
+    const route = planRoute(stationId('Times Sq-42 St'), ROOSEVELT_ISLAND, {
+      at: WEEKDAY_AFTERNOON,
+    });
+    expect(route).not.toBeNull();
+    expect(rides(route!.legs).length).toBeGreaterThan(0);
+    expect(route!.legs.at(-1)!.kind).toBe('TRANSFER');
+  });
+
+  // The point of the whole thing: the tram is a second way across the river,
+  // so suspending the F should not strand anybody on Roosevelt Island.
+  it('still reaches Roosevelt Island with the F and M suspended', () => {
+    const route = planRoute(stationId('Times Sq-42 St'), ROOSEVELT_ISLAND, {
+      at: WEEKDAY_AFTERNOON,
+      alerts: SUSPEND_F_AND_M,
+    });
+    expect(route).not.toBeNull();
+    const last = route!.legs.at(-1)!;
+    expect(last.kind === 'TRANSFER' && last.connectorName).toBe('Roosevelt Island Tramway');
+  });
+
+  // With the trains running the F/M beats the tram, which is correct — the
+  // tram is an option, not a gimmick the router is made to prefer.
+  it('prefers the train to Roosevelt Island when the train is running', async () => {
+    const trip = await planTrip('Times Square', 'Roosevelt Island', {
+      at: WEEKDAY_AFTERNOON,
+      geocoder,
+    });
+    expect(trip.alightStationId).toBe(ROOSEVELT_ISLAND);
+    expect(rides(trip.route.legs).length).toBeGreaterThan(0);
+    expect(trip.route.legs.at(-1)!.kind).toBe('RIDE');
+  });
+
+  it('anchors the trip at the far side of the connector, not the last train', async () => {
+    const trip = await planTrip('Times Square', 'Roosevelt Island', {
+      at: WEEKDAY_AFTERNOON,
+      geocoder,
+      alerts: SUSPEND_F_AND_M,
+    });
+    const lastLeg = trip.route.legs.at(-1)!;
+    expect(lastLeg.kind === 'TRANSFER' && lastLeg.connectorName).toBe('Roosevelt Island Tramway');
+    // Anchoring to the last *ride* would leave the exit card at Lexington
+    // Av/59 St and ask somebody to walk the rest of the way across the river.
+    expect(trip.alightStationId).toBe(ROOSEVELT_ISLAND);
+  });
+
+  it('resolves "Roosevelt Island" to the island, not the Manhattan tram station', async () => {
+    const hit = await geocoder.geocode('Roosevelt Island');
+    expect(hit!.label).toBe('Roosevelt Island');
+    expect(hit!.point.longitude).toBeGreaterThan(-73.96);
   });
 });

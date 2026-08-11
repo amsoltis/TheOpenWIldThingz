@@ -204,6 +204,35 @@ our own survey is one you are permitted to hand over. A dataset with Google
 content in it is one you legally cannot. The cheap shortcut is the thing that
 would kill the exit.
 
+### The network is bigger than the feed
+
+The subway GTFS covers the subway. The rider's fare does not stop there, and
+the gap between those two facts is where the Roosevelt Island Tramway went
+missing — drawn on nobody's subway map, reachable on everybody's subway fare.
+
+`packages/data/src/connectors.ts` now carries fare-linked services as
+first-class routable edges, priced at the crossing plus half the headway.
+Everything in it is `HAND_AUTHORED` and says so on every card it produces:
+*"these times are approximate; the posted times at the station are the ones to
+trust."* Replacing that with an agency feed is a small, well-bounded job —
+the `provenance` field is already the switch, and `KNOWN_ABSENT_CONNECTORS`
+lists what is deliberately still missing and why.
+
+Two things are worth being precise about:
+
+- **Fare inclusion is a field, not an assumption.** The tram is free to
+  transfer to; the AirTrain and NYC Ferry are not. Routing somebody onto a
+  separate fare without saying so costs them money at a gate, so
+  `includedInSubwayFare` gates routing entirely.
+- **The walk to the connector is part of the connector.** The Manhattan tram
+  terminal is two blocks from the subway it is joined to in the graph. That
+  walk is written down, and the map draws it as a hairline rather than
+  pretending the two are the same building.
+
+The remaining candidates in rough order of value to a tourist: the Staten
+Island Ferry (free, frequent, a destination in itself), then the AirTrain with
+its fare stated plainly on the card.
+
 ### Enhancing it by asking
 
 The design principle: **ask at the moment of knowledge, not later.** As someone

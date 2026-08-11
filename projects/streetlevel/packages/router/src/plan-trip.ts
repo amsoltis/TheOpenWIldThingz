@@ -132,10 +132,14 @@ export async function planTrip(
  * already priced into the route is left in place, so the estimate errs long.
  */
 function reanchorToRideEnds(plan: TripPlan, originPoint: LatLon, destinationPoint: LatLon): TripPlan {
-  const rides = plan.route.legs.filter((l) => l.kind === 'RIDE');
-  const first = rides[0];
-  const last = rides.at(-1);
-  if (!first || !last || first.kind !== 'RIDE' || last.kind !== 'RIDE') return plan;
+  // Rides and fare-linked connectors both count; plain walking transfers do
+  // not. A trip that ends on the Roosevelt Island Tramway leaves the system on
+  // Roosevelt Island, and anchoring to the last *train* would put the exit card
+  // at Lexington Av/59 St and ask somebody to walk the rest across the river.
+  const journey = plan.route.legs.filter((l) => l.kind === 'RIDE' || Boolean(l.connectorName));
+  const first = journey[0];
+  const last = journey.at(-1);
+  if (!first || !last) return plan;
 
   const boardStation = getStation(first.from);
   const alightStation = getStation(last.to);

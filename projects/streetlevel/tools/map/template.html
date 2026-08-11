@@ -81,6 +81,8 @@
   .leg-text { font-size: 13px; line-height: 1.5; padding-top: 3px; }
   .leg-text b { font-weight: 700; }
   .leg-sub { color: var(--ink-mute); font-size: 11.5px; }
+  /* Not a line bullet: a connector is not a train and must not read as one. */
+  .link-bul { background: #8A6FB0; color: #fff; }
   .walk { color: var(--ink-mute); font-size: 12px; padding: 8px 0; border-top: 1px solid var(--edge); }
   #route-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 12px; }
   #route-total { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
@@ -244,17 +246,37 @@
 
   function drawConnectors() {
     if (CONNECTORS.length === 0) return;
+    // Which connectors the current plan actually rides. A route that crosses
+    // on the tram and then dims the tram would be hiding its own answer.
+    const routed = new Set();
+    if (plan) for (const leg of plan.legs) if (leg.link) routed.add(leg.link.name);
+
     ctx.save();
     ctx.setLineDash([Math.max(4, view.scale * 0.00035), Math.max(4, view.scale * 0.00028)]);
-    ctx.lineWidth = Math.max(1.4, Math.min(view.scale * 0.0005, 4.5));
     ctx.strokeStyle = CONNECTOR_COLOR;
-    ctx.globalAlpha = plan || isolate ? 0.28 : 0.95;
     for (const c of CONNECTORS) {
+      const on = routed.has(c.name);
+      ctx.lineWidth = Math.max(1.4, Math.min(view.scale * 0.0005, 4.5)) * (on ? 2.1 : 1);
+      ctx.globalAlpha = on ? 1 : (plan || isolate ? 0.28 : 0.95);
       const x1 = px(c.a.lon) * view.scale + view.tx, y1 = py(c.a.lat) * view.scale + view.ty;
       const x2 = px(c.b.lon) * view.scale + view.tx, y2 = py(c.b.lat) * view.scale + view.ty;
       ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
 
-      if (view.scale > 20000) {
+      // The tram's terminals are not the subway stations — they are a walk
+      // away, which is exactly what the boarding card says. Drawing the walk
+      // as a hairline keeps the map honest about the gap instead of either
+      // hiding it or leaving the crossing floating unattached to anything.
+      ctx.save();
+      ctx.lineWidth = Math.max(0.8, ctx.lineWidth * 0.4);
+      ctx.setLineDash([2, 3]);
+      ctx.globalAlpha *= 0.6;
+      for (const [id, ex, ey] of [[c.from, x1, y1], [c.to, x2, y2]]) {
+        if (!S[id]) continue;
+        ctx.beginPath(); ctx.moveTo(sx(id), sy(id)); ctx.lineTo(ex, ey); ctx.stroke();
+      }
+      ctx.restore();
+
+      if (view.scale > 20000 || on) {
         ctx.save();
         ctx.setLineDash([]);
         ctx.globalAlpha = 1;
@@ -284,6 +306,20 @@
     walks.get(t[0]).push([t[1], t[2]]);
     walks.get(t[1]).push([t[0], t[2]]);
   }
+  // Fare-linked connectors ride like a named transfer, at the same price the
+  // engine puts on them: the crossing plus half the headway, because a tram
+  // every fifteen minutes is not a staircase. Without this the tram would be
+  // drawn on the map and be unroutable on it — decoration pretending to be
+  // infrastructure.
+  const links = new Map();
+  for (const c of CONNECTORS) {
+    const cost = c.seconds + Math.round(c.headway / 2);
+    if (!links.has(c.from)) links.set(c.from, []);
+    if (!links.has(c.to)) links.set(c.to, []);
+    links.get(c.from).push([c.to, cost, c]);
+    links.get(c.to).push([c.from, cost, c]);
+  }
+
   const runs = (e) => (period === 'weekday' ? e[6] : e[8]) >= MIN_TRIPS;
   const linesAt = (id) => {
     const out = new Set();
@@ -319,13 +355,18 @@
       done.add(key);
       const cut = key.lastIndexOf('|');
       const at = key.slice(0, cut), line = key.slice(cut + 1);
-      if (line !== '@' && goal.has(at)) { goalKey = key; break; }
+      // Arriving counts however you got here. Requiring a boarded line would
+      // make a trip whose last move is the tram impossible to finish.
+      if (key !== start && goal.has(at)) { goalKey = key; break; }
 
       if (line === '@') {
         for (const l of linesAt(at)) push(at + '|' + l, d + BOARDING_WAIT, { key, kind: 'board', line: l });
         for (const [nb, s] of walks.get(at) || []) push(nb + '|@', d + s, { key, kind: 'walk' });
+        for (const [nb, s, c] of links.get(at) || []) push(nb + '|@', d + s, { key, kind: 'link', link: c });
         continue;
       }
+      // Getting off a train and onto a connector.
+      for (const [nb, s, c] of links.get(at) || []) push(nb + '|@', d + s, { key, kind: 'link', link: c });
       for (const e of outgoing.get(at) || []) {
         if (e[2] !== line || !runs(e)) continue;
         push(e[1] + '|' + line, d + e[3], { key, kind: 'ride', line, edge: e });
@@ -354,6 +395,17 @@
 
     const legs = [];
     for (const st of steps) {
+      if (st.kind === 'link') {
+        // A connector leg still carries `stations`, so every consumer that
+        // walks a leg's stops — highlighting, hit-testing, fitting the view —
+        // keeps working without learning about a second leg shape.
+        legs.push({
+          link: st.link,
+          stations: [st.link.from === st.to ? st.link.to : st.link.from, st.to],
+          seconds: st.link.seconds + Math.round(st.link.headway / 2),
+        });
+        continue;
+      }
       if (st.kind !== 'ride') continue;
       const last = legs[legs.length - 1];
       if (last && last.line === st.line && last.stations[last.stations.length - 1] === st.edge[0]) {
@@ -460,14 +512,21 @@
         ctx.font = (special || id === hover ? '700 ' : '500 ') +
           (special ? 14 : onPath ? 12.5 : 11.5) + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
         ctx.textBaseline = 'middle';
-        const tx = x + drawn + 7, ty = y;
+        // Labels sit to the right of their dot, which runs a station near the
+        // right edge off the canvas — and a half-drawn name is worse than a
+        // moved one. Flip to the left when there is no room.
+        const label = S[id][0];
+        const flip = x + drawn + 7 + ctx.measureText(label).width > W - 8;
+        ctx.textAlign = flip ? 'right' : 'left';
+        const tx = flip ? x - drawn - 7 : x + drawn + 7, ty = y;
         // A halo, because route labels land on top of the line they describe.
         ctx.lineWidth = 3.5;
         ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--ground').trim();
         ctx.lineJoin = 'round';
-        ctx.strokeText(S[id][0], tx, ty);
+        ctx.strokeText(label, tx, ty);
         ctx.fillStyle = ink;
-        ctx.fillText(S[id][0], tx, ty);
+        ctx.fillText(label, tx, ty);
+        ctx.textAlign = 'left';
       }
     }
     ctx.globalAlpha = 1;
@@ -520,12 +579,20 @@
     $('route-total').textContent = mins(plan.seconds) + ' min';
     $('route-legs').innerHTML = plan.legs.map((leg) => {
       const stops = leg.stations.length - 1;
+      // A connector has no bullet and no headsign, so it gets neither. It is
+      // named instead, which is what a rider would say out loud.
+      if (leg.link) {
+        return '<div class="leg"><span class="bul link-bul">▲</span>' +
+          '<div class="leg-text"><b>' + leg.link.name + '</b><br>' +
+          '<span class="leg-sub">to ' + S[leg.stations[1]][0] + ' · ' + mins(leg.seconds) +
+          ' min including the wait · same fare</span></div></div>';
+      }
       return '<div class="leg">' + bulletHtml([leg.line]) +
         '<div class="leg-text">toward <b>' + leg.headsign + '</b><br>' +
         '<span class="leg-sub">' + stops + ' stop' + (stops === 1 ? '' : 's') +
         ' to ' + S[leg.stations[stops]][0] + ' · ' + mins(leg.seconds) + ' min</span></div></div>';
     }).join('') + (plan.legs.length > 1
-      ? '<div class="walk">' + (plan.legs.length - 1) + ' change' + (plan.legs.length > 2 ? 's' : '') + ' of train</div>'
+      ? '<div class="walk">' + (plan.legs.length - 1) + ' change' + (plan.legs.length > 2 ? 's' : '') + '</div>'
       : '');
     $('route').classList.add('on');
   }
