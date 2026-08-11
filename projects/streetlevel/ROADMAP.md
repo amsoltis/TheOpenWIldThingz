@@ -220,3 +220,64 @@ The engineering caveat: a single report is not truth. One person's "wrong car"
 may be them leaving by a different exit than the one we routed. Answers need
 agreement thresholds before they change an instruction, and every surveyed record
 already carries `surveyedOn` so a claim can age out.
+
+---
+
+## 6 · The competition: Mapway's *New York Subway MTA Map NYC*
+
+Roughly 12 million downloads, free with advertising, and it already does more
+than a first look suggests: the official MTA map, an A-to-B route planner that
+routes to tourist attractions as well as stations, offline map and offline
+route planning, live service status with push alerts, and countdown clocks.
+
+*(Assembled from search summaries — the App Store listing itself is unreachable
+from this build environment. Verify before quoting any of it.)*
+
+### What they have that we do not
+
+- **Distribution.** 12M downloads and a decade of ranking.
+- **Live data.** Countdown clocks and service alerts. We have neither, and both
+  come from realtime feeds this environment cannot reach.
+- **The official map**, which is a genuine asset and an emotional one — people
+  trust that diagram.
+- **Tourist destinations in the planner**, so our landmark gazetteer is not a
+  differentiator. It is table stakes.
+
+### Why this is not the same product
+
+Their planner answers **"which train, how long"**. It ends at the moment ours
+begins.
+
+> A to B · 5 stations · 18 min
+
+Everything this project exists for happens after that sentence: which staircase,
+which end of the platform, which train pulling in is *not* yours, what the sign
+over your head should read, and what to do when you have got it wrong. A map
+app tells you the route. It cannot tell you that the 1, 2 and 3 are all red and
+you have to read the number.
+
+**The strategic read: they are a map, we are a set of instructions.** A map is a
+reference you consult; instructions are something you follow. Those are
+different products for different moments, and the tourist standing at the top of
+the wrong staircase is in our moment, not theirs.
+
+### What they could copy, and what they could not
+
+| | |
+|---|---|
+| Copy in a sprint | Plain-English step text, a card deck, proficiency levels. All of it is presentation over a route they already compute. |
+| Copy in a quarter | Offline round-trip packets, the divergence warning. Engineering, not data. |
+| **Cannot copy without the same work** | Entrance-level survey, car alignment, the recovery flow. The first two need someone in the stations; the third needs the confidence discipline more than the model. |
+
+That table is the argument for the sequencing above: the defensible work is the
+work that needs feet in stations and nerve about uncertainty, so it should start
+before the presentation layer gets any more polish.
+
+### And one wedge from their own reviews
+
+The recurring complaint is that the app **now has ads**, and that the interface
+is less friendly than Google Maps or Citymapper. A free ad-supported map has a
+ceiling: it cannot charge, so it must monetise attention, which makes it worse
+at the exact moment a lost tourist needs it most. Ours already refuses to show
+a paywall to somebody who is lost. That is not a feature — it is the difference
+in business model, made visible.
