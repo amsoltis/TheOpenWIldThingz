@@ -118,8 +118,19 @@ const LINE_BONUS = 4;
  * the cost of a confident mistake here is a person following instructions from
  * the wrong platform.
  */
-export function rankStations(description: string, limit = 8): StationCandidate[] {
-  const { lines } = extractClues(description);
+export function rankStations(
+  description: string,
+  limit = 8,
+  /**
+   * Lines known from something other than the prose — the bullets read off a
+   * photographed sign, say. Typed descriptions have to earn a line claim
+   * ("the 6 train"), because a bare "6" is far more likely to be 6th Avenue.
+   * A sign has no such ambiguity: an isolated glyph in a circle *is* a bullet.
+   */
+  knownLines: readonly LineID[] = [],
+): StationCandidate[] {
+  const { lines: spokenLines } = extractClues(description);
+  const lines = [...new Set([...spokenLines, ...knownLines])];
   const index = getIndex();
   const idf = tokenIdf();
   const normalisedDescription = normaliseText(description);
@@ -162,12 +173,33 @@ export function confidenceFromRanking(candidates: StationCandidate[]): number {
   const best = candidates[0]!.score;
   if (best === 0) return 0;
   const runnerUp = candidates[1]?.score ?? 0;
+
+  /**
+   * A tie at the top is ignorance, however strong the match.
+   *
+   * Four stations are called "23 St". Reading that name off a wall scores all
+   * four identically and perfectly — a maximal score with a zero margin — and
+   * an earlier version of this formula landed that case on exactly
+   * RECOVERY_CONFIDENCE_FLOOR. The floor is tested with `<`, so the tie passed
+   * and the resolver would have routed somebody from whichever of the four
+   * sorted first. Capped explicitly rather than left to the arithmetic, because
+   * the arithmetic happening to clear the bar was the bug.
+   */
+  if (runnerUp === best) return TIED_CONFIDENCE;
+
   const margin = (best - runnerUp) / best;
   const strength = Math.min(1, best / SCORE_SATURATION);
   // Both terms scale with strength: a wide margin between two weak matches is
   // still two weak matches, and should not read as certainty.
-  return Math.min(0.95, strength * (0.45 + 0.55 * margin));
+  return Math.min(0.95, strength * (0.35 + 0.65 * margin));
 }
+
+/**
+ * What a perfect tie is worth. Non-zero because knowing it is one of four named
+ * stations is real information — it drives the clarifying question — but
+ * comfortably under the floor, because it is not enough to route on.
+ */
+const TIED_CONFIDENCE = 0.2;
 
 function clarifyingQuestionsFor(candidates: StationCandidate[]): string[] {
   const questions = [

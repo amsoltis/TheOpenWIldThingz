@@ -28,6 +28,15 @@ export {
 } from './recover.js';
 export * from './language.js';
 export {
+  matchSign,
+  readSign,
+  cameraClarifications,
+  MIN_FRAGMENT_CONFIDENCE,
+  type RecognisedLine,
+  type SignReading,
+  type SignMatch,
+} from './sign-text.js';
+export {
   NIM_SYSTEM_PROMPT,
   NIM_POLISH_PROMPT,
   NIM_RECOVERY_PROMPT,
