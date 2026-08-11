@@ -17,6 +17,51 @@ correctly under `react-native-web` (`npm run screenshot`), that everything
 typechecks under the same strict settings as the rest of the workspace, and
 that all the pure logic is unit-tested.
 
+## Seeing it run, with hot reload
+
+**Claude Code Desktop has an iOS Simulator pane**, and it is the fastest way to
+put this app in front of a person. The one thing to know is that it works in
+**local sessions only** — a cloud or SSH session runs on a machine that cannot
+reach the simulators on your Mac, so the session that opens this repo has to be
+running on the Mac itself.
+
+Requirements, from Anthropic's own docs: Claude Desktop v1.24012.0 or later,
+macOS, and **Xcode 26.x** — the pane does not yet work with Xcode 27, which
+replaced the Simulator app with Device Hub. If `xcode-select -p` points at 27,
+install 26.x alongside it and select it:
+
+```bash
+sudo xcode-select -s /Applications/Xcode-26.4.app
+```
+
+Then, in a local session with this repo as the project folder:
+
+```bash
+npm install
+npm run build                       # the workspace packages the app imports
+npm start --workspace=streetlevel-mobile -- --ios
+```
+
+Fast Refresh works normally; Metro is running on your machine, so an edit to a
+screen repaints the simulator without a rebuild.
+
+**No prebuild is needed.** Every native dependency here is an `expo-*` module
+that ships inside Expo Go, and there is no `ios/` directory to keep in sync.
+
+### What has actually been verified
+
+Not "it should work" — these were run:
+
+- `npx expo export --platform ios` bundles the app: **672 modules, 1.4 MB** of
+  Hermes bytecode.
+- `npx expo export --platform android` bundles it too: **1.7 MB**.
+- Metro resolves the `@streetlevel/*` workspace packages out of the monorepo,
+  which is the thing most likely to break in a setup like this.
+
+So the bundler path is proven. What is still unproven is everything that only
+happens on a device: real font metrics, real haptics, `expo-sqlite` against a
+real file, and `expo-camera` permissions.
+
 ## Building iOS without owning a Mac
 
 This is the part worth knowing: **EAS builds on macOS machines in the cloud.**

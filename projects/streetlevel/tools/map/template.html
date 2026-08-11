@@ -73,6 +73,12 @@
     font-size: 14px; font-weight: 800; flex: none;
   }
   .meta { font-size: 12px; color: var(--ink-soft); line-height: 1.6; }
+  /* One row per platform: its bullets, then what distinguishes it. */
+  .plat { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .plat .bul { width: 21px; height: 21px; font-size: 11.5px; }
+  .plat-bullets { display: flex; gap: 4px; flex: none; }
+  .plat-note { font-size: 11.5px; color: var(--ink-mute); }
+  .plat-here { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: var(--accent); }
 
   #route { bottom: 122px; left: 18px; display: none; max-width: 380px; max-height: 38vh; overflow-y: auto; }
   #route.on { display: block; }
@@ -233,6 +239,89 @@
     for (const l of lines) if (!colors.includes(LINE_COLORS[l])) colors.push(LINE_COLORS[l]);
     return { a: s.a, b: s.b, lines, colors };
   });
+
+  /* ---------- complexes: one station, several platforms ----------------- */
+  /*
+   * Times Square is five station records at one corner and every one of them
+   * is called "Times Sq-42 St", so the map drew the name three and five times
+   * over, as though they were separate places a traveller had to choose
+   * between. They are not: they are platforms of one building, joined inside
+   * the fare gates, and the rest of this product already models them that way.
+   *
+   * So a complex is drawn as the thing it is — one shape with the platforms
+   * inside it, named once. The individual dots stay, because that is genuinely
+   * where each line runs and a route has to be able to point at one of them.
+   */
+  const COMPLEXES = new Map();
+  for (const id of IDS) {
+    const key = S[id][4];
+    let c = COMPLEXES.get(key);
+    if (!c) { c = { id: key, members: [] }; COMPLEXES.set(key, c); }
+    c.members.push(id);
+  }
+  for (const c of COMPLEXES.values()) {
+    // The name a rider would use. Members usually share one; where they do not
+    // (Times Sq and 42 St-Port Authority are one complex) the commonest wins
+    // and the info panel lists the rest, rather than the map picking a fight.
+    const counts = new Map();
+    for (const id of c.members) counts.set(S[id][0], (counts.get(S[id][0]) || 0) + 1);
+    c.names = [...counts.keys()];
+    c.name = c.names.slice(1).reduce(
+      (best, n) => (counts.get(n) > counts.get(best) || (counts.get(n) === counts.get(best) && n.length < best.length) ? n : best),
+      c.names[0],
+    );
+    // Ordered along the complex's own long axis, so the hull drawn through the
+    // platforms is a passage rather than a zigzag.
+    const xs = c.members.map((id) => px(S[id][2]));
+    const ys = c.members.map((id) => py(S[id][1]));
+    const spanX = Math.max(...xs) - Math.min(...xs);
+    const spanY = Math.max(...ys) - Math.min(...ys);
+    c.order = [...c.members].sort((a, b) =>
+      spanX >= spanY ? px(S[a][2]) - px(S[b][2]) : py(S[a][1]) - py(S[b][1]));
+    c.cx = xs.reduce((t, v) => t + v, 0) / xs.length;
+    c.cy = ys.reduce((t, v) => t + v, 0) / ys.length;
+    c.lines = [...new Set(c.members.flatMap((id) => S[id][3].split('')))]
+      .sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
+    c.spreadMetres = Math.max(spanX, spanY);
+  }
+  const complexOf = (id) => COMPLEXES.get(S[id][4]);
+
+  /**
+   * The passage joining a complex's platforms.
+   *
+   * Stroked as one thick round-capped path through the platforms in order,
+   * which for two platforms is a capsule and for five is a rounded run — the
+   * shape of the walk you actually take underground. Drawn under everything
+   * else so it reads as the building the lines pass through, not another line.
+   */
+  function complexFill() {
+    const css = getComputedStyle(document.documentElement);
+    const ink = css.getPropertyValue('--ink').trim();
+    // A wash of the ink colour: present enough to read as a building, faint
+    // enough that the lines running through it stay the loudest thing.
+    return ink === '#F2F4F7' || ink.toLowerCase() === '#f2f4f7'
+      ? 'rgba(242, 244, 247, 0.10)'
+      : 'rgba(20, 23, 28, 0.09)';
+  }
+
+  function drawComplexes() {
+    if (view.scale < 30000) return;   // below this the platforms are one pixel
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (const c of COMPLEXES.values()) {
+      if (c.members.length < 2) continue;
+      const pts = c.order.map((id) => [sx(id), sy(id)]);
+      if (pts.every(([x, y]) => x < -60 || x > W + 60 || y < -60 || y > H + 60)) continue;
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.lineWidth = Math.max(16, Math.min(view.scale * 0.0016, 46));
+      ctx.strokeStyle = complexFill();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   /* ---------- connectors: fare-linked, not subway ----------------------- */
   // Dashed and in a colour that belongs to no line, because it is not a train.
@@ -440,6 +529,8 @@
     const lw = Math.max(1.15, Math.min(z * 0.00055, 5.5));
     const dimmed = plan || isolate;
 
+    drawComplexes();
+
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     for (const seg of SEGMENTS) {
       const key = seg.a < seg.b ? seg.a + '|' + seg.b : seg.b + '|' + seg.a;
@@ -477,6 +568,35 @@
       return true;
     };
 
+    /*
+     * One name per complex, not one per platform.
+     *
+     * The proximity dedupe above only catches labels that land on top of each
+     * other. Times Square's platforms are far enough apart at close zoom that
+     * all five drew their own "Times Sq-42 St", which reads as five stations
+     * with the same name rather than one station with five platforms. So a
+     * complex nominates a single member to carry the name — the one nearest
+     * its own centre, which is where somebody would say the station is.
+     *
+     * A platform the current route actually uses keeps its own label
+     * regardless: the route points at a platform, and that is the one piece of
+     * the complex the traveller has to find.
+     */
+    const namedMember = new Map();
+    for (const c of COMPLEXES.values()) {
+      if (c.members.length < 2) continue;
+      let best = null, bestD = Infinity;
+      for (const id of c.members) {
+        const d = (px(S[id][2]) - c.cx) ** 2 + (py(S[id][1]) - c.cy) ** 2;
+        if (d < bestD) { bestD = d; best = id; }
+      }
+      namedMember.set(c.id, best);
+    }
+    const carriesName = (id) => {
+      const chosen = namedMember.get(S[id][4]);
+      return chosen === undefined || chosen === id;
+    };
+
     drawConnectors();
 
     const r = Math.max(1.5, Math.min(z * 0.00042, 4.6));
@@ -504,8 +624,11 @@
       // base radius put the origin's enlarged marker on top of its own first
       // letter.
       const onPath = plan ? planTouches(id) : false;
+      // `special` and `onPath` are platform-level facts — the station you board
+      // at, change at or leave from — so they override the one-name rule.
+      const mayName = special || onPath || id === hover || carriesName(id);
       if (((showNames && lit) || special || onPath || id === hover) &&
-          labelIsFree(S[id][0], x, y)) {
+          mayName && labelIsFree(S[id][0], x, y)) {
         drawnLabels.push({ name: S[id][0], x, y });
         const drawn = special ? r * 2.3 : r;
         ctx.globalAlpha = 1;
@@ -561,13 +684,44 @@
     if (!id) { $('info').classList.remove('on'); return; }
     const st = S[id];
     $('info-label').textContent = id === origin ? 'STARTING FROM' : id === destination ? 'GOING TO' : 'STATION';
-    $('info-name').textContent = st[0];
-    $('info-bullets').innerHTML = bulletHtml(st[3].split(''));
-    const siblings = IDS.filter((o) => o !== id && S[o][4] === st[4]).length;
+    $('info-name').textContent = complexOf(id).name;
+    $('info-bullets').innerHTML = bulletHtml(complexOf(id).lines);
+    const c = complexOf(id);
+    const siblings = c.members.length - 1;
+
+    /*
+     * What the complex is actually made of.
+     *
+     * "One of 5 platforms" was true and useless. A rider standing at Times
+     * Square wants to know which platform carries which trains, because that
+     * is the whole decision — the complex is one building and the platforms
+     * are the parts of it they have to pick between. Listing them by their
+     * lines turns a count into the thing they came to find out.
+     */
+    let parts = '';
+    if (siblings > 0) {
+      const rows = c.order.map((mid) => {
+        const lines = S[mid][3].split('').sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
+        // Only the platforms whose name differs from the complex's are worth
+        // naming — repeating "Times Sq-42 St" five times is the thing this
+        // panel exists to stop.
+        const note = S[mid][0] === c.name ? '' : '<span class="plat-note">' + S[mid][0] + '</span>';
+        const here = mid === id ? '<span class="plat-here">YOU ARE HERE</span>' : '';
+        return '<div class="plat"><span class="plat-bullets">' + bulletHtml(lines) + '</span>' +
+          here + note + '</div>';
+      }).join('');
+      parts =
+        '<div style="margin-top:10px"><span class="label" style="margin:0">' +
+        (siblings + 1) + ' PLATFORMS, ONE STATION</span>' +
+        '<div style="display:flex;flex-direction:column;gap:7px;margin-top:8px">' + rows + '</div>' +
+        '<div style="margin-top:7px;font-size:11.5px;color:var(--ink-mute)">' +
+        'You can walk between all of them without leaving or paying again.</div></div>';
+    }
+
     $('info-meta').innerHTML =
       BOROUGH[st[5]] +
-      (siblings ? ' · one of ' + (siblings + 1) + ' platforms you can walk between without leaving' : '') +
-      (period === 'lateNight' && linesAt(id).size === 0 ? '<br><b>No scheduled service overnight.</b>' : '');
+      (period === 'lateNight' && linesAt(id).size === 0 ? '<br><b>No scheduled service overnight.</b>' : '') +
+      parts;
     $('info').classList.add('on');
   }
 
@@ -715,6 +869,22 @@
 
   function applyDeepLink() {
     const q = new URLSearchParams(location.search);
+
+    // ?at=<stationId> frames one station and opens its panel. Same reasoning
+    // as the route link below: it is the only way to point somebody — or a
+    // screenshot — at a particular station without hunting for its dot.
+    const at = q.get('at');
+    if (at && S[at]) {
+      const c = complexOf(at);
+      view.scale = Number(q.get('z')) || 90000;
+      view.tx = W / 2 - c.cx * view.scale;
+      view.ty = H / 2 - c.cy * view.scale;
+      hover = at;
+      showInfo(at);
+      draw();
+      return true;
+    }
+
     const a = q.get('from'), b = q.get('to');
     if (!a || !b || !S[a] || !S[b]) return false;
     origin = a; destination = b;
