@@ -15,7 +15,8 @@
     "data:build": "npm run build:dataset --workspace=@streetlevel/data",
     "server:dev": "npm run dev --workspace=@streetlevel/server",
     "demo": "tsx tools/demo.ts",
-    "screenshot": "tsx tools/screenshot/generate-fixtures.ts && tsx tools/screenshot/shoot.ts"
+    "screenshot": "tsx tools/screenshot/generate-fixtures.ts && tsx tools/screenshot/shoot.ts",
+    "design-study": "tsx tools/screenshot/shoot.ts --entry ../design-study/entry.tsx --html ../design-study/index.html --out ../design-study/generated --name study"
   },
   "devDependencies": {
     "typescript": "^5.9.2",

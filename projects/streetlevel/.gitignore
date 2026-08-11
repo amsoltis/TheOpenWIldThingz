@@ -19,3 +19,7 @@ packages/data/vendor/
 # `npm run screenshot`.
 tools/screenshot/generated/*
 !tools/screenshot/generated/screens.png
+
+# Design study build output; the comparison sheet is the artefact worth keeping.
+tools/design-study/generated/*
+!tools/design-study/generated/study.png

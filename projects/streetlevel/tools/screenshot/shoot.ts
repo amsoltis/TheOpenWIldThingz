@@ -17,14 +17,28 @@ import * as esbuild from 'esbuild';
 import { chromium } from 'playwright';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const OUT_DIR = path.join(here, 'generated');
+
+/**
+ * The harness renders whichever entry it is pointed at, so exploratory design
+ * studies can reuse the same aliasing and the same camera as the real client.
+ */
+function argValue(flag: string, fallback: string): string {
+  const i = process.argv.indexOf(flag);
+  const value = i === -1 ? undefined : process.argv[i + 1];
+  return value ?? fallback;
+}
+
+const ENTRY = path.resolve(here, argValue('--entry', path.join(here, 'entry.tsx')));
+const HTML = path.resolve(here, argValue('--html', path.join(here, 'index.html')));
+const GALLERY_NAME = argValue('--name', 'screens');
+const OUT_DIR = path.resolve(here, argValue('--out', path.join(here, 'generated')));
 
 const PHONE_WIDTH = 390;
 const PHONE_HEIGHT = 844;
 
 async function bundle(): Promise<void> {
   await esbuild.build({
-    entryPoints: [path.join(here, 'entry.tsx')],
+    entryPoints: [ENTRY],
     bundle: true,
     outfile: path.join(OUT_DIR, 'bundle.js'),
     format: 'iife',
@@ -78,19 +92,19 @@ async function shoot(): Promise<void> {
   });
   page.on('pageerror', (err) => problems.push(err.message));
 
-  await page.goto(`file://${path.join(here, 'index.html')}`, { waitUntil: 'load' });
+  await page.goto(`file://${HTML}`, { waitUntil: 'load' });
   await page.waitForSelector('#root > *', { timeout: 15_000 });
   // react-native-web injects its stylesheet on mount; give layout a beat to settle.
   await page.waitForTimeout(600);
 
   const gallery = page.locator('#root');
-  await gallery.screenshot({ path: path.join(OUT_DIR, 'screens.png') });
+  await gallery.screenshot({ path: path.join(OUT_DIR, `${GALLERY_NAME}.png`) });
 
   // Individual frames, so a single screen can be looked at properly.
   const phones = page.locator('#root [data-phone]');
   const count = await phones.count();
   for (let i = 0; i < count; i++) {
-    await phones.nth(i).screenshot({ path: path.join(OUT_DIR, `screen-${i + 1}.png`) });
+    await phones.nth(i).screenshot({ path: path.join(OUT_DIR, `${GALLERY_NAME}-${i + 1}.png`) });
   }
 
   await browser.close();
@@ -102,7 +116,7 @@ async function shoot(): Promise<void> {
     return;
   }
   process.stdout.write(
-    `\nWrote ${path.join(OUT_DIR, 'screens.png')}` +
+    `\nWrote ${path.join(OUT_DIR, `${GALLERY_NAME}.png`)}` +
       (count > 0 ? ` and ${count} individual frames (${PHONE_WIDTH}×${PHONE_HEIGHT})` : '') +
       '\n',
   );
