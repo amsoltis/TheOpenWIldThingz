@@ -27,6 +27,12 @@ export interface TransferLeg {
   seconds: number;
   /** False when the change is a walk between two stations of one complex. */
   inPlace: boolean;
+  /**
+   * Set when the change is a ride on a fare-linked service rather than a walk —
+   * the Roosevelt Island Tramway, for instance. Without it a card would tell
+   * somebody to walk across the East River.
+   */
+  connectorName?: string;
 }
 
 export type RouteLeg = RideLeg | TransferLeg;

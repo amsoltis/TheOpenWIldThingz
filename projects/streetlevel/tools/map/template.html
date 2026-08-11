@@ -232,6 +232,42 @@
     return { a: s.a, b: s.b, lines, colors };
   });
 
+  /* ---------- connectors: fare-linked, not subway ----------------------- */
+  // Dashed and in a colour that belongs to no line, because it is not a train.
+  // A tourist reading a solid coloured line as "a subway" and then looking for
+  // a platform would be worse served than by leaving it off entirely.
+  const CONNECTOR_COLOR = '#8A6FB0';
+  const CONNECTORS = (DATA.connectors || []).map((c) => ({
+    name: c[0], mode: c[1], from: c[2], to: c[3], seconds: c[4], headway: c[5],
+    a: { lat: c[6], lon: c[7] }, b: { lat: c[8], lon: c[9] }, note: c[10],
+  }));
+
+  function drawConnectors() {
+    if (CONNECTORS.length === 0) return;
+    ctx.save();
+    ctx.setLineDash([Math.max(4, view.scale * 0.00035), Math.max(4, view.scale * 0.00028)]);
+    ctx.lineWidth = Math.max(1.4, Math.min(view.scale * 0.0005, 4.5));
+    ctx.strokeStyle = CONNECTOR_COLOR;
+    ctx.globalAlpha = plan || isolate ? 0.28 : 0.95;
+    for (const c of CONNECTORS) {
+      const x1 = px(c.a.lon) * view.scale + view.tx, y1 = py(c.a.lat) * view.scale + view.ty;
+      const x2 = px(c.b.lon) * view.scale + view.tx, y2 = py(c.b.lat) * view.scale + view.ty;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+
+      if (view.scale > 20000) {
+        ctx.save();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+        ctx.font = '700 11px "Helvetica Neue", Helvetica, Arial, sans-serif';
+        ctx.fillStyle = CONNECTOR_COLOR;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(c.name, (x1 + x2) / 2 + 8, (y1 + y2) / 2 - 10);
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+
   /* ---------- routing: the real engine's shape, in the browser ---------- */
   const TRANSFER_PENALTY = 300, BOARDING_WAIT = 240, MIN_TRIPS = 4;
   let period = 'weekday';
@@ -388,6 +424,8 @@
       }
       return true;
     };
+
+    drawConnectors();
 
     const r = Math.max(1.5, Math.min(z * 0.00042, 4.6));
     const showNames = z > 26000;

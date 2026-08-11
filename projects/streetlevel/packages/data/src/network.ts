@@ -55,7 +55,10 @@ export interface NetworkIndex {
   /** Outbound track edges keyed by origin station. */
   edgesFrom: Map<StationID, TrackEdge[]>;
   /** Walking connections keyed by origin station, both directions present. */
-  transfersFrom: Map<StationID, { to: StationID; seconds: number; inPlace: boolean }[]>;
+  transfersFrom: Map<
+    StationID,
+    { to: StationID; seconds: number; inPlace: boolean; connectorName?: string }[]
+  >;
   /** Every station sharing an in-system passageway, keyed by complex id. */
   complexMembers: Map<string, StationID[]>;
 }
@@ -73,10 +76,19 @@ export function getIndex(): NetworkIndex {
     else edgesFrom.set(edge.from, [edge]);
   }
 
-  const transfersFrom = new Map<StationID, { to: StationID; seconds: number; inPlace: boolean }[]>();
-  const addTransfer = (from: StationID, to: StationID, seconds: number, inPlace: boolean) => {
+  const transfersFrom = new Map<
+    StationID,
+    { to: StationID; seconds: number; inPlace: boolean; connectorName?: string }[]
+  >();
+  const addTransfer = (
+    from: StationID,
+    to: StationID,
+    seconds: number,
+    inPlace: boolean,
+    connectorName?: string,
+  ) => {
     const list = transfersFrom.get(from);
-    const entry = { to, seconds, inPlace };
+    const entry = connectorName ? { to, seconds, inPlace, connectorName } : { to, seconds, inPlace };
     if (list) {
       if (!list.some((t) => t.to === to)) list.push(entry);
     } else {
@@ -87,6 +99,17 @@ export function getIndex(): NetworkIndex {
     if (t.from === t.to) continue; // an in-place transfer is not a graph move
     addTransfer(t.from, t.to, t.seconds, t.inPlace);
     addTransfer(t.to, t.from, t.seconds, t.inPlace);
+  }
+
+  // Fare-linked services ride like a transfer with a name. Half the headway is
+  // the honest expected wait: a tram every 15 minutes is not a staircase, and
+  // pricing it as one would send people to a cable car they then stand and wait
+  // for while their train leaves.
+  for (const connector of network.connectors ?? []) {
+    if (!connector.includedInSubwayFare) continue;
+    const cost = connector.seconds + Math.round(connector.headwaySeconds / 2);
+    addTransfer(connector.fromStationId, connector.toStationId, cost, false, connector.name);
+    addTransfer(connector.toStationId, connector.fromStationId, cost, false, connector.name);
   }
 
   const complexMembers = new Map<string, StationID[]>();

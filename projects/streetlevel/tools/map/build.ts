@@ -46,11 +46,21 @@ async function main(): Promise<void> {
     .filter((t) => t.from !== t.to)
     .map((t) => [t.from, t.to, t.seconds]);
 
+  // Drawn from their own endpoint coordinates rather than snapped to the
+  // subway stations, because the tram's Manhattan terminal is a couple of
+  // blocks from the station it connects to and pretending otherwise would draw
+  // a cable car through a building.
+  const connectors = network.connectors.map((c) => [
+    c.name, c.mode, c.fromStationId, c.toStationId, c.seconds, c.headwaySeconds,
+    c.fromPoint.latitude, c.fromPoint.longitude, c.toPoint.latitude, c.toPoint.longitude, c.note,
+  ]);
+
   const payload = JSON.stringify({
     meta: { feedVersion: network.meta.feedVersion, feedEnd: network.meta.feedEndDate },
     stations,
     edges,
     transfers,
+    connectors,
   });
 
   const template = await readFile(path.join(here, 'template.html'), 'utf8');
@@ -68,6 +78,7 @@ async function main(): Promise<void> {
       `  stations   ${Object.keys(stations).length}`,
       `  hops       ${edges.length}`,
       `  transfers  ${transfers.length}`,
+      `  connectors ${connectors.length}${connectors.length ? ' (' + connectors.map((c) => c[0]).join(', ') + ')' : ''}`,
       `  payload    ${(payload.length / 1024).toFixed(0)} KB`,
       `  page       ${((template.length + payload.length) / 1024).toFixed(0)} KB → ${outPath}`,
       '',

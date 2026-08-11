@@ -1,5 +1,6 @@
 import type { LineID, StationID } from '@streetlevel/shared';
 
+import type { Connector } from './connectors.js';
 import type { PathwayDataset } from './pathways.js';
 
 export type BoroughCode = 'M' | 'B' | 'Q' | 'X' | 'SI';
@@ -93,4 +94,9 @@ export interface SubwayNetwork {
    * does not publish.
    */
   pathways: PathwayDataset;
+  /**
+   * Fare-linked services the subway feed does not carry. Hand-authored — see
+   * `connectors.ts` for what is deliberately absent and why.
+   */
+  connectors: Connector[];
 }

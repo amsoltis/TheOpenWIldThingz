@@ -200,7 +200,14 @@ export function planRoute(
     const line = key.slice(sep + 1);
     const usedTransfers = transfersUsed.get(key) ?? 0;
 
-    if (goalStations.has(station) && line !== BOARD_STATE) {
+    /**
+     * Arrival used to require being aboard a line, which quietly made any
+     * journey ending on a fare-linked service unroutable: step off the tram at
+     * Roosevelt Island and you are in the pre-boarding state, so the search ran
+     * past its own destination and reported no route. Any move that reaches the
+     * destination is an arrival — the guard only has to exclude standing still.
+     */
+    if (goalStations.has(station) && key !== startKey) {
       bestGoalKey = key;
       break;
     }
@@ -259,6 +266,26 @@ export function planRoute(
         stateKey(station, candidate),
         cost,
         { fromKey: key, kind: 'TRANSFER', line: candidate, seconds: cost },
+        usedTransfers + 1,
+      );
+    }
+
+    /**
+     * Get off and leave on foot — or on a fare-linked service.
+     *
+     * Without this the only way out of a line state was onto another line, so a
+     * journey ending in a walk to a sibling platform, or on the tram, was
+     * unreachable from the moment the traveller boarded anything. It is also
+     * the move that lets somebody alight and finish the trip at the station
+     * next door.
+     */
+    for (const transfer of index.transfersFrom.get(station) ?? []) {
+      if (disruptions.blockedStations.has(transfer.to)) continue;
+      relax(
+        key,
+        stateKey(transfer.to, BOARD_STATE),
+        transfer.seconds,
+        { fromKey: key, kind: 'TRANSFER', seconds: transfer.seconds },
         usedTransfers + 1,
       );
     }
@@ -379,7 +406,19 @@ function reconstruct(
 
     flushRide();
     if (step.fromStation !== step.toStation) {
-      legs.push({ kind: 'TRANSFER', from: step.fromStation, to: step.toStation, seconds: step.seconds, inPlace: false });
+      // Looked up rather than threaded through the search: the move is already
+      // in the transfer graph, and only its identity is needed here.
+      const connectorName = (index.transfersFrom.get(step.fromStation) ?? []).find(
+        (t) => t.to === step.toStation,
+      )?.connectorName;
+      legs.push({
+        kind: 'TRANSFER',
+        from: step.fromStation,
+        to: step.toStation,
+        seconds: step.seconds,
+        inPlace: false,
+        ...(connectorName ? { connectorName } : {}),
+      });
     } else if (legs.length > 0) {
       legs.push({ kind: 'TRANSFER', from: step.fromStation, to: step.toStation, seconds: step.seconds, inPlace: true });
     }
@@ -387,9 +426,12 @@ function reconstruct(
   flushRide();
 
   // A transfer at either end is an artefact of the search, not something the
-  // traveller does: they walk in off the street and out onto it.
-  while (legs.length > 0 && legs[0]!.kind === 'TRANSFER') legs.shift();
-  while (legs.length > 0 && legs.at(-1)!.kind === 'TRANSFER') legs.pop();
+  // traveller does: they walk in off the street and out onto it. A fare-linked
+  // service is the exception — riding the tram to the island is the journey,
+  // and trimming it would silently delete the last leg of the trip.
+  const isTrimmable = (leg: RouteLeg) => leg.kind === 'TRANSFER' && !leg.connectorName;
+  while (legs.length > 0 && isTrimmable(legs[0]!)) legs.shift();
+  while (legs.length > 0 && isTrimmable(legs.at(-1)!)) legs.pop();
 
   return {
     originStationId,

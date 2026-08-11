@@ -8,6 +8,7 @@ import { normaliseGtfsRouteId } from '@streetlevel/shared';
 
 import { gtfsTimeToSeconds, headerIndex, parseCsv, parseCsvLine } from './csv.js';
 import { boroughFor } from './geo.js';
+import { CONNECTORS } from './connectors.js';
 import { loadPathwayDataset } from './pathways.js';
 import type {
   DirectionCode,
@@ -343,6 +344,9 @@ export async function buildNetwork(opts: BuildOptions): Promise<SubwayNetwork> {
     transfers,
     patterns,
     pathways,
+    // Only those whose endpoints survived the graph build; a connector to a
+    // station that does not exist would be a dead end the router could enter.
+    connectors: CONNECTORS.filter((c) => stations[c.fromStationId] && stations[c.toStationId]),
   };
 }
 
