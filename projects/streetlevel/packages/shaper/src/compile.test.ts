@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll } from 'vitest';
 
-import { assertValidPacket, RECOVERY_CONFIDENCE_FLOOR, type TransitPacket } from '@streetlevel/shared';
+import { assertValidPacket, LINE_COLORS, RECOVERY_CONFIDENCE_FLOOR, type TransitPacket } from '@streetlevel/shared';
 import { GazetteerGeocoder, findStationsByName } from '@streetlevel/data';
 
 import { compilePacket, detectDivergence, ReturnLegUnavailableError } from './packet.js';
@@ -442,5 +442,72 @@ describe('fare-linked connectors on the cards', () => {
     for (const card of cards) {
       expect(text(card)).not.toMatch(/same station complex/);
     }
+  });
+});
+
+describe('a connector card is not a train card', () => {
+  let tramCards: TransitPacket['outboundJourney']['navigationCards'];
+
+  beforeAll(async () => {
+    const packet = await compilePacket({
+      originAddress: 'Times Square',
+      destinationAddress: 'Roosevelt Island',
+      departAt: '2026-08-11T14:00:00-04:00',
+      returnAt: '2026-08-11T18:00:00-04:00',
+      geocoder,
+      packetId: 'pkt_tram_focus',
+      now: NOW,
+      alerts: [
+        {
+          alertId: 'a1',
+          affectedLineIds: ['F', 'M'],
+          affectedStationIds: [],
+          activeFrom: '2026-08-11T00:00:00-04:00',
+          activeUntil: '2026-08-12T00:00:00-04:00',
+          effect: 'NO_SERVICE',
+          headerPlainText: 'No F or M trains',
+        },
+      ],
+    });
+    tramCards = packet.outboundJourney.navigationCards;
+  });
+
+  /**
+   * The bug this exists to prevent: a card with no `targetLineFocus` falls
+   * back to the nearest line in the deck, so the Tramway card rendered in
+   * Broadway yellow with a W bullet on it — an instruction to look for a
+   * train, on the way to a cable car.
+   */
+  it('marks the cards whose subject is the Tramway', () => {
+    const subject = tramCards.filter(
+      (c) =>
+        c.primaryInstructionMarkdown.includes('Tramway') &&
+        (c.phaseType === 'MEZZANINE_TRANSIT' || c.phaseType === 'ON_TRAIN'),
+    );
+    expect(subject.length).toBe(2);
+    for (const card of subject) {
+      expect(card.connectorFocus?.connectorName).toBe('Roosevelt Island Tramway');
+    }
+  });
+
+  // The exit card names the Tramway but is not about it — it is about leaving.
+  // Painting it the connector colour would say "you are still aboard".
+  it('leaves the exit card its own identity', () => {
+    const exit = tramCards.at(-1)!;
+    expect(exit.phaseType).toBe('EXIT_SURFACING');
+    expect(exit.primaryInstructionMarkdown).toContain('Tramway');
+    expect(exit.connectorFocus).toBeUndefined();
+  });
+
+  it('never gives a connector card a line to borrow', () => {
+    for (const card of tramCards) {
+      if (!card.connectorFocus) continue;
+      expect(card.targetLineFocus).toBeUndefined();
+    }
+  });
+
+  it('paints connectors in a colour no line owns', () => {
+    const focus = tramCards.find((c) => c.connectorFocus)!.connectorFocus!;
+    expect(Object.values(LINE_COLORS)).not.toContain(focus.connectorColor);
   });
 });

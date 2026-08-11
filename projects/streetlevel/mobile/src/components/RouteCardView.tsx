@@ -68,10 +68,17 @@ export function RouteCardView({
 }: RouteCardViewProps): ReactElement {
   const [box, setBox] = useState({ width: FALLBACK_WIDTH, height: FALLBACK_HEIGHT });
 
+  const connector = card.connectorFocus ?? null;
   const activeLine = line ?? card.targetLineFocus?.activeLineId ?? null;
-  const statementLine = activeLine ?? legLine ?? null;
-  const accent = statementLine ? LINE_COLORS[statementLine] : undefined;
-  const statement = statementFor(card, activeLine ?? legLine ?? null);
+  // A connector card takes no line at all. Letting it fall back to `legLine`
+  // is what put a W bullet on the Roosevelt Island Tramway.
+  const statementLine = connector ? null : (activeLine ?? legLine ?? null);
+  const accent = connector
+    ? connector.connectorColor
+    : statementLine
+      ? LINE_COLORS[statementLine]
+      : undefined;
+  const statement = statementFor(card, statementLine);
 
   /**
    * The statement takes roughly three-quarters of whatever it is given, which
@@ -97,6 +104,7 @@ export function RouteCardView({
         <StatementZone
           statement={statement}
           line={statementLine}
+          connector={connector}
           stepIndex={stepIndex}
           stepTotal={stepTotal}
           ghosts={card.targetLineFocus?.coLocatedLinesToDim ?? []}

@@ -1,11 +1,12 @@
 import type {
+  ConnectorFocusConfig,
   JourneyLeg,
   LineFocusConfig,
   RouteCard,
   StationID,
   StreetEntranceNode,
 } from '@streetlevel/shared';
-import { LINE_COLORS, trunkSiblings } from '@streetlevel/shared';
+import { LINE_COLORS, PaperTheme, trunkSiblings } from '@streetlevel/shared';
 import {
   BOROUGH_NAMES,
   coLocatedLines,
@@ -514,6 +515,24 @@ function connectorFrequencyAnchor(connector: Connector): string {
   );
 }
 
+/**
+ * Tells the client this card is not about a train.
+ *
+ * A card with no `targetLineFocus` falls back to the nearest line in the deck,
+ * which painted the Tramway card Broadway yellow and put a **W** bullet on it.
+ * The colour travels in the packet rather than being looked up, for the same
+ * reason every other fact does: the client is offline and cannot ask.
+ */
+function connectorFocusFor(connector: Connector): ConnectorFocusConfig {
+  return {
+    connectorName: connector.name,
+    connectorColor: PaperTheme.colors.connector,
+    connectorTextColor: PaperTheme.colors.connectorInk,
+    // What is actually written on the signs, which is rarely the full name.
+    signpostedAs: connector.name.includes('Tramway') ? 'Tramway' : connector.name,
+  };
+}
+
 /** Says out loud that these numbers are ours, not the agency's. */
 function connectorProvenanceAnchor(connector: Connector): string {
   return (
@@ -586,6 +605,7 @@ function buildConnectorBoardingCard(
 
   return {
     phaseType: 'MEZZANINE_TRANSIT',
+    connectorFocus: connectorFocusFor(connector),
     primaryInstructionMarkdown: `${instruction}\n\n${approach}`,
     conciseInstructionMarkdown: previous
       ? `Off at **${fromName}**, to the **${connector.name}**.`
@@ -630,6 +650,7 @@ function buildConnectorRideCard(
 
   return {
     phaseType: 'ON_TRAIN',
+    connectorFocus: connectorFocusFor(connector),
     primaryInstructionMarkdown:
       `Ride the **${connector.name}** to **${toName}**.` +
       (isLast

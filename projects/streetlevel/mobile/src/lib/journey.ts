@@ -51,6 +51,10 @@ export function cardLines(cards: readonly RouteCard[]): (LineID | null)[] {
   return cards.map((card, index) => {
     const own = direct[index];
     if (own) return own;
+    // A connector is not a train and must never borrow one. Falling through
+    // here painted the Roosevelt Island Tramway card Broadway yellow and put a
+    // W bullet on it, which is an instruction to look for the wrong thing.
+    if (card.connectorFocus) return null;
     if (card.phaseType === 'ON_TRAIN') {
       for (let i = index - 1; i >= 0; i -= 1) {
         const line = direct[i];

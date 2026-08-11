@@ -17,7 +17,7 @@ import { isLineID } from '@streetlevel/shared';
 import { boldPhrases, overheadSignLegends, stationNameFrom } from './cardFacts';
 
 /** What the graphic bleeding off the right edge of the statement zone is. */
-export type StatementGraphic = 'bullet' | 'counter' | 'exit';
+export type StatementGraphic = 'bullet' | 'counter' | 'exit' | 'connector';
 
 export interface Statement {
   /** Which moment of the trip this is. Sits across the top. */
@@ -73,6 +73,20 @@ export function statementFor(card: RouteCard, line: LineID | null): Statement {
     }
 
     case 'MEZZANINE_TRANSIT': {
+      // A connector has no bullet and no overhead sign in our data, so the
+      // ordinary treatment left "follow the signs to" pointing at nothing.
+      // Name the service instead — it is what is written on the doors.
+      if (card.connectorFocus) {
+        const { connectorName, signpostedAs } = card.connectorFocus;
+        return {
+          kicker: 'LEAVING THE SUBWAY',
+          headline: ['THIS', 'WAY'],
+          sub: 'walk to the',
+          name: connectorName,
+          plate: signpostedAs.toUpperCase(),
+          graphic: 'connector',
+        };
+      }
       const legend = overheadSignLegends(card.visualAnchors)[0] ?? null;
       return {
         kicker: 'INSIDE THE STATION',
@@ -95,6 +109,20 @@ export function statementFor(card: RouteCard, line: LineID | null): Statement {
     }
 
     case 'ON_TRAIN': {
+      // No stops to count, so the counter — the whole point of this layout —
+      // has nothing to say. Showing "0 STOPS TO GO" beside a river crossing
+      // would read as an error.
+      if (card.connectorFocus) {
+        const ladder = card.stopLadder;
+        const alight = ladder?.stops[ladder.alightIndex] ?? null;
+        return {
+          kicker: 'ON THE ' + card.connectorFocus.signpostedAs.toUpperCase(),
+          headline: ['ONE', 'RIDE'],
+          sub: 'all the way to',
+          ...(alight ? { name: alight } : {}),
+          graphic: 'connector',
+        };
+      }
       const ladder = card.stopLadder;
       const count = ladder ? Math.max(ladder.alightIndex, 0) : (card.offlineSensorValidation?.expectedTunnelTransitCount ?? 0);
       const alight = ladder?.stops[ladder.alightIndex] ?? placeFrom(card.primaryInstructionMarkdown);

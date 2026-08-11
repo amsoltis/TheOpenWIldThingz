@@ -126,6 +126,24 @@ export function validateRouteCard(v: unknown, path = 'card'): ValidationResult<R
   if (v['targetLineFocus'] !== undefined) {
     validateLineFocus(v['targetLineFocus'], `${path}.targetLineFocus`, errors);
   }
+  if (v['connectorFocus'] !== undefined) {
+    const c = v['connectorFocus'];
+    if (!isRecord(c)) {
+      errors.push(`${path}.connectorFocus: expected an object`);
+    } else {
+      for (const key of ['connectorName', 'connectorColor', 'connectorTextColor', 'signpostedAs']) {
+        if (!isNonEmptyString(c[key])) {
+          errors.push(`${path}.connectorFocus.${key}: required non-empty string`);
+        }
+      }
+    }
+    // The two focus blocks answer the same question — what owns this screen —
+    // and a card carrying both would leave the client picking. A connector is
+    // not a train; that is the entire reason the field exists.
+    if (v['targetLineFocus'] !== undefined) {
+      errors.push(`${path}: a card cannot carry both targetLineFocus and connectorFocus`);
+    }
+  }
   if (v['criticalAvoidanceNotes'] !== undefined && typeof v['criticalAvoidanceNotes'] !== 'string') {
     errors.push(`${path}.criticalAvoidanceNotes: expected a string`);
   }

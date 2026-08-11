@@ -24,6 +24,12 @@ interface StatementZoneProps {
    * colour it has no right to.
    */
   line: LineID | null;
+  /**
+   * A fare-linked service that is not a train. Takes the field in place of a
+   * line colour, deliberately in a hue no line owns: someone who has learnt
+   * that a coloured room means a subway must not be handed one that is not.
+   */
+  connector?: { connectorColor: string; connectorTextColor: string } | null;
   stepIndex: number;
   stepTotal: number;
   /** Co-located lines the traveller will watch pull in and must not board. */
@@ -56,6 +62,7 @@ interface StatementZoneProps {
 export function StatementZone({
   statement,
   line,
+  connector = null,
   stepIndex,
   stepTotal,
   ghosts = [],
@@ -63,8 +70,16 @@ export function StatementZone({
   width,
   minHeight,
 }: StatementZoneProps): ReactElement {
-  const field = line ? LINE_COLORS[line] : PaperTheme.colors.ink;
-  const ink = line ? LINE_TEXT_COLORS[line] : PaperTheme.colors.paper;
+  const field = connector
+    ? connector.connectorColor
+    : line
+      ? LINE_COLORS[line]
+      : PaperTheme.colors.ink;
+  const ink = connector
+    ? connector.connectorTextColor
+    : line
+      ? LINE_TEXT_COLORS[line]
+      : PaperTheme.colors.paper;
   const margin = StatementTheme.margin;
   // Spent only where the pairing can afford it — see `safeSecondaryOpacity`.
   const held = safeSecondaryOpacity(field, ink, 0.75);
@@ -89,6 +104,7 @@ export function StatementZone({
       </View>
 
       {statement.graphic === 'bullet' && line ? <BleedBullet line={line} /> : null}
+      {statement.graphic === 'connector' ? <BleedConnector ink={ink} /> : null}
       {statement.graphic === 'exit' ? <BleedExit ink={ink} /> : null}
 
       {statement.counter ? (
@@ -274,6 +290,36 @@ function BleedExit({ ink }: { ink: string }): ReactElement {
         }}
       />
       <View style={{ width: 66, height: 62, backgroundColor: ink, alignSelf: 'center' }} />
+    </View>
+  );
+}
+
+/**
+ * A cabin on a cable, bleeding in from the right.
+ *
+ * Deliberately not a bullet and deliberately not a train. The whole point of
+ * the statement zone is that the shape is matched before anything is read, so
+ * the shape for "this is not a subway" has to be legibly not a subway — a
+ * hanging box under a line, which is what the traveller is about to walk up to.
+ */
+function BleedConnector({ ink }: { ink: string }): ReactElement {
+  return (
+    <View style={[styles.graphic, { right: -10 }]} accessibilityElementsHidden pointerEvents="none">
+      {/* The cable. */}
+      <View style={{ width: 176, height: 7, backgroundColor: ink, opacity: 0.55 }} />
+      {/* The hanger. */}
+      <View style={{ width: 9, height: 26, backgroundColor: ink, alignSelf: 'center' }} />
+      {/* The cabin. */}
+      <View
+        style={{
+          width: 128,
+          height: 96,
+          borderWidth: 11,
+          borderColor: ink,
+          borderRadius: 14,
+          alignSelf: 'center',
+        }}
+      />
     </View>
   );
 }

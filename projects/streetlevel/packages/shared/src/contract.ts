@@ -86,6 +86,8 @@ export interface RouteCard {
    */
   conciseInstructionMarkdown?: string;
   targetLineFocus?: LineFocusConfig;
+  /** Mutually exclusive with `targetLineFocus`: a connector has no line. */
+  connectorFocus?: ConnectorFocusConfig;
   visualAnchors: string[];
   criticalAvoidanceNotes?: string;
   hapticPatternTrigger?: 'LIGHT_TAP' | 'DOUBLE_JOLT' | 'CONTINUOUS_ALERT';
@@ -124,6 +126,29 @@ export interface LineFocusConfig {
   /** 1-indexed from the front of the train. */
   expectedTrainCarIndex: number;
   platformPositioningText: string;
+}
+
+/**
+ * The card is about a fare-linked service that is not a subway line.
+ *
+ * Without this the client has nothing to go on: a card with no
+ * `targetLineFocus` falls back to the nearest train in the deck, so a card
+ * about the Roosevelt Island Tramway came out painted Broadway yellow with a
+ * **W** bullet on it — telling somebody to look for a train on their way to a
+ * cable car. The packet has to be able to say "this one is not a train",
+ * because the client is offline and cannot ask.
+ */
+export interface ConnectorFocusConfig {
+  connectorName: string;
+  /**
+   * Deliberately not any line's colour. A rider who has learnt that a colour
+   * means a train must not meet one that does not.
+   */
+  connectorColor: HexColor;
+  /** Ink that stays legible on `connectorColor`. */
+  connectorTextColor: HexColor;
+  /** The short word on the signs, e.g. "Tramway". */
+  signpostedAs: string;
 }
 
 export interface SensorValidationConfig {

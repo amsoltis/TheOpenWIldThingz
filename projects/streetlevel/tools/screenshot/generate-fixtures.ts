@@ -57,16 +57,49 @@ async function main(): Promise<void> {
     ],
   };
 
+  /**
+   * A journey that leaves the subway behind.
+   *
+   * The card deck was built entirely around trains, and every screen in it
+   * assumes a line bullet, a headsign and a platform. The Roosevelt Island
+   * Tramway has none of those, so it is the one fixture that can catch a
+   * screen quietly rendering an empty bullet or a blank direction. With the
+   * 63 St tunnel shut the tram is the only way across, which forces it into
+   * the plan rather than leaving it to the router's preference.
+   */
+  const tramPacket = await compilePacket({
+    originAddress: 'Times Square',
+    destinationAddress: 'Roosevelt Island',
+    departAt: '2026-08-11T14:00:00-04:00',
+    returnAt: '2026-08-11T18:00:00-04:00',
+    geocoder,
+    packetId: 'pkt_tram',
+    now: new Date('2026-08-11T13:30:00-04:00'),
+    alerts: [
+      {
+        alertId: 'alert_63st',
+        affectedLineIds: ['F', 'M'],
+        affectedStationIds: [],
+        activeFrom: '2026-08-11T00:00:00-04:00',
+        activeUntil: '2026-08-12T00:00:00-04:00',
+        effect: 'NO_SERVICE',
+        headerPlainText: 'No F or M trains through the 63 St tunnel',
+      },
+    ],
+  });
+  assertValidPacket(tramPacket);
+
   await mkdir(path.join(here, 'generated'), { recursive: true });
   await writeFile(
     path.join(here, 'generated', 'fixtures.json'),
-    `${JSON.stringify({ packet, recovery, paywall }, null, 2)}\n`,
+    `${JSON.stringify({ packet, recovery, paywall, tramPacket }, null, 2)}\n`,
     'utf8',
   );
 
   const phases = packet.outboundJourney.navigationCards.map((c) => c.phaseType).join(', ');
+  const tramPhases = tramPacket.outboundJourney.navigationCards.map((c) => c.phaseType).join(', ');
   process.stdout.write(
-    `fixtures written\n  outbound cards: ${phases}\n  recovery confidence: ${recovery.confidence.toFixed(2)} (${recovery.resolvedStationName})\n`,
+    `fixtures written\n  outbound cards: ${phases}\n  tram cards: ${tramPhases}\n  recovery confidence: ${recovery.confidence.toFixed(2)} (${recovery.resolvedStationName})\n`,
   );
 }
 

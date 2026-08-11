@@ -35,10 +35,11 @@ import { orderedCards, legDurationText, primaryLineOf } from '../../mobile/src/l
 
 import fixtures from './generated/fixtures.json';
 
-const { packet, recovery, paywall } = fixtures as unknown as {
+const { packet, recovery, paywall, tramPacket } = fixtures as unknown as {
   packet: TransitPacket;
   recovery: RecoveryResponse;
   paywall: PaywallExceptionResponse;
+  tramPacket: TransitPacket;
 };
 
 const PHONE_WIDTH = 390;
@@ -115,6 +116,35 @@ function repaint(card: RouteCard, line: LineID, siblings: LineID[]): RouteCard {
 
 const yellowCards = cards.map((card) => repaint(card, 'N', ['Q', 'R', 'W']));
 
+/**
+ * The deck's one journey that is not entirely trains.
+ *
+ * Every card layout assumes a line bullet, a headsign and a platform. The
+ * Roosevelt Island Tramway supplies none of them, so these frames are the
+ * only place an empty bullet or a blank direction would be visible.
+ */
+const tramCards = orderedCards(tramPacket.outboundJourney);
+const tramConnectorIndex = tramCards.findIndex((c) =>
+  c.primaryInstructionMarkdown.includes('Roosevelt Island Tramway'),
+);
+const tramRideIndex = tramCards.findIndex(
+  (c) => c.phaseType === 'ON_TRAIN' && c.primaryInstructionMarkdown.includes('Tramway'),
+);
+
+function tramProps(index: number) {
+  return {
+    cards: tramCards,
+    index,
+    activeLeg: 'outbound' as const,
+    destinationLabel: tramPacket.outboundJourney.destinationAddress,
+    durationLabel: legDurationText(tramPacket.outboundJourney),
+    onNext: noop,
+    onPrev: noop,
+    onSelectLeg: noop,
+    onNeedHelp: noop,
+  } as const;
+}
+
 function deckProps(index: number, leg: 'outbound' | 'return' = 'outbound') {
   const journey = leg === 'outbound' ? outbound : packet.returnJourney;
   return {
@@ -190,6 +220,23 @@ function Gallery(): ReactElement {
         <Phone caption="9 · Return leg — the divergence warning">
           <CardDeckScreen {...deckProps(0, 'return')} />
         </Phone>
+      </View>
+
+      {/* The tram. Not a train, no bullet, no headsign — the cards have to
+          carry it on words alone, and the fare line has to land before the
+          traveller is standing at a turnstile deciding whether to pay twice. */}
+      <View style={styles.row}>
+        <Phone caption="13 · Off the train, onto a cable car — DO NOT buy a ticket">
+          <CardDeckScreen {...tramProps(tramConnectorIndex)} />
+        </Phone>
+
+        <Phone caption="14 · Aboard the Tramway — no stops to count">
+          <CardDeckScreen {...tramProps(tramRideIndex)} />
+        </Phone>
+
+        <Unrolled caption="15 · The same connector card, unrolled">
+          <CardDeckScreen {...tramProps(tramConnectorIndex)} />
+        </Unrolled>
       </View>
 
       <View style={styles.row}>

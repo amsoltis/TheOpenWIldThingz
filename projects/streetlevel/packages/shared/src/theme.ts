@@ -69,6 +69,14 @@ export const PaperTheme = {
      * thing on the pavement.
      */
     streetGlobe: '#3E8E41',
+    /**
+     * Fare-linked services that are not subway lines — the Roosevelt Island
+     * Tramway today. Chosen precisely because it belongs to no line: a rider
+     * who has learnt that a colour zone means a train must not meet one that
+     * does not. Measured at 5.9:1 with white ink.
+     */
+    connector: '#6B4E9E',
+    connectorInk: '#FFFFFF',
   },
   /**
    * The paper scale. Smaller and quieter than the statement scale on purpose:
