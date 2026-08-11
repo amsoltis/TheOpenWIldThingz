@@ -139,3 +139,84 @@ alignment needs sensing, and sensing needs nothing.
 Claims about platform hardware and platform APIs are from general knowledge and
 should be verified against current documentation before anyone commits a sprint
 to them.
+
+---
+
+## 4 · Proficiency levels — the same packet, three densities
+
+Built. `Proficiency` is `FIRST_TIME | BEEN_HERE | LOCAL`, and it is a
+**rendering** decision, not a routing one: the packet is compiled once, carries
+every level, and the client switches offline — because the moment someone wants
+less detail is usually the moment they are already underground.
+
+Real compiler output, same trip:
+
+| Level | Platform card |
+|---|---|
+| `FIRST_TIME` | Wait here for the **3** train toward **New Lots Av** (heading into Brooklyn). *+ 3 anchors, diagrams, highlighting* |
+| `BEEN_HERE` | Wait here for the **3** train toward **New Lots Av** (heading into Brooklyn). *+ 2 anchors* |
+| `LOCAL` | **3** toward **New Lots Av**. |
+
+Two rules hold it together:
+
+- **The prohibition survives every level.** It is tempting to treat "do not board
+  the first train unless the sign reads New Lots Av" as beginner content, but the
+  mistake it prevents is not a beginner mistake — a local boards the wrong train
+  precisely because they stopped reading.
+- **Anchors truncate from the end**, because the compiler orders them by
+  usefulness. Degrading drops the nice-to-know before the need-to-know.
+
+Note that `containsCompassDirection` blocks true bearings (`north`, `southbound`)
+but deliberately permits *uptown* / *downtown*, which are landmarks by
+convention rather than bearings. Expert mode can speak like a local without
+touching that guard.
+
+Still to build: the `FIRST_TIME` scaffolding itself — highlighting and motion
+that point at the thing to look for. `showScaffolding` is the flag; the animation
+needs a device to judge.
+
+---
+
+## 5 · Where else the data can come from
+
+### The licensing trap, stated before it costs anything
+
+Google Maps Platform terms prohibit using their content to create or improve a
+competing service or dataset, and restrict caching. Apple's mapping terms are
+display-only within the app. **Harvesting either into our dataset is not
+available to us**, however the data is obtained.
+
+What *is* available: using a licensed API to answer a question for one user in
+one session — geocoding an address they typed, for instance. That is what the
+`Geocoder` interface exists for, and a paid provider drops in behind it without
+touching anything else.
+
+### The source that is actually better
+
+**OpenStreetMap.** NYC's subway is mapped in genuine detail there —
+`railway=subway_entrance` nodes, stairs, lifts, and in places full indoor
+tagging. It is free, and ODbL permits commercial use with attribution and
+share-alike on derived databases.
+
+**And this connects directly to selling it to the city.** Open provenance is an
+asset in that conversation: a dataset assembled from OSM, agency open data and
+our own survey is one you are permitted to hand over. A dataset with Google
+content in it is one you legally cannot. The cheap shortcut is the thing that
+would kill the exit.
+
+### Enhancing it by asking
+
+The design principle: **ask at the moment of knowledge, not later.** As someone
+steps off the train is exactly when they know whether the car was right. One
+binary tap, on the card that just ended:
+
+> Was that the right car for the exit? · Yes / Too far to walk
+
+That feeds the highest-value dataset we have, from the only people positioned to
+verify it. Station temperature is the same shape and lower stakes — a good
+second question precisely because being wrong about it costs nothing.
+
+The engineering caveat: a single report is not truth. One person's "wrong car"
+may be them leaving by a different exit than the one we routed. Answers need
+agreement thresholds before they change an instruction, and every surveyed record
+already carries `surveyedOn` so a claim can age out.

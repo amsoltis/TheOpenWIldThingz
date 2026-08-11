@@ -14,17 +14,18 @@ interface PeripheralLineRowProps {
 /**
  * Contextual Peripheral Dimming.
  *
- * The co-located lines are drawn faded and explicitly named, never removed. A
- * traveller standing on a shared platform will watch three trains they must not
- * board pull in; an interface that shows only their line makes every one of
- * those arrivals a moment of doubt ("is the app wrong, or am I on the wrong
+ * The co-located lines are explicitly named, never removed. A traveller
+ * standing on a shared platform will watch three trains they must not board
+ * pull in; an interface that shows only their line makes every one of those
+ * arrivals a moment of doubt ("is the app wrong, or am I on the wrong
  * platform?"). Naming the intruders and telling them to let them pass converts
  * each arrival into a confirmation instead.
  *
- * On paper the separation is carried by scale and by a rule rather than by
- * opacity alone — dimming to 25% was a dark-screen trick, and at 25% on warm
- * paper the bullets stopped being identifiable, which defeats the point of
- * showing them.
+ * The suppression is now entirely scale and hierarchy: a 72pt bullet under
+ * BOARD ONLY THIS ONE, and 34pt bullets under a rule that says NOT YOURS.
+ * Fading them was a dark-screen trick, and a faded bullet on warm paper is a
+ * pastel smudge — unidentifiable, which is the one thing a peripheral bullet
+ * must never be, since naming the train you are letting go is its entire job.
  */
 export function PeripheralLineRow({ focus }: PeripheralLineRowProps): ReactElement {
   const dimmed = focus.coLocatedLinesToDim;
@@ -34,7 +35,7 @@ export function PeripheralLineRow({ focus }: PeripheralLineRowProps): ReactEleme
     <View>
       <PaperSection label="BOARD ONLY THIS ONE">
         <View style={styles.activeRow}>
-          <LineBullet line={focus.activeLineId} size={64} />
+          <LineBullet line={focus.activeLineId} size={72} />
           <Text style={styles.activeSentence}>
             {targetLineReassuranceText(focus.activeLineId, dimmed)}
           </Text>
@@ -46,7 +47,7 @@ export function PeripheralLineRow({ focus }: PeripheralLineRowProps): ReactEleme
           <View style={styles.dimmedRow}>
             {dimmed.map((line) => (
               <View key={line} style={styles.dimmedSlot}>
-                <LineBullet line={line} size={38} dimmed />
+                <LineBullet line={line} size={34} dimmed />
               </View>
             ))}
           </View>

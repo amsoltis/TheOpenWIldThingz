@@ -6,6 +6,7 @@ import {
   LINE_TEXT_COLORS,
   PaperTheme,
   StatementTheme,
+  safeSecondaryOpacity,
   statementFontSize,
 } from '@streetlevel/shared';
 
@@ -58,6 +59,8 @@ export function StatementZone({
   const field = line ? LINE_COLORS[line] : PaperTheme.colors.ink;
   const ink = line ? LINE_TEXT_COLORS[line] : PaperTheme.colors.paper;
   const margin = StatementTheme.margin;
+  // Spent only where the pairing can afford it — see `safeSecondaryOpacity`.
+  const held = safeSecondaryOpacity(field, ink, 0.75);
 
   // The graphic bleeds in from the right, so the headline gets a narrower
   // column and is fitted to it rather than allowed to wrap under the bullet.
@@ -73,7 +76,7 @@ export function StatementZone({
         <Text style={[styles.kicker, { color: ink }]} allowFontScaling={false}>
           {statement.kicker}
         </Text>
-        <Text style={[styles.kicker, styles.kickerStep, { color: ink }]} allowFontScaling={false}>
+        <Text style={[styles.kicker, { color: ink, opacity: held }]} allowFontScaling={false}>
           {stepIndex + 1} / {stepTotal}
         </Text>
       </View>
@@ -115,7 +118,10 @@ export function StatementZone({
           The name below clears the circle's bottom tangent and can run wider. */}
       {statement.sub ? (
         <Text
-          style={[styles.sub, { color: ink, maxWidth: isCounter ? undefined : column - 40 }]}
+          style={[
+            styles.sub,
+            { color: ink, opacity: held, maxWidth: isCounter ? undefined : column - 40 },
+          ]}
           numberOfLines={2}
         >
           {statement.sub}
@@ -133,12 +139,14 @@ export function StatementZone({
 
       {statement.plate ? <SignPlate legend={statement.plate} exit={statement.graphic === 'exit'} /> : null}
 
-      {ghosts.length > 0 && line ? <GhostRow ghosts={ghosts} line={line} ink={ink} /> : null}
+      {ghosts.length > 0 && line ? (
+        <GhostRow ghosts={ghosts} line={line} ink={ink} held={held} />
+      ) : null}
 
       {statement.footnote ? (
         <View style={styles.footnote}>
           <View style={[styles.footnoteRule, { backgroundColor: ink }]} />
-          <Text style={[styles.kicker, styles.footnoteLabel, { color: ink }]} allowFontScaling={false}>
+          <Text style={[styles.kicker, { color: ink, opacity: held }]} allowFontScaling={false}>
             {statement.footnote.label}
           </Text>
           <Text style={[styles.footnoteValue, { color: ink }]} numberOfLines={2}>
@@ -271,17 +279,19 @@ function GhostRow({
   ghosts,
   line,
   ink,
+  held,
 }: {
   ghosts: readonly LineID[];
   line: LineID;
   ink: string;
+  held: number;
 }): ReactElement {
   const ambiguous = colourIsAmbiguous(line, ghosts);
 
   return (
     <View style={styles.ghostRow}>
       {ghosts.map((ghost) => (
-        <View key={ghost} style={[styles.ghost, { borderColor: ink }]}>
+        <View key={ghost} style={[styles.ghost, { borderColor: ink, opacity: held }]}>
           <Text style={[styles.ghostGlyph, { color: ink }]} allowFontScaling={false}>
             {ghost}
           </Text>
@@ -308,9 +318,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   kicker: StatementTheme.type.kicker,
-  kickerStep: {
-    opacity: 0.7,
-  },
   graphic: {
     position: 'absolute',
     top: 112,
@@ -327,7 +334,6 @@ const styles = StyleSheet.create({
   sub: {
     ...StatementTheme.type.sub,
     marginTop: 24,
-    opacity: 0.85,
   },
   name: {
     ...StatementTheme.type.name,
@@ -387,7 +393,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
-    opacity: 0.6,
   },
   ghostGlyph: {
     fontSize: 19,
@@ -409,9 +414,6 @@ const styles = StyleSheet.create({
     height: 2,
     opacity: 0.35,
     marginBottom: 14,
-  },
-  footnoteLabel: {
-    opacity: 0.75,
   },
   footnoteValue: {
     fontSize: 22,

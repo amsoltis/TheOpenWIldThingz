@@ -196,10 +196,16 @@ export function EntranceLockScreen({
                 ))}
               </View>
             ) : null}
-            <Text style={styles.caveat}>
-              We have not surveyed the individual staircases here, so any entrance signed for this
-              station will do.
-            </Text>
+            {/* Only when the compiler sent no warning of its own. Where it did,
+                that sentence is already printed below and says the same thing —
+                and a stranger cannot tell whether a repeated caveat is a second,
+                different problem. */}
+            {entrance.avoidanceWarningText ? null : (
+              <Text style={styles.caveat}>
+                We have not surveyed the individual staircases here, so any entrance signed for this
+                station will do.
+              </Text>
+            )}
           </PaperSection>
         )}
 

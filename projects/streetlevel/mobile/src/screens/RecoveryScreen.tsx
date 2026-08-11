@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { PaperTheme, RECOVERY_CONFIDENCE_FLOOR, SubwayTheme } from '@streetlevel/shared';
+import { PaperTheme, RECOVERY_CONFIDENCE_FLOOR } from '@streetlevel/shared';
 
 import { PaperList } from '../components/PaperList';
 import { PaperNotice } from '../components/PaperNotice';

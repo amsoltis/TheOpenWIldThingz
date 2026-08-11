@@ -57,11 +57,34 @@ export type PhaseType =
   | 'ON_TRAIN'
   | 'EXIT_SURFACING';
 
+/**
+ * How much hand-holding this traveller wants.
+ *
+ * Not an accessibility setting and not a preference buried in a menu — it is
+ * the difference between two genuinely different products sharing one engine.
+ * Somebody on their first ever subway ride needs to be shown what to look for;
+ * somebody who has done this trip twice wants the line and the direction and
+ * nothing else, and will resent every extra word.
+ *
+ * Crucially this is a *rendering* decision, not a routing one. The packet is
+ * compiled once, carries every level, and the client switches between them
+ * offline — because the moment a traveller wants less detail is usually the
+ * moment they are already underground.
+ */
+export type Proficiency = 'FIRST_TIME' | 'BEEN_HERE' | 'LOCAL';
+
+export const PROFICIENCY_ORDER: readonly Proficiency[] = ['FIRST_TIME', 'BEEN_HERE', 'LOCAL'];
+
 export interface RouteCard {
   cardId: string;
   phaseOrder: number;
   phaseType: PhaseType;
   primaryInstructionMarkdown: string;
+  /**
+   * The same instruction for somebody who does not need it explained — one
+   * line, the load-bearing facts only. Shown at LOCAL.
+   */
+  conciseInstructionMarkdown?: string;
   targetLineFocus?: LineFocusConfig;
   visualAnchors: string[];
   criticalAvoidanceNotes?: string;

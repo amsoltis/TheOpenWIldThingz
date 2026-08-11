@@ -38,13 +38,9 @@ export const PaperTheme = {
     paper: PAPER,
     /** One step down from the paper: notice washes, sunken wells, input fields. */
     paperShade: '#E8E2D4',
-    /** Deeper still, for the trough the platform diagram sits in. */
-    paperWell: '#DED7C6',
     ink: INK,
     /** Body text that is deliberately secondary. 5.2:1 — the floor. */
     inkMuted: ink(0.66),
-    /** Micro-labels and captions. */
-    inkQuiet: ink(0.82),
     /** Rules. Separation without a line the eye stops on. */
     rule: ink(0.2),
     ruleStrong: ink(0.45),
@@ -94,13 +90,6 @@ export const PaperTheme = {
       lineHeight: 45,
       letterSpacing: -1.6,
     },
-    /** Station names and other proper nouns that must be matched against a sign. */
-    name: {
-      fontSize: 27,
-      fontWeight: '800' as const,
-      lineHeight: 32,
-      letterSpacing: -0.7,
-    },
     nameSmall: {
       fontSize: 21,
       fontWeight: '800' as const,
@@ -139,7 +128,8 @@ export const PaperTheme = {
   },
   /** The page margin. Generous, and the same on every paper surface. */
   margin: 26,
-  rules: { hair: 1, head: 5, bar: 4 },
+  /** The heavy rule that opens a page, and the bar down the side of a notice. */
+  rules: { head: 5, bar: 4 },
 } as const;
 
 /**
@@ -205,11 +195,18 @@ export const StatementTheme = {
   bullet: { size: 226, overhang: 68, glyphRatio: 0.62 },
 } as const;
 
+/**
+ * What is left of the old theme once colour moved into the two materials above.
+ *
+ * These are the tokens that were never about looks: how far apart things sit,
+ * how big a thing has to be before a moving thumb can hit it, and how long the
+ * taps go on for. Everything that used to live here — a dark palette, a
+ * typographic scale, card radii, four elevation shadows — described a stack of
+ * floating dark rectangles, and there are no floating dark rectangles left.
+ */
 export const SubwayTheme = {
-  colors: PaperTheme.colors,
   spacing: { xxs: 2, xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48, xxxl: 64 },
-  radii: { bullet: 999, button: 10, chip: 8, plate: 3 },
-  borders: { hairline: 1, emphasis: 2, plate: 3 },
+  radii: { bullet: 999 },
   hapticSequences: {
     // Direct configurations passed to expo-haptics notification methods
     STATION_APPROACH_PATTERN: [0, 100, 50, 100],            // Short sequence warning to stand up
@@ -278,11 +275,34 @@ export function withAlpha(hex: string, alpha: number): string {
   return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${clamped})`;
 }
 
+function relativeLuminance(hex: string): number {
+  const rgb = channels(hex) ?? [0, 0, 0];
+  const [r, g, b] = rgb.map((value) => {
+    const c = value / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** WCAG contrast ratio, 1 to 21. Falls back to 1 on anything unparseable. */
+function contrastRatio(a: string, b: string): number {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  const [light, dark] = la >= lb ? [la, lb] : [lb, la];
+  return (light + 0.05) / (dark + 0.05);
+}
+
 /**
- * A line colour laid over the paper as a wash. Kept faint on purpose: the
- * paper zone's job is to be quiet, and a saturated band of the line's colour
- * inside it starts a second argument with the statement zone above.
+ * How far a label may be held back on a given field.
+ *
+ * The statement zone knocks its secondary type back so the statement itself
+ * leads — but the MTA's twenty-two colour pairs are not equally strong. White
+ * on the Broadway yellow's black is enormous; white on the L and S grey is
+ * about 3.7:1 before anything is faded, and holding a label back on top of that
+ * pushes it under the floor. So the fade is spent only where the pairing can
+ * afford it. This is legibility arithmetic, not a style token: the line colours
+ * themselves must never be adjusted, so the only variable left is us.
  */
-export function lineWash(hex: string): string {
-  return withAlpha(hex, 0.12);
+export function safeSecondaryOpacity(field: string, ink: string, wanted: number): number {
+  return contrastRatio(field, ink) >= 5 ? wanted : 1;
 }

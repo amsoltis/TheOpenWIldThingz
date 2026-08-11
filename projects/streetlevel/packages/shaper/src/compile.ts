@@ -186,6 +186,7 @@ function buildEntranceApproachCard(
     primaryInstructionMarkdown:
       `Walk ${walk === 1 ? 'about a minute' : `about ${walk} minutes`} from ${trip.origin.label} ` +
       `to ${where}.`,
+    conciseInstructionMarkdown: `Walk ${walk} min to **${station?.name ?? entrance.streetIntersectionText}**.`,
     visualAnchors: anchors,
     criticalAvoidanceNotes:
       'Do not go down the first staircase you see. The wrong stairs can put you on the far side of ' +
@@ -235,6 +236,9 @@ function buildMezzanineCard(
   return {
     phaseType: 'MEZZANINE_TRANSIT',
     primaryInstructionMarkdown: walkText ? `${instruction}\n\n${walkText}` : instruction,
+    conciseInstructionMarkdown: isFirst
+      ? `In, then follow the **${ride.line}**.`
+      : `Off at **${alightName}**, follow the **${ride.line}**.`,
     visualAnchors: anchors,
     criticalAvoidanceNotes:
       surveyed && connection?.avoidanceTrackNoise
@@ -297,6 +301,8 @@ function buildPlatformWaitCard(
   return {
     phaseType: 'PLATFORM_WAIT',
     primaryInstructionMarkdown: `Wait here for the **${ride.line}** train ${direction}.`,
+    // What a local would actually say out loud: the bullet and the front sign.
+    conciseInstructionMarkdown: `**${ride.line}** toward **${ride.headsign}**.`,
     targetLineFocus: lineFocus,
     visualAnchors: anchors,
     criticalAvoidanceNotes:
@@ -347,6 +353,7 @@ function buildOnTrainCard(
 
   return {
     phaseType: 'ON_TRAIN',
+    conciseInstructionMarkdown: `${pluralStops(stopCount)} to **${toStation?.name ?? ride.to}**.`,
     stopLadder: {
       stops,
       alightIndex: stops.length - 1,
@@ -415,6 +422,7 @@ function buildExitCard(
     primaryInstructionMarkdown:
       `Leave the station at **${station?.name ?? trip.alightStationId}**, then walk ` +
       `${walk === 1 ? 'about a minute' : `about ${walk} minutes`} to ${trip.destination.label}.`,
+    conciseInstructionMarkdown: `Out at **${station?.name ?? trip.alightStationId}**, walk ${walk} min.`,
     visualAnchors: anchors,
     criticalAvoidanceNotes:
       'Do not keep walking if the street names do not match. Go back down and take the other exit — ' +
