@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+mobile
+# The unpacked GTFS feed is ~45 MB of build input; the compiled station graph in
+# packages/data/generated is the artefact the image actually needs.
+packages/data/vendor
+.git
+*.md
+.env
+.env.*

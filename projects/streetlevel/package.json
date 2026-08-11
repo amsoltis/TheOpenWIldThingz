@@ -1,0 +1,28 @@
+{
+  "name": "streetlevel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plain-English NYC subway micro-navigation — turn-by-turn instructions for tourists, offline-first",
+  "workspaces": [
+    "packages/*",
+    "server",
+    "mobile"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=@streetlevel/shared && npm run build --workspace=@streetlevel/data && npm run build --workspace=@streetlevel/router && npm run build --workspace=@streetlevel/shaper && npm run build --workspace=@streetlevel/server",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "data:build": "npm run build:dataset --workspace=@streetlevel/data",
+    "server:dev": "npm run dev --workspace=@streetlevel/server",
+    "demo": "tsx tools/demo.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "tsx": "^4.19.2",
+    "vitest": "^2.1.8",
+    "@types/node": "^22.10.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

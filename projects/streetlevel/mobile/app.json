@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Streetlevel",
+    "slug": "streetlevel",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "streetlevel",
+    "newArchEnabled": true,
+    "backgroundColor": "#121212",
+    "primaryColor": "#121212",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "bundleIdentifier": "app.streetlevel.client",
+      "supportsTablet": false,
+      "requireFullScreen": true,
+      "infoPlist": {
+        "UIUserInterfaceStyle": "Dark"
+      }
+    },
+    "android": {
+      "package": "app.streetlevel.client",
+      "userInterfaceStyle": "dark",
+      "edgeToEdgeEnabled": true
+    },
+    "androidStatusBar": {
+      "barStyle": "light-content",
+      "backgroundColor": "#121212"
+    },
+    "extra": {
+      "apiBaseUrl": "https://api.streetlevel.app",
+      "freeCreditAllowance": 3
+    }
+  }
+}

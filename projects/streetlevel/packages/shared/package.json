@@ -1,0 +1,21 @@
+{
+  "name": "@streetlevel/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The wire contract: TransitPacket types, runtime validators, MTA line identity, and UI theme tokens. Zero runtime dependencies so it can be imported by the Expo client and the server alike.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  }
+}

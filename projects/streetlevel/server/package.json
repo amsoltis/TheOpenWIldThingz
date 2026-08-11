@@ -1,0 +1,26 @@
+{
+  "name": "@streetlevel/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The packet-compilation API: routes, recovery, and the device-bound freemium meter.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@streetlevel/shared": "*",
+    "@streetlevel/data": "*",
+    "@streetlevel/router": "*",
+    "@streetlevel/shaper": "*",
+    "fastify": "^5.2.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10"
+  }
+}

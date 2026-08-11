@@ -1,0 +1,28 @@
+{
+  "name": "@streetlevel/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "description": "The Expo client: the card deck the traveller actually holds in their hand.",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@streetlevel/shared": "*",
+    "expo": "~57.0.12",
+    "expo-application": "~57.0.2",
+    "expo-constants": "~57.0.10",
+    "expo-haptics": "~57.0.1",
+    "expo-sqlite": "~57.0.1",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.2"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2"
+  }
+}

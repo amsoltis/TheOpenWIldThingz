@@ -1,0 +1,64 @@
+name: streetlevel
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      DATABASE_URL: postgres://streetlevel:streetlevel@db:5432/streetlevel
+      FREE_CREDITS: '3'
+      # Point at the NIM container to enable the prose-polish pass. Left unset,
+      # the deterministic compiler serves every packet on its own — a supported
+      # production posture, not a degraded one.
+      NIM_BASE_URL: ${NIM_BASE_URL:-}
+      NIM_MODEL: ${NIM_MODEL:-meta/llama-3.1-8b-instruct}
+      NIM_API_KEY: ${NIM_API_KEY:-}
+      ALERTS_FILE: ${ALERTS_FILE:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: streetlevel
+      POSTGRES_PASSWORD: streetlevel
+      POSTGRES_DB: streetlevel
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U streetlevel -d streetlevel']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Opt in with:  docker compose --profile nim up
+  #
+  # Requires an NGC API key and a GPU with the NVIDIA container runtime. Without
+  # this profile the stack runs entirely on CPU and still serves complete
+  # packets; the model only rewrites prose that is already correct.
+  nim:
+    profiles: ['nim']
+    image: ${NIM_IMAGE:-nvcr.io/nim/meta/llama-3.1-8b-instruct:latest}
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:-}
+    ports:
+      - '8000:8000'
+    shm_size: 16gb
+    volumes:
+      - nimcache:/opt/nim/.cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  pgdata:
+  nimcache:

@@ -25,9 +25,13 @@ spawned.** Discovery on one side, real shipped code on the other.
     │   ├── Phonoglyph.ttf         # the real, HarfBuzz-verified font (2,026 words)
     │   ├── demo/font.html         # type English, watch the font respell it
     │   └── site/                  # deploy-ready landing page (phonotype.soltis.house)
-    └── zoneland/                  # ⭐ built #2: an esolang whose source is timezones
-        ├── zoneland.py            # the VM; opcodes are read live from UTC offsets
-        └── examples/summer.zone   # silent in winter, prints SUMMER in summer — same file
+    ├── zoneland/                  # ⭐ built #2: an esolang whose source is timezones
+    │   ├── zoneland.py            # the VM; opcodes are read live from UTC offsets
+    │   └── examples/summer.zone   # silent in winter, prints SUMMER in summer — same file
+    └── streetlevel/               # ⭐ built #3: plain-English NYC subway navigation
+        ├── packages/router/       # Dijkstra over the real MTA graph, service-period aware
+        ├── packages/shaper/       # routed path → swipeable plain-English instruction cards
+        └── mobile/                # the Expo card deck a tourist actually holds
 ```
 
 ## 🔭 [`discovery/`](discovery/README.md) — the hunt
@@ -75,6 +79,31 @@ $ python3 zoneland.py transitions examples/summer.zone             → the real 
 Same unchanged file, different behavior by season. Pure-stdlib Python, zero runtime deps, 7/7
 golden tests, and a synthesizer that spells words out of timezones. Well-posed (tzdata is a strict
 host), zero prior art found — the payoff, like Phonoglyph, is pure delight.
+
+## ⭐ [`projects/streetlevel/`](projects/streetlevel/README.md) — the third thing we built
+
+**Plain-English NYC subway navigation for people who have never used it.** Not a map — a deck of
+swipeable cards, one physical action each, generated above ground and followed underground with no
+signal. Tourists don't get lost for want of a map; they get lost in the last thirty metres, and a 2D
+map is silent on every one of those.
+
+> **Wait here for the 3 train toward New Lots Av** (heading into Brooklyn)
+> · You will also see red trains (1, 2) stopping here. They are dimmed on your screen because they
+>   are not yours. Let them pass — you want the red 3.
+
+Built on the MTA's own GTFS feed: 475 stations, 1,890 track edges, 613 transfers, and 104 express
+hops that know which stations they fly past. The router is service-period aware — an early build
+put a 2pm rider on a **4** train at 33 St, a stop it only makes overnight, which is exactly the
+class of error the product exists to prevent. It warns you before you leave that your 1:30am
+return is a different journey than your outbound, and it tells you to walk when walking is faster.
+
+The language model is never allowed to author a fact: a deterministic compiler builds every packet
+from schedule data, and the model may only rewrite prose that already survives a guard preserving
+every station name, every stop count, and every line bullet.
+
+155 tests. Honest about its gap: the entrance-level survey data that is the headline feature does
+not exist in any public feed and needs a person standing in the station — so it ships as a schema
+plus five clearly-labelled samples, and the compiler refuses to quote unverified prose as fact.
 
 ## How it was made
 

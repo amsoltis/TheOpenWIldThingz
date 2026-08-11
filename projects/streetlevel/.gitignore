@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.tsbuildinfo
+
+# The unpacked GTFS feed is ~42 MB of build input, re-fetchable with
+# `npm run fetch:gtfs`. The compiled station graph it produces
+# (packages/data/generated/) is committed instead — that is the artefact the
+# router and the tests actually read, and it records the feed version it came
+# from so a stale build is obvious.
+packages/data/vendor/
+
+.expo/
+.env
+.env.*
+!.env.example
