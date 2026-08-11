@@ -4,32 +4,72 @@
     "slug": "streetlevel",
     "version": "0.1.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
     "scheme": "streetlevel",
     "newArchEnabled": true,
-    "backgroundColor": "#121212",
-    "primaryColor": "#121212",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F2EEE4",
+    "primaryColor": "#D82233",
     "assetBundlePatterns": ["**/*"],
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F2EEE4"
+    },
     "ios": {
       "bundleIdentifier": "app.streetlevel.client",
+      "buildNumber": "1",
       "supportsTablet": false,
       "requireFullScreen": true,
       "infoPlist": {
-        "UIUserInterfaceStyle": "Dark"
+        "UIUserInterfaceStyle": "Light",
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Photograph a station sign and Streetlevel will work out where you are. The photo is read on this phone and never leaves it.",
+        "NSMotionUsageDescription": "Streetlevel counts the stops you pass using the phone's motion sensor, so it can keep track of where you are underground where there is no signal.",
+        "NSLocationWhenInUseUsageDescription": "Used above ground to find the station entrance nearest to you. Streetlevel does not track you underground — there is no signal down there anyway."
       }
     },
     "android": {
       "package": "app.streetlevel.client",
-      "userInterfaceStyle": "dark",
-      "edgeToEdgeEnabled": true
+      "versionCode": 1,
+      "userInterfaceStyle": "light",
+      "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F2EEE4"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.HIGH_SAMPLING_RATE_SENSORS"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
+      ]
     },
     "androidStatusBar": {
-      "barStyle": "light-content",
-      "backgroundColor": "#121212"
+      "barStyle": "dark-content",
+      "backgroundColor": "#F2EEE4"
     },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Photograph a station sign and Streetlevel will work out where you are. The photo is read on this phone and never leaves it.",
+          "recordAudioAndroid": false
+        }
+      ]
+    ],
     "extra": {
       "apiBaseUrl": "https://api.streetlevel.app",
-      "freeCreditAllowance": 3
+      "freeCreditAllowance": 3,
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
     }
   }
 }

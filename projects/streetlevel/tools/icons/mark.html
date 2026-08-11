@@ -1,0 +1,57 @@
+<!doctype html><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0}
+  .frame{display:flex;align-items:center;justify-content:center}
+  /* The mark is the product's own signature element: the stop ladder. A rail
+     with nodes on it, the last one filled and enlarged — "your stop". It reads
+     as a distinctive vertical gesture at 60px and as a transit diagram at 1024. */
+  .mark{position:relative;display:block}
+  .rail{position:absolute;left:50%;transform:translateX(-50%);background:#14110E;border-radius:999px}
+  .node{position:absolute;left:50%;transform:translate(-50%,-50%);border-radius:50%;background:#F2EEE4;border-style:solid;border-color:#14110E}
+  .stop{background:#D82233;border-color:#14110E}
+</style>
+<div class="frame" id="frame"><div class="mark" id="mark"></div></div>
+<script>
+  const q = new URLSearchParams(location.search);
+  const size = +(q.get('size') || 1024);
+  const scale = +(q.get('scale') || 1);        // shrink the mark for safe zones
+  const bg = q.get('bg') || '#F2EEE4';
+  const frame = document.getElementById('frame');
+  frame.style.width = size + 'px';
+  frame.style.height = size + 'px';
+  frame.style.background = bg === 'none' ? 'transparent' : bg;
+  if (bg === 'none') document.body.style.background = 'transparent';
+
+  const m = document.getElementById('mark');
+  const H = size * 0.60 * scale;
+  const W = size * 0.34 * scale;
+  m.style.width = W + 'px';
+  m.style.height = H + 'px';
+
+  const railW = H * 0.075;
+  const rail = document.createElement('div');
+  rail.className = 'rail';
+  rail.style.width = railW + 'px';
+  rail.style.top = (H * 0.06) + 'px';
+  rail.style.height = (H * 0.88) + 'px';
+  m.appendChild(rail);
+
+  // Three passed stops, then the destination — the shape of every on-train card.
+  const ys = [0.03, 0.33, 0.63];
+  for (const y of ys) {
+    const n = document.createElement('div');
+    n.className = 'node';
+    const d = H * 0.145;
+    n.style.width = d + 'px'; n.style.height = d + 'px';
+    n.style.borderWidth = (d * 0.26) + 'px';
+    n.style.top = (H * y) + 'px';
+    m.appendChild(n);
+  }
+  const stop = document.createElement('div');
+  stop.className = 'node stop';
+  const d = H * 0.29;
+  stop.style.width = d + 'px'; stop.style.height = d + 'px';
+  stop.style.borderWidth = (d * 0.17) + 'px';
+  stop.style.top = (H * 0.94) + 'px';
+  m.appendChild(stop);
+</script>

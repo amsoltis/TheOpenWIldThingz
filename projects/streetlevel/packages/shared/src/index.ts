@@ -4,3 +4,4 @@ export * from './validate.js';
 export * from './theme.js';
 export * from './schema.js';
 export * from './proficiency.js';
+export * from './stop-detector.js';
