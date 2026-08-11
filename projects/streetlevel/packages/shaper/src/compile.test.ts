@@ -4,7 +4,7 @@ import { assertValidPacket, RECOVERY_CONFIDENCE_FLOOR, type TransitPacket } from
 import { GazetteerGeocoder, findStationsByName } from '@streetlevel/data';
 
 import { compilePacket, detectDivergence, ReturnLegUnavailableError } from './packet.js';
-import { containsCompassDirection } from './language.js';
+import { containsCompassDirection, dimmedLinesSentence } from './language.js';
 import { confidenceFromRanking, extractClues, rankStations, resolveAndRecover } from './recover.js';
 import { isSafeRewrite } from './nim.js';
 
@@ -70,8 +70,12 @@ describe('compilePacket', () => {
     );
     expect(platform).toBeDefined();
     const anchors = platform!.visualAnchors.join(' ');
-    expect(anchors).toMatch(/dimmed/i);
-    expect(anchors).toMatch(/Let them pass/i);
+    // Every dimmed line must be named. A train the traveller can physically see
+    // but the app never mentions reads as the app being broken.
+    for (const line of platform!.targetLineFocus!.coLocatedLinesToDim) {
+      expect(anchors).toContain(line);
+    }
+    expect(anchors).toMatch(/stop here too|Let them pass/i);
   });
 
   it('gives every on-train card a next-station check the rider can verify through the window', () => {
@@ -122,6 +126,27 @@ describe('compilePacket', () => {
   });
 });
 
+describe('dimmedLinesSentence', () => {
+  it('refuses to use colour when the other trains are the same colour', () => {
+    // The 1, 2 and 3 are all red. "Wait for the red train" at Times Square is
+    // the single worst instruction this product could give.
+    const text = dimmedLinesSentence('3', ['1', '2'])!;
+    expect(text).toMatch(/same red as yours/i);
+    expect(text).toMatch(/read the number/i);
+    expect(text).not.toMatch(/Let them pass/i);
+  });
+
+  it('uses colour when colour genuinely separates them', () => {
+    const text = dimmedLinesSentence('7', ['A', 'N'])!;
+    expect(text).toMatch(/blue and yellow trains/);
+    expect(text).toMatch(/Let them pass/i);
+  });
+
+  it('says nothing when there is nothing sharing the platform', () => {
+    expect(dimmedLinesSentence('L', [])).toBeNull();
+  });
+});
+
 describe('the divergence engine', () => {
   it('flags an overnight return that is not the outbound reversed', async () => {
     const packet = await compilePacket({
@@ -135,7 +160,9 @@ describe('the divergence engine', () => {
     });
     expect(packet.isMaintenanceDiverted).toBe(true);
     // The warning has to land where the traveller meets it, not in a flag.
-    expect(packet.returnJourney.navigationCards[0]!.criticalAvoidanceNotes).toMatch(/not simply your way out reversed/i);
+    expect(packet.returnJourney.navigationCards[0]!.criticalAvoidanceNotes).toMatch(
+      /do not assume your way home is your way out reversed/i,
+    );
   });
 
   it('reports a planned service change affecting the return window', async () => {

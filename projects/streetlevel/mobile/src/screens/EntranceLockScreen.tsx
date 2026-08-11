@@ -4,8 +4,13 @@ import type { ViewStyle } from 'react-native';
 import type { LineID, StreetEntranceNode } from '@streetlevel/shared';
 import { LINE_COLORS, SubwayTheme } from '@streetlevel/shared';
 
+import { AlertNote } from '../components/AlertNote';
 import { LineBullet } from '../components/LineBullet';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { SectionCaption } from '../components/SectionCaption';
+import { StationPlate } from '../components/StationPlate';
+import { StreetGlobe } from '../components/StreetGlobe';
+import { linesServedFrom, mentionsStreetGlobe, stationNameFrom, stripStationSuffix } from '../lib/cardFacts';
 import {
   ALL_CORNER_CODES,
   cornerDescription,
@@ -57,6 +62,9 @@ export function EntranceLockScreen({
    * has checked, which is the exact mistake this screen exists to prevent.
    */
   const hasIntersection = crossStreet.length > 0;
+  const stationName =
+    stationNameFrom([entrance.visualLandmarkCue]) ?? stripStationSuffix(primaryStreet);
+  const linesServed = linesServedFrom([entrance.visualLandmarkCue]);
 
   return (
     <ScrollView
@@ -64,7 +72,9 @@ export function EntranceLockScreen({
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.legLabel}>{legLabel}</Text>
+      <Text style={styles.legLabel} allowFontScaling={false}>
+        {legLabel}
+      </Text>
       <Text style={styles.title}>
         {hasIntersection ? 'Stand on this corner first.' : 'Find this station first.'}
       </Text>
@@ -121,43 +131,44 @@ export function EntranceLockScreen({
         })}
       </View>
       ) : (
-        <View
-          style={styles.stationPlate}
-          accessible
-          accessibilityRole="image"
-          accessibilityLabel={`${primaryStreet}. The individual staircases here have not been surveyed.`}
-        >
-          <View style={[styles.stationPlateBar, { backgroundColor: accent }]} />
-          <Text style={styles.stationPlateName}>{primaryStreet}</Text>
-          {/* Kept to one line: the actionable version of this caveat is already
-              in the avoidance box below, and saying it twice reads as noise. */}
-          <Text style={styles.stationPlateNote}>
-            We have not surveyed the individual staircases here.
-          </Text>
-        </View>
+        /* The unsurveyed case used to open with a grey box apologising for what
+           we do not know. That is the wrong first impression for a screen whose
+           whole job is to make someone confident enough to walk down a
+           staircase — and it buried the part we *are* certain about. The name
+           and the bullets lead; the caveat is still here, one rule below,
+           where it belongs. */
+        <StationPlate
+          name={stationName}
+          linesServed={linesServed}
+          accentLine={activeLineId}
+          eyebrow="THE STATION YOU ARE LOOKING FOR"
+          note="We have not surveyed the individual staircases here."
+        />
       )}
 
-      <View style={styles.intersectionRow}>
-        {activeLineId ? <LineBullet line={activeLineId} size={44} /> : null}
-        <View style={styles.intersectionText}>
-          <Text style={styles.intersection}>{entrance.streetIntersectionText}</Text>
-          {hasIntersection ? (
+      {hasIntersection ? (
+        <View style={styles.intersectionRow}>
+          {activeLineId ? <LineBullet line={activeLineId} size={44} /> : null}
+          <View style={styles.intersectionText}>
+            <Text style={styles.intersection}>{entrance.streetIntersectionText}</Text>
             <Text style={styles.cornerSentence}>
               {cornerDescription(target, entrance.streetIntersectionText)}
             </Text>
-          ) : null}
+          </View>
+        </View>
+      ) : null}
+
+      <View style={styles.section}>
+        <SectionCaption label="YOU SHOULD BE ABLE TO SEE" accent={accent} />
+        <View style={styles.landmarkPlate}>
+          {mentionsStreetGlobe(entrance.visualLandmarkCue) ? <StreetGlobe /> : null}
+          <Text style={styles.landmark}>{entrance.visualLandmarkCue}</Text>
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionCaption}>YOU SHOULD BE ABLE TO SEE</Text>
-        <Text style={styles.landmark}>{entrance.visualLandmarkCue}</Text>
-      </View>
-
       {entrance.avoidanceWarningText ? (
-        <View style={styles.warningBox} accessible accessibilityRole="alert">
-          <Text style={styles.warningCaption}>DO NOT</Text>
-          <Text style={styles.warningText}>{entrance.avoidanceWarningText}</Text>
+        <View style={styles.warning}>
+          <AlertNote caption="DO NOT" text={entrance.avoidanceWarningText} />
         </View>
       ) : null}
 
@@ -197,14 +208,14 @@ const CORNER_POSITIONS: Record<CornerCode, ViewStyle> = {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDark,
+    backgroundColor: SubwayTheme.colors.backgroundDeep,
   },
   content: {
     padding: SubwayTheme.spacing.lg,
     paddingBottom: SubwayTheme.spacing.xxl,
   },
   legLabel: {
-    ...SubwayTheme.typography.metaLabel,
+    ...SubwayTheme.typography.microLabel,
     color: SubwayTheme.colors.textSecondary,
     marginTop: SubwayTheme.spacing.md,
   },
@@ -218,10 +229,11 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 1,
     borderRadius: SubwayTheme.radii.card,
-    backgroundColor: SubwayTheme.colors.backgroundDark,
-    borderWidth: 2,
-    borderColor: SubwayTheme.colors.surfaceCard,
+    backgroundColor: SubwayTheme.colors.surfaceInset,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairline,
     overflow: 'hidden',
+    boxShadow: SubwayTheme.elevation.card,
   },
   compass: {
     ...SubwayTheme.typography.metaLabel,
@@ -294,29 +306,6 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: SubwayTheme.radii.bullet,
   },
-  stationPlate: {
-    backgroundColor: SubwayTheme.colors.surfaceCard,
-    borderRadius: SubwayTheme.radii.card,
-    padding: SubwayTheme.spacing.lg,
-    marginTop: SubwayTheme.spacing.lg,
-  },
-  stationPlateBar: {
-    height: 6,
-    borderRadius: 3,
-    width: 64,
-    marginBottom: SubwayTheme.spacing.md,
-  },
-  stationPlateName: {
-    ...SubwayTheme.typography.macroActionTitle,
-    fontSize: 26,
-    lineHeight: 32,
-    color: SubwayTheme.colors.textPrimary,
-  },
-  stationPlateNote: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.textSecondary,
-    marginTop: SubwayTheme.spacing.md,
-  },
   intersectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -340,34 +329,28 @@ const styles = StyleSheet.create({
   section: {
     marginTop: SubwayTheme.spacing.lg,
   },
-  sectionCaption: {
-    ...SubwayTheme.typography.metaLabel,
-    color: SubwayTheme.colors.textSecondary,
-    marginBottom: SubwayTheme.spacing.sm,
+  landmarkPlate: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SubwayTheme.spacing.sm,
+    padding: SubwayTheme.spacing.md,
+    borderRadius: SubwayTheme.radii.chip,
+    backgroundColor: SubwayTheme.colors.surfaceCard,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairline,
   },
   landmark: {
-    ...SubwayTheme.typography.landmarkBody,
+    ...SubwayTheme.typography.bodyStrong,
     color: SubwayTheme.colors.textPrimary,
+    flexShrink: 1,
+    marginLeft: SubwayTheme.spacing.md,
   },
-  warningBox: {
+  warning: {
     marginTop: SubwayTheme.spacing.lg,
-    padding: SubwayTheme.spacing.md,
-    borderRadius: SubwayTheme.radii.button,
-    borderWidth: 2,
-    borderColor: SubwayTheme.colors.danger,
-  },
-  warningCaption: {
-    ...SubwayTheme.typography.metaLabel,
-    color: SubwayTheme.colors.danger,
-    marginBottom: SubwayTheme.spacing.xs,
-  },
-  warningText: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.danger,
   },
   why: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.textSecondary,
+    ...SubwayTheme.typography.supportBody,
+    color: SubwayTheme.colors.textTertiary,
     marginTop: SubwayTheme.spacing.lg,
   },
   confirm: {

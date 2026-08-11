@@ -7,8 +7,8 @@ ground and follow underground with no signal:
 
 > **Wait here for the 3 train toward New Lots Av** (heading into Brooklyn)
 > · The front of the train reads "New Lots Av".
-> · You will also see red trains (1, 2) stopping here. They are dimmed on your
->   screen because they are not yours. Let them pass — you want the red 3.
+> · The 1 and 2 stop here too and are the same red as yours. Do not go by colour
+>   on this platform — read the number on the front of the train.
 > ⚠ Do not board the first train that arrives unless its front sign reads "New Lots Av".
 
 The premise is that tourists do not get lost because they lack a map. They get
@@ -80,13 +80,22 @@ a traveller who watches a train pull in that their app never mentioned assumes
 the app is broken. They are named, dimmed to 25% opacity, and explicitly
 dismissed.
 
+**And it knows when its own colour system is a trap.** Colour coding is the
+product's central cognitive shortcut, right up until the platform where it
+fails: the 1, 2 and 3 are all red, the N, Q, R and W all yellow. At Times Square
+"wait for the red train" is the single worst instruction this app could give. So
+when a dimmed line shares the target's colour, the copy drops colour entirely and
+falls back to the only thing that differs on the front of the train:
+
+> Your train is the 3. Check the number, not the colour — the others here are
+> the same colour.
+
 **It gives you a wrong-direction check you can verify in 90 seconds.** Every
 on-train card names the station you would see first if you boarded the opposite
 way, computed from the reversed edge on the same line:
 
-> If the first station you see is 72 St instead, you are on a train going the
-> other way. Get off at that station, cross to the opposite platform, and start
-> this card again.
+> If the first station you see is 72 St, you are going the wrong way. Get off
+> there, cross to the opposite platform, and start this card again.
 
 **It knows what an express train flies past.** 104 hops carry the stations they
 skip, derived by matching each express hop against the local line sharing its
@@ -96,11 +105,11 @@ trunk. That is the reassurance beat right after the doors close.
 divergence engine compiles both legs and diffs them. Real output for Times
 Square → Brooklyn Botanic Garden with a 1:30am return:
 
-> Heads up — your way home is not simply your way out reversed. Your route home
-> is not the reverse of your route out: you will not be using the 3 on the way
-> back, and your return uses the Q instead. You come home from a different
-> station than the one you arrive at. Your return falls in the overnight
-> timetable, when several lines run differently.
+> Do not assume your way home is your way out reversed. Your route home is not
+> the reverse of your route out: you will not be using the 3 on the way back, and
+> your return uses the Q instead. You come home from a different station than the
+> one you arrive at. Your return falls in the overnight timetable, when several
+> lines run differently.
 
 **It tells you to walk when walking is better.** Times Square → Morgan Library
 returns `WALK_INSTEAD: that is about a 14 minute walk — faster than going
@@ -199,7 +208,7 @@ npm run fetch:gtfs    --workspace=@streetlevel/data
 npm run build:dataset --workspace=@streetlevel/data
 
 npm run build
-npm test                                        # 155 tests
+npm test                                        # 181 tests
 npm run verify:sqlite --workspace=@streetlevel/data   # real SQLite engine
 
 npm run server:dev    # http://localhost:8080

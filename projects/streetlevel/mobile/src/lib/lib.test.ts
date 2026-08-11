@@ -1,12 +1,40 @@
 import { describe, expect, it } from 'vitest';
 import { SubwayTheme } from '@streetlevel/shared';
 
+import {
+  boldPhrases,
+  isPeripheralAnchor,
+  isSignAnchor,
+  linesServedFrom,
+  mentionsStreetGlobe,
+  overheadSignLegends,
+  stationNameFrom,
+  stripStationSuffix,
+} from './cardFacts';
 import { nextOccurrence, parseClockTime, resolveTripWindow } from './clock';
 import { hapticStepsFor, pulseOffsets, totalHapticDurationMs } from './hapticPlan';
-import { legDurationText, orderedCards, primaryLineOf } from './journey';
-import { colourWordsFor, joinWithAnd, peripheralReassuranceText } from './lineCopy';
+import {
+  cardLines,
+  journeySpine,
+  legDurationText,
+  orderedCards,
+  primaryLineOf,
+  segmentWeight,
+} from './journey';
+import {
+  colourWordsFor,
+  joinWithAnd,
+  peripheralReassuranceText,
+  targetLineReassuranceText,
+} from './lineCopy';
 import { markdownToPlainText, parseInlineMarkdown, parseMarkdownBlocks } from './markdown';
-import { downloadedTripsReassurance, paywallHeadline, paywallSubline } from './paywallCopy';
+import {
+  downloadedTripsReassurance,
+  paywallHeadline,
+  paywallSubline,
+  serverMessageWorthShowing,
+  splitTierDescription,
+} from './paywallCopy';
 import { TRAIN_CAR_COUNT, carSlots, carZone, carZoneText, clampCarIndex } from './platformGeometry';
 import { storeProductUrl } from './storeLinks';
 import { cornerDescription, cornerQuadrant, splitIntersection } from './streetGeometry';
@@ -60,6 +88,24 @@ describe('peripheral dimming copy', () => {
 
   it('says nothing when there is nothing to dim', () => {
     expect(peripheralReassuranceText([])).toBe('');
+  });
+
+  it('stops leaning on colour when the trains sharing the platform are the same colour', () => {
+    // Times Square: the 1, 2 and 3 are all red, so "wait for the red train" is
+    // the worst possible instruction. The number is the only real difference.
+    const text = peripheralReassuranceText(['1', '2'], '3');
+    expect(text).toMatch(/same colour as yours/i);
+    expect(text).toMatch(/number on the front/i);
+    expect(text).not.toMatch(/red trains pulling in/i);
+  });
+
+  it('keeps the colour cue when the colours actually differ', () => {
+    expect(peripheralReassuranceText(['A', 'N'], '7')).toMatch(/blue and yellow trains/);
+  });
+
+  it('tells you which number is yours when colour cannot separate them', () => {
+    expect(targetLineReassuranceText('3', ['1', '2'])).toMatch(/Check the number, not the colour/i);
+    expect(targetLineReassuranceText('7', ['A'])).toBe('Your train is the purple 7. Board only that one.');
   });
 
   it('joins lists the way a person would say them', () => {
@@ -242,6 +288,131 @@ describe('journey helpers', () => {
   });
 });
 
+describe('card facts', () => {
+  const entranceAnchors = [
+    'Look for a staircase with a green globe or lamp and a sign reading "Times Sq-42 St". The sign will list the 1, 2, 3 trains.',
+    'The station name on the sign reads "Times Sq-42 St".',
+  ];
+
+  it('reads the lines the station sign lists', () => {
+    expect(linesServedFrom(entranceAnchors)).toEqual(['1', '2', '3']);
+    expect(linesServedFrom(['The sign will list the 7 train.'])).toEqual(['7']);
+  });
+
+  it('prefers the name as it is physically printed', () => {
+    expect(stationNameFrom(entranceAnchors)).toBe('Times Sq-42 St');
+    expect(stripStationSuffix('Eastern Pkwy-Brooklyn Museum station')).toBe(
+      'Eastern Pkwy-Brooklyn Museum',
+    );
+  });
+
+  it('takes the emphasised phrases as the structured facts', () => {
+    expect(boldPhrases('Ride 14 stops and get off at **Eastern Pkwy**.')).toEqual(['Eastern Pkwy']);
+    expect(boldPhrases('No emphasis at all')).toEqual([]);
+  });
+
+  it('lifts the ceiling sign legends off the anchors', () => {
+    expect(overheadSignLegends(['Signs for your platform will name "New Lots Av".'])).toEqual([
+      'New Lots Av',
+    ]);
+    expect(overheadSignLegends(['Overhead sign: "Downtown & Brooklyn"'])).toEqual([
+      'Downtown & Brooklyn',
+    ]);
+    expect(isSignAnchor('Signs for your platform will name "8 Av".')).toBe(true);
+    // The bullet instruction is advice, not a legend printed on the plate.
+    expect(isSignAnchor('Follow the overhead signs marked with the 3 bullet.')).toBe(false);
+  });
+
+  it('spots the sentences a drawn hero already says', () => {
+    expect(
+      isPeripheralAnchor(
+        'You will also see red trains (1, 2) stopping here. They are dimmed on your screen because they are not yours.',
+      ),
+    ).toBe(true);
+    expect(isPeripheralAnchor('Platform signs show the 3 bullet.')).toBe(false);
+    expect(mentionsStreetGlobe(entranceAnchors[0] ?? '')).toBe(true);
+    expect(mentionsStreetGlobe('Walk past the bank.')).toBe(false);
+  });
+
+  it('refuses to guess when the sentence is not the one it knows', () => {
+    expect(linesServedFrom(['Some other sentence entirely.'])).toEqual([]);
+    expect(stationNameFrom(['Some other sentence entirely.'])).toBeNull();
+    expect(overheadSignLegends(['Some other sentence entirely.'])).toEqual([]);
+  });
+});
+
+describe('journey spine', () => {
+  const deck = (phases: [RouteCard['phaseType'], string | null][]): RouteCard[] =>
+    phases.map(([phaseType, line], index) => ({
+      cardId: `c${index}`,
+      phaseOrder: index + 1,
+      phaseType,
+      primaryInstructionMarkdown: line ? `Take the **${line}** train.` : 'Walk.',
+      visualAnchors: [],
+      ...(line && phaseType === 'PLATFORM_WAIT'
+        ? {
+            targetLineFocus: {
+              activeLineId: line as '4',
+              activeLineColor: '#009952',
+              coLocatedLinesToDim: [],
+              expectedTrainCarIndex: 5,
+              platformPositioningText: '',
+            },
+          }
+        : {}),
+    }));
+
+  it('hands the mezzanine to the train it leads to and the ride to the one behind it', () => {
+    const cards = deck([
+      ['ENTRANCE_APPROACH', null],
+      ['MEZZANINE_TRANSIT', null],
+      ['PLATFORM_WAIT', '4'],
+      ['ON_TRAIN', null],
+      ['EXIT_SURFACING', null],
+    ]);
+    expect(cardLines(cards)).toEqual([null, '4', '4', '4', null]);
+  });
+
+  it('breaks the ribbon into walk, ride and walk', () => {
+    const cards = deck([
+      ['ENTRANCE_APPROACH', null],
+      ['MEZZANINE_TRANSIT', null],
+      ['PLATFORM_WAIT', '4'],
+      ['ON_TRAIN', null],
+      ['EXIT_SURFACING', null],
+    ]);
+    expect(journeySpine(cards).map((s) => [s.kind, s.line, s.from, s.to])).toEqual([
+      ['walk', null, 0, 0],
+      ['ride', '4', 1, 3],
+      ['walk', null, 4, 4],
+    ]);
+  });
+
+  it('puts a boundary at every transfer', () => {
+    const cards = deck([
+      ['PLATFORM_WAIT', 'L'],
+      ['ON_TRAIN', null],
+      ['MEZZANINE_TRANSIT', null],
+      ['PLATFORM_WAIT', '4'],
+      ['ON_TRAIN', null],
+    ]);
+    expect(journeySpine(cards).map((s) => s.line)).toEqual(['L', '4']);
+  });
+
+  it('weights a segment by the ride, inside limits that keep a walk visible', () => {
+    expect(segmentWeight({ kind: 'walk', line: null, from: 0, to: 0, stopCount: 0 })).toBe(3);
+    expect(segmentWeight({ kind: 'ride', line: '4', from: 1, to: 2, stopCount: 1 })).toBe(5);
+    expect(segmentWeight({ kind: 'ride', line: '4', from: 1, to: 2, stopCount: 14 })).toBe(14);
+    expect(segmentWeight({ kind: 'ride', line: '4', from: 1, to: 2, stopCount: 40 })).toBe(18);
+  });
+
+  it('survives a deck with no train in it at all', () => {
+    const cards = deck([['ENTRANCE_APPROACH', null]]);
+    expect(journeySpine(cards)).toHaveLength(1);
+    expect(journeySpine([])).toEqual([]);
+  });
+});
+
 describe('paywall copy', () => {
   it('names the destination the traveller was two taps from', () => {
     expect(paywallHeadline(3)).toBe("You've used your 3 free navigation keys.");
@@ -259,6 +430,27 @@ describe('paywall copy', () => {
     expect(downloadedTripsReassurance(1)).toContain('1 trip');
     expect(downloadedTripsReassurance(2)).toContain('2 trips');
     expect(downloadedTripsReassurance(2)).toContain('forever');
+  });
+
+  it('splits a store tier into a product and its promise', () => {
+    expect(
+      splitTierDescription('City Explorer Pass — unlimited offline trip packets, one payment.'),
+    ).toEqual({ name: 'City Explorer Pass', detail: 'unlimited offline trip packets, one payment' });
+    expect(splitTierDescription('Lifetime unlock')).toEqual({
+      name: 'Lifetime unlock',
+      detail: null,
+    });
+    expect(splitTierDescription('  ')).toEqual({ name: 'Lifetime access', detail: null });
+  });
+
+  it('drops a server message that only repeats the copy already on screen', () => {
+    const headline = paywallHeadline(3);
+    const subline = paywallSubline('the Morgan Library');
+    expect(serverMessageWorthShowing(`${headline} ${subline}`, headline, subline)).toBeNull();
+    expect(serverMessageWorthShowing('   ', headline, subline)).toBeNull();
+    expect(serverMessageWorthShowing('Payments are down for maintenance.', headline, subline)).toBe(
+      'Payments are down for maintenance.',
+    );
   });
 });
 

@@ -11,9 +11,12 @@ import {
 } from 'react-native';
 import { RECOVERY_CONFIDENCE_FLOOR, SubwayTheme } from '@streetlevel/shared';
 
-import { PhaseProgress } from '../components/PhaseProgress';
+import { AlertNote } from '../components/AlertNote';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { SectionCaption } from '../components/SectionCaption';
+import { RouteRibbon } from '../components/RouteRibbon';
 import { RouteCardView } from '../components/RouteCardView';
+import { cardLines, journeySpine } from '../lib/journey';
 import { showsRecoveryRoute } from '../state/appMachine';
 import type { RecoverySession } from '../state/appMachine';
 
@@ -61,24 +64,35 @@ export function RecoveryScreen({
   if (session && resolved) {
     const { response, cardIndex } = session;
     const card = response.recoveryCards[cardIndex];
+    const lines = cardLines(response.recoveryCards);
+
     return (
       <ScrollView
         style={styles.root}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.caption}>WE THINK YOU ARE HERE</Text>
-        <Text style={styles.stationName}>{response.resolvedStationName}</Text>
-        {response.resolvedPlatformDirection ? (
-          <Text style={styles.platformDirection}>{response.resolvedPlatformDirection}</Text>
-        ) : null}
+        <View style={styles.foundPlate}>
+          <View style={styles.foundCap} />
+          <View style={styles.foundBody}>
+            <Text style={styles.caption} allowFontScaling={false}>
+              WE THINK YOU ARE HERE
+            </Text>
+            <Text style={styles.stationName}>{response.resolvedStationName}</Text>
+            {response.resolvedPlatformDirection ? (
+              <Text style={styles.platformDirection}>{response.resolvedPlatformDirection}</Text>
+            ) : null}
 
-        {/* The reasoning is shown, not hidden behind a "details" link: the
-            traveller is the only one who can actually see the platform, so they
-            are the final check on whether the engine guessed right. */}
-        <View style={styles.reasoningBox}>
-          <Text style={styles.reasoningCaption}>WHY WE THINK SO — CHECK THIS AGAINST WHAT YOU SEE</Text>
-          <Text style={styles.reasoningText}>{response.reasoningPlainText}</Text>
+            {/* The reasoning is shown, not hidden behind a "details" link: the
+                traveller is the only one who can actually see the platform, so
+                they are the final check on whether the engine guessed right. */}
+            <View style={styles.reasoningBox}>
+              <Text style={styles.reasoningCaption} allowFontScaling={false}>
+                WHY WE THINK SO — CHECK THIS AGAINST WHAT YOU SEE
+              </Text>
+              <Text style={styles.reasoningText}>{response.reasoningPlainText}</Text>
+            </View>
+          </View>
         </View>
 
         <PrimaryButton
@@ -90,10 +104,16 @@ export function RecoveryScreen({
         />
 
         <View style={styles.deckHeader}>
-          <Text style={styles.caption}>
+          <Text style={styles.caption} allowFontScaling={false}>
             {intendedDestination ? `GETTING YOU TO ${intendedDestination.toUpperCase()}` : 'GETTING YOU BACK ON TRACK'}
           </Text>
-          <PhaseProgress total={response.recoveryCards.length} currentIndex={cardIndex} />
+          <View style={styles.deckRibbon}>
+            <RouteRibbon
+              segments={journeySpine(response.recoveryCards)}
+              currentIndex={cardIndex}
+              totalCards={response.recoveryCards.length}
+            />
+          </View>
         </View>
 
         <View style={styles.recoveryCard}>
@@ -101,6 +121,9 @@ export function RecoveryScreen({
             <RouteCardView
               card={card}
               stepLabel={`STEP ${cardIndex + 1} OF ${response.recoveryCards.length}`}
+              line={lines[cardIndex] ?? null}
+              legLine={lines.find((l) => l !== null) ?? null}
+              destinationLabel={intendedDestination ?? undefined}
             />
           ) : null}
         </View>
@@ -155,46 +178,59 @@ export function RecoveryScreen({
             worst thing this product can do, so we ask instead of inventing. */}
         {lowConfidence ? (
           <View style={styles.clarifyBox}>
-            <Text style={styles.clarifyCaption}>NOT SURE ENOUGH TO SEND YOU ANYWHERE</Text>
-            <Text style={styles.clarifyIntro}>
-              There are too many places in the city that match what you described, and pointing you
-              down the wrong staircase would make this worse. A couple more details will settle it:
-            </Text>
-            {(questions.length > 0 ? questions : PROMPTS).map((question, index) => (
-              <View key={`${question}-${index}`} style={styles.questionRow}>
-                <Text style={styles.questionMark} accessibilityElementsHidden>
-                  ?
-                </Text>
-                <Text style={styles.questionText}>{question}</Text>
+            <AlertNote
+              caption="NOT SURE ENOUGH TO SEND YOU ANYWHERE"
+              text={
+                'There are too many places in the city that match what you described, and pointing ' +
+                'you down the wrong staircase would make this worse. A couple more details will settle it:'
+              }
+            />
+          </View>
+        ) : null}
+
+        <View style={styles.prompts}>
+          <SectionCaption
+            label={lowConfidence ? 'ANSWER ANY ONE OF THESE' : 'THINGS THAT HELP'}
+            {...(lowConfidence ? { accent: SubwayTheme.colors.danger } : {})}
+          />
+          <View style={styles.promptWell}>
+            {(lowConfidence && questions.length > 0 ? questions : PROMPTS).map((prompt, index) => (
+              <View
+                key={`${prompt}-${index}`}
+                style={[styles.promptRow, index > 0 ? styles.promptDivided : null]}
+              >
+                <View style={styles.promptMark} accessibilityElementsHidden>
+                  <Text style={styles.promptMarkGlyph} allowFontScaling={false}>
+                    ?
+                  </Text>
+                </View>
+                <Text style={styles.promptText}>{prompt}</Text>
               </View>
             ))}
-            <Text style={styles.confidenceNote}>
+          </View>
+          {lowConfidence ? (
+            <Text style={styles.confidenceNote} allowFontScaling={false}>
               Confidence was {Math.round((session?.response.confidence ?? 0) * 100)}%. We only route
               you at {Math.round(RECOVERY_CONFIDENCE_FLOOR * 100)}% or better.
             </Text>
-          </View>
-        ) : (
-          <View style={styles.promptList}>
-            {PROMPTS.map((prompt) => (
-              <Text key={prompt} style={styles.promptText}>
-                • {prompt}
-              </Text>
-            ))}
-          </View>
-        )}
+          ) : null}
+        </View>
 
-        <TextInput
-          value={description}
-          onChangeText={setDescription}
-          placeholder="There's a green pillar and a sign saying Uptown & The Bronx…"
-          placeholderTextColor={SubwayTheme.colors.textSecondary}
-          style={styles.input}
-          accessibilityLabel="Describe what you can see around you"
-          multiline
-          textAlignVertical="top"
-          autoCapitalize="sentences"
-          autoCorrect
-        />
+        <View style={styles.inputBlock}>
+          <SectionCaption label="IN YOUR OWN WORDS" />
+          <TextInput
+            value={description}
+            onChangeText={setDescription}
+            placeholder="There's a green pillar and a sign saying Uptown & The Bronx…"
+            placeholderTextColor={SubwayTheme.colors.textTertiary}
+            style={styles.input}
+            accessibilityLabel="Describe what you can see around you"
+            multiline
+            textAlignVertical="top"
+            autoCapitalize="sentences"
+            autoCorrect
+          />
+        </View>
 
         {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
@@ -220,7 +256,7 @@ export function RecoveryScreen({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDark,
+    backgroundColor: SubwayTheme.colors.backgroundDeep,
   },
   content: {
     padding: SubwayTheme.spacing.lg,
@@ -232,26 +268,77 @@ const styles = StyleSheet.create({
     marginTop: SubwayTheme.spacing.md,
   },
   body: {
-    ...SubwayTheme.typography.landmarkBody,
+    ...SubwayTheme.typography.sectionTitle,
+    fontSize: 17,
+    lineHeight: 24,
     color: SubwayTheme.colors.textSecondary,
     marginTop: SubwayTheme.spacing.sm,
   },
-  promptList: {
-    marginTop: SubwayTheme.spacing.md,
+  /**
+   * The prompts are the whole interaction: someone underground cannot answer
+   * "where are you", but they can answer "what colour are the pillars". Set as
+   * a list of loose bullet lines they read as filler, so they get the same
+   * well and the same rhythm as the LOOK FOR list on a route card — a set of
+   * questions to work through, not a paragraph of suggestions.
+   */
+  prompts: {
+    marginTop: SubwayTheme.spacing.lg,
+  },
+  promptWell: {
+    marginTop: SubwayTheme.spacing.sm,
+    backgroundColor: SubwayTheme.colors.surfaceCard,
+    borderRadius: SubwayTheme.radii.chip,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairline,
+    paddingHorizontal: SubwayTheme.spacing.md,
+  },
+  promptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SubwayTheme.spacing.md,
+  },
+  promptDivided: {
+    borderTopWidth: SubwayTheme.borders.hairline,
+    borderTopColor: SubwayTheme.colors.hairline,
+  },
+  promptMark: {
+    width: 24,
+    height: 24,
+    borderRadius: SubwayTheme.radii.bullet,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairlineStrong,
+    backgroundColor: SubwayTheme.colors.surfaceSunken,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SubwayTheme.spacing.md,
+  },
+  promptMarkGlyph: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: SubwayTheme.colors.textSecondary,
+    includeFontPadding: false,
   },
   promptText: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.textSecondary,
+    ...SubwayTheme.typography.supportBody,
+    fontSize: 16,
+    lineHeight: 22,
+    color: SubwayTheme.colors.textPrimary,
+    flexShrink: 1,
+  },
+  inputBlock: {
+    marginTop: SubwayTheme.spacing.lg,
   },
   input: {
-    minHeight: 140,
-    marginTop: SubwayTheme.spacing.lg,
+    minHeight: 132,
+    marginTop: SubwayTheme.spacing.sm,
     backgroundColor: SubwayTheme.colors.surfaceCard,
     borderRadius: SubwayTheme.radii.button,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairlineStrong,
     padding: SubwayTheme.spacing.md,
     color: SubwayTheme.colors.textPrimary,
-    fontSize: 20,
-    lineHeight: 28,
+    fontSize: 19,
+    lineHeight: 27,
   },
   submit: {
     marginTop: SubwayTheme.spacing.lg,
@@ -266,43 +353,36 @@ const styles = StyleSheet.create({
   },
   clarifyBox: {
     marginTop: SubwayTheme.spacing.lg,
-    padding: SubwayTheme.spacing.md,
-    borderRadius: SubwayTheme.radii.button,
-    borderWidth: 2,
-    borderColor: SubwayTheme.colors.danger,
-  },
-  clarifyCaption: {
-    ...SubwayTheme.typography.metaLabel,
-    color: SubwayTheme.colors.danger,
-  },
-  clarifyIntro: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.textPrimary,
-    marginTop: SubwayTheme.spacing.sm,
-    marginBottom: SubwayTheme.spacing.md,
-  },
-  questionRow: {
-    flexDirection: 'row',
-    marginBottom: SubwayTheme.spacing.sm,
-  },
-  questionMark: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.danger,
-    marginRight: SubwayTheme.spacing.sm,
-  },
-  questionText: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.textPrimary,
-    flexShrink: 1,
   },
   confidenceNote: {
-    ...SubwayTheme.typography.metaLabel,
-    color: SubwayTheme.colors.textSecondary,
+    ...SubwayTheme.typography.microLabel,
+    color: SubwayTheme.colors.textTertiary,
     marginTop: SubwayTheme.spacing.sm,
   },
   caption: {
-    ...SubwayTheme.typography.metaLabel,
+    ...SubwayTheme.typography.microLabel,
     color: SubwayTheme.colors.textSecondary,
+  },
+  /**
+   * The answer arrives as a solid, confident object rather than as loose text.
+   * Someone who has just admitted they are lost needs the screen to look like
+   * it knows something, and a green cap over a raised plate says "found" before
+   * a single word of it is read.
+   */
+  foundPlate: {
+    borderRadius: SubwayTheme.radii.card,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairline,
+    backgroundColor: SubwayTheme.colors.surfaceRaised,
+    overflow: 'hidden',
+    boxShadow: SubwayTheme.elevation.card,
+  },
+  foundCap: {
+    height: 6,
+    backgroundColor: SubwayTheme.colors.success,
+  },
+  foundBody: {
+    padding: SubwayTheme.spacing.lg,
   },
   stationName: {
     ...SubwayTheme.typography.macroActionTitle,
@@ -310,31 +390,39 @@ const styles = StyleSheet.create({
     marginTop: SubwayTheme.spacing.sm,
   },
   platformDirection: {
-    ...SubwayTheme.typography.landmarkBody,
+    ...SubwayTheme.typography.bodyStrong,
     color: SubwayTheme.colors.success,
     marginTop: SubwayTheme.spacing.xs,
   },
   reasoningBox: {
     marginTop: SubwayTheme.spacing.lg,
     padding: SubwayTheme.spacing.md,
-    borderRadius: SubwayTheme.radii.button,
-    backgroundColor: SubwayTheme.colors.surfaceCard,
+    borderRadius: SubwayTheme.radii.chip,
+    backgroundColor: SubwayTheme.colors.surfaceSunken,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairline,
   },
   reasoningCaption: {
-    ...SubwayTheme.typography.metaLabel,
-    color: SubwayTheme.colors.textSecondary,
+    ...SubwayTheme.typography.microLabel,
+    color: SubwayTheme.colors.textTertiary,
     marginBottom: SubwayTheme.spacing.sm,
   },
   reasoningText: {
-    ...SubwayTheme.typography.landmarkBody,
+    ...SubwayTheme.typography.bodyStrong,
     color: SubwayTheme.colors.textPrimary,
   },
   deckHeader: {
     marginTop: SubwayTheme.spacing.xl,
     marginBottom: SubwayTheme.spacing.md,
   },
+  deckRibbon: {
+    marginTop: SubwayTheme.spacing.sm,
+  },
+  // Tall enough that the phase body under the instruction is visible without a
+  // second scroll. This screen already scrolls; a card that only ever showed
+  // its headline would make the recovery deck feel like a worse deck.
   recoveryCard: {
-    minHeight: 320,
+    minHeight: 520,
   },
   stepControls: {
     flexDirection: 'row',

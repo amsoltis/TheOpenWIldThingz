@@ -13,6 +13,7 @@ import {
 import type { PacketRequest, UserBillingProfile } from '@streetlevel/shared';
 import { SubwayTheme } from '@streetlevel/shared';
 
+import { AlertNote } from '../components/AlertNote';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { resolveTripWindow } from '../lib/clock';
 
@@ -132,7 +133,7 @@ export function PlanTripScreen({
             accessibilityLabel={`Error: ${errorMessage}. Tap to dismiss.`}
             style={styles.errorBox}
           >
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <AlertNote caption="THAT DID NOT WORK" text={errorMessage} />
             <Text style={styles.errorDismiss}>Tap to dismiss</Text>
           </Pressable>
         ) : null}
@@ -198,7 +199,7 @@ function Field({ label, placeholder, value, onChange, autoFocus, keyboard }: Fie
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDark,
+    backgroundColor: SubwayTheme.colors.backgroundDeep,
   },
   content: {
     padding: SubwayTheme.spacing.lg,
@@ -210,7 +211,9 @@ const styles = StyleSheet.create({
     marginTop: SubwayTheme.spacing.lg,
   },
   subtitle: {
-    ...SubwayTheme.typography.landmarkBody,
+    ...SubwayTheme.typography.sectionTitle,
+    fontSize: 18,
+    lineHeight: 25,
     color: SubwayTheme.colors.textSecondary,
     marginTop: SubwayTheme.spacing.sm,
     marginBottom: SubwayTheme.spacing.lg,
@@ -219,14 +222,19 @@ const styles = StyleSheet.create({
     marginBottom: SubwayTheme.spacing.lg,
   },
   fieldLabel: {
-    ...SubwayTheme.typography.metaLabel,
+    ...SubwayTheme.typography.microLabel,
     color: SubwayTheme.colors.textSecondary,
     marginBottom: SubwayTheme.spacing.sm,
   },
+  // Bordered rather than a bare fill: an unlabelled dark rectangle on a dark
+  // screen is invisible until you tap it, and this is the first thing a new
+  // user is asked to do.
   input: {
     minHeight: SubwayTheme.minTouchTarget,
     backgroundColor: SubwayTheme.colors.surfaceCard,
     borderRadius: SubwayTheme.radii.button,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairlineStrong,
     paddingHorizontal: SubwayTheme.spacing.md,
     paddingVertical: SubwayTheme.spacing.md,
     color: SubwayTheme.colors.textPrimary,
@@ -243,32 +251,30 @@ const styles = StyleSheet.create({
     width: SubwayTheme.spacing.md,
   },
   hint: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.textSecondary,
+    ...SubwayTheme.typography.supportBody,
+    color: SubwayTheme.colors.textTertiary,
+    padding: SubwayTheme.spacing.md,
+    borderRadius: SubwayTheme.radii.chip,
+    backgroundColor: SubwayTheme.colors.surfaceSunken,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairline,
     marginBottom: SubwayTheme.spacing.lg,
   },
   errorBox: {
-    borderWidth: 2,
-    borderColor: SubwayTheme.colors.danger,
-    borderRadius: SubwayTheme.radii.button,
-    padding: SubwayTheme.spacing.md,
     marginBottom: SubwayTheme.spacing.lg,
     minHeight: SubwayTheme.minTouchTarget,
   },
-  errorText: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.danger,
-  },
   errorDismiss: {
-    ...SubwayTheme.typography.metaLabel,
-    color: SubwayTheme.colors.textSecondary,
-    marginTop: SubwayTheme.spacing.xs,
+    ...SubwayTheme.typography.microLabel,
+    color: SubwayTheme.colors.textTertiary,
+    marginTop: SubwayTheme.spacing.sm,
+    textAlign: 'center',
   },
   submit: {
     marginTop: SubwayTheme.spacing.sm,
   },
   credits: {
-    ...SubwayTheme.typography.metaLabel,
+    ...SubwayTheme.typography.microLabel,
     color: SubwayTheme.colors.textSecondary,
     textAlign: 'center',
     marginTop: SubwayTheme.spacing.md,

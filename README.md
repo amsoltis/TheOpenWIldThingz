@@ -101,7 +101,7 @@ The language model is never allowed to author a fact: a deterministic compiler b
 from schedule data, and the model may only rewrite prose that already survives a guard preserving
 every station name, every stop count, and every line bullet.
 
-155 tests. Honest about its gap: the entrance-level survey data that is the headline feature does
+181 tests. Honest about its gap: the entrance-level survey data that is the headline feature does
 not exist in any public feed and needs a person standing in the station — so it ships as a schema
 plus five clearly-labelled samples, and the compiler refuses to quote unverified prose as fact.
 

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { SubwayTheme } from '@streetlevel/shared';
 
-export type ButtonTone = 'primary' | 'secondary' | 'danger' | 'quiet';
+export type ButtonTone = 'primary' | 'secondary' | 'danger' | 'quiet' | 'alert';
 
 interface PrimaryButtonProps {
   label: string;
@@ -49,7 +49,9 @@ export function PrimaryButton({
       hitSlop={SubwayTheme.spacing.sm}
       style={({ pressed }) => [
         styles.button,
-        tone === 'quiet' ? styles.quiet : { backgroundColor: background },
+        tone === 'quiet' ? styles.quiet : null,
+        tone === 'alert' ? styles.alert : null,
+        tone === 'quiet' || tone === 'alert' ? null : { backgroundColor: background },
         pressed ? styles.pressed : null,
         disabled ? styles.disabled : null,
         style,
@@ -60,6 +62,7 @@ export function PrimaryButton({
           styles.label,
           tone === 'primary' ? styles.onLight : styles.onDark,
           tone === 'quiet' ? styles.quietLabel : null,
+          tone === 'alert' ? styles.alertLabel : null,
         ]}
         numberOfLines={2}
       >
@@ -83,6 +86,20 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: SubwayTheme.colors.textSecondary,
   },
+  /**
+   * The lost-and-found button, on every card, all day.
+   *
+   * It was a solid red slab, which put it in a shouting match with the primary
+   * action directly above it — and on a red line those two slabs were the same
+   * colour. Outlined, it is still the only red thing in the lower half of the
+   * screen and still impossible to miss, but it stops reading as the thing to
+   * press next.
+   */
+  alert: {
+    backgroundColor: SubwayTheme.colors.dangerWash,
+    borderWidth: 2,
+    borderColor: SubwayTheme.colors.danger,
+  },
   pressed: {
     opacity: 0.7,
   },
@@ -102,5 +119,8 @@ const styles = StyleSheet.create({
   },
   quietLabel: {
     color: SubwayTheme.colors.textSecondary,
+  },
+  alertLabel: {
+    color: SubwayTheme.colors.danger,
   },
 });

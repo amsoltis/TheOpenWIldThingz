@@ -6,6 +6,11 @@
  * than the native engine, so metrics and font rendering differ slightly from a
  * device — this shows what the interface *says* and how it is laid out, which
  * is the part worth reviewing before anyone has a build on a phone.
+ *
+ * Every phase gets a frame. The five phase layouts are the product's main
+ * claim — that waiting on a platform and sitting on a train are different
+ * moments — and a gallery that showed two of them would let the other three
+ * rot unnoticed.
  */
 import { createRoot } from 'react-dom/client';
 import { View, Text, StyleSheet } from 'react-native';
@@ -13,6 +18,7 @@ import type { ReactElement, ReactNode } from 'react';
 
 import type {
   PaywallExceptionResponse,
+  PhaseType,
   RecoveryResponse,
   TransitPacket,
 } from '@streetlevel/shared';
@@ -21,6 +27,7 @@ import { SubwayTheme } from '@streetlevel/shared';
 import { CardDeckScreen } from '../../mobile/src/screens/CardDeckScreen';
 import { EntranceLockScreen } from '../../mobile/src/screens/EntranceLockScreen';
 import { PaywallScreen } from '../../mobile/src/screens/PaywallScreen';
+import { PlanTripScreen } from '../../mobile/src/screens/PlanTripScreen';
 import { RecoveryScreen } from '../../mobile/src/screens/RecoveryScreen';
 import { orderedCards, legDurationText, primaryLineOf } from '../../mobile/src/lib/journey';
 
@@ -52,9 +59,12 @@ function Phone({ caption, children }: { caption: string; children: ReactNode }):
 
 const outbound = packet.outboundJourney;
 const cards = orderedCards(outbound);
-const platformIndex = cards.findIndex((c) => c.phaseType === 'PLATFORM_WAIT');
-const onTrainIndex = cards.findIndex((c) => c.phaseType === 'ON_TRAIN');
 const returnCards = orderedCards(packet.returnJourney);
+
+function phaseIndex(phase: PhaseType): number {
+  const found = cards.findIndex((c) => c.phaseType === phase);
+  return found === -1 ? 0 : found;
+}
 
 function deckProps(index: number, leg: 'outbound' | 'return' = 'outbound') {
   const journey = leg === 'outbound' ? outbound : packet.returnJourney;
@@ -80,33 +90,47 @@ function Gallery(): ReactElement {
       </Text>
 
       <View style={styles.row}>
-        <Phone caption="1 · Entrance Lock — the gate before any card is visible">
+        <Phone caption="1 · Entrance Lock — station identity, caveat demoted">
           <EntranceLockScreen
             entrance={outbound.initialStreetEntrance}
             activeLineId={primaryLineOf(outbound)}
-            legLabel="My Outbound Trip"
+            legLabel="MY OUTBOUND TRIP"
             onConfirm={noop}
             onNeedHelp={noop}
           />
         </Phone>
 
-        <Phone caption="2 · Platform card — peripheral dimming">
-          <CardDeckScreen {...deckProps(platformIndex === -1 ? 0 : platformIndex)} />
+        <Phone caption="2 · Entrance approach — the station as hero">
+          <CardDeckScreen {...deckProps(phaseIndex('ENTRANCE_APPROACH'))} />
         </Phone>
 
-        <Phone caption="3 · On the train — the wrong-direction check">
-          <CardDeckScreen {...deckProps(onTrainIndex === -1 ? 0 : onTrainIndex)} />
+        <Phone caption="3 · Mezzanine — the sign they are hunting, drawn">
+          <CardDeckScreen {...deckProps(phaseIndex('MEZZANINE_TRANSIT'))} />
         </Phone>
       </View>
 
       <View style={styles.row}>
-        <Phone caption="4 · Return leg — the divergence warning">
+        <Phone caption="4 · Platform — peripheral dimming and the car strip">
+          <CardDeckScreen {...deckProps(phaseIndex('PLATFORM_WAIT'))} />
+        </Phone>
+
+        <Phone caption="5 · On the train — the stop ladder">
+          <CardDeckScreen {...deckProps(phaseIndex('ON_TRAIN'))} />
+        </Phone>
+
+        <Phone caption="6 · Surfacing — the exit and the walk that follows">
+          <CardDeckScreen {...deckProps(phaseIndex('EXIT_SURFACING'))} />
+        </Phone>
+      </View>
+
+      <View style={styles.row}>
+        <Phone caption="7 · Return leg — the divergence warning">
           <CardDeckScreen {...deckProps(0, 'return')} />
         </Phone>
 
-        <Phone caption="5 · I Messed Up — resolved from a wall sign">
+        <Phone caption="8 · I Messed Up — resolved, and a two-train ribbon">
           <RecoveryScreen
-            session={{ response: recovery, cardIndex: 0 }}
+            session={{ response: recovery, cardIndex: 2 }}
             isBusy={false}
             errorMessage={null}
             intendedDestination="The Met"
@@ -118,12 +142,43 @@ function Gallery(): ReactElement {
           />
         </Phone>
 
-        <Phone caption="6 · Paywall after three free trips">
+        <Phone caption="9 · Paywall after three free trips">
           <PaywallScreen
             response={paywall}
             intendedDestination="the Morgan Library"
             freeAllowance={3}
             downloadedTripCount={3}
+            onDismiss={noop}
+          />
+        </Phone>
+      </View>
+
+      <View style={styles.row}>
+        <Phone caption="10 · The front door, before any trip exists">
+          <PlanTripScreen
+            billing={null}
+            isBusy={false}
+            errorMessage={null}
+            savedTripLabel="Brooklyn Botanic Garden"
+            onSubmit={noop}
+            onOpenSavedTrip={noop}
+            onDismissError={noop}
+          />
+        </Phone>
+
+        {/* The moment before anything is known. Worth a frame of its own: this
+            is the screen someone reaches while genuinely lost, and its tone is
+            the product's whole argument for being trusted underground. */}
+        <Phone caption="11 · I Messed Up — asking, before any guess is made">
+          <RecoveryScreen
+            session={null}
+            isBusy={false}
+            errorMessage={null}
+            intendedDestination="The Met"
+            onSubmit={noop}
+            onNext={noop}
+            onPrev={noop}
+            onTryAgain={noop}
             onDismiss={noop}
           />
         </Phone>

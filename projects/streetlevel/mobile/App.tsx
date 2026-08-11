@@ -231,13 +231,13 @@ export default function App(): ReactElement {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDark,
+    backgroundColor: SubwayTheme.colors.backgroundDeep,
     paddingTop: TOP_INSET,
     paddingBottom: BOTTOM_INSET,
   },
   bleed: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDark,
+    backgroundColor: SubwayTheme.colors.backgroundDeep,
   },
   fallback: {
     flex: 1,

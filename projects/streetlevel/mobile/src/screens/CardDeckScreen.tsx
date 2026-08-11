@@ -10,12 +10,13 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import type { RouteCard } from '@streetlevel/shared';
-import { LINE_COLORS, SubwayTheme } from '@streetlevel/shared';
+import { SubwayTheme } from '@streetlevel/shared';
 
-import { PhaseProgress } from '../components/PhaseProgress';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { RouteRibbon } from '../components/RouteRibbon';
 import { RouteCardView } from '../components/RouteCardView';
 import { playHapticPattern } from '../lib/haptics';
+import { cardLines, journeySpine } from '../lib/journey';
 import type { LegKey } from '../state/appMachine';
 
 interface CardDeckScreenProps {
@@ -51,7 +52,13 @@ export function CardDeckScreen({
   const isAnimating = useRef(false);
 
   const card = cards[index];
-  const accent = card?.targetLineFocus ? LINE_COLORS[card.targetLineFocus.activeLineId] : undefined;
+  // The deck resolves which line every card belongs to once, so the ribbon, the
+  // card chrome and the Next button all tint from the same answer — a mezzanine
+  // card carrying no focus of its own still belongs to the train it leads to.
+  const lines = useMemo(() => cardLines(cards), [cards]);
+  const spine = useMemo(() => journeySpine(cards), [cards]);
+  const cardLine = lines[index] ?? null;
+  const legLine = lines.find((l) => l !== null) ?? null;
   const canNext = index < cards.length - 1;
   const canPrev = index > 0;
 
@@ -141,14 +148,23 @@ export function CardDeckScreen({
   return (
     <View style={styles.root}>
       <View style={styles.header}>
-        <Text style={styles.legName}>
-          {activeLeg === 'outbound' ? 'HEADING OUT' : 'HEADING HOME'}
-          {durationLabel.length > 0 ? ` · ${durationLabel.toUpperCase()}` : ''}
-        </Text>
+        <View style={styles.headerText}>
+          <Text style={styles.legName} allowFontScaling={false}>
+            {activeLeg === 'outbound' ? 'HEADING OUT' : 'HEADING HOME'}
+          </Text>
+          {durationLabel.length > 0 ? (
+            <Text style={styles.duration} allowFontScaling={false}>
+              {durationLabel}
+            </Text>
+          ) : null}
+        </View>
         <Text style={styles.destination} numberOfLines={1}>
           {destinationLabel}
         </Text>
-        <PhaseProgress total={cards.length} currentIndex={index} accentColor={accent} />
+        {/* The one place the whole trip is visible at once. Everything else in
+            this product is deliberately one step at a time, which leaves
+            "how much of this is left" unanswerable without it. */}
+        <RouteRibbon segments={spine} currentIndex={index} totalCards={cards.length} />
       </View>
 
       <Animated.View
@@ -156,7 +172,13 @@ export function CardDeckScreen({
         {...panResponder.panHandlers}
       >
         {card ? (
-          <RouteCardView card={card} stepLabel={stepLabel} />
+          <RouteCardView
+            card={card}
+            stepLabel={stepLabel}
+            line={cardLine}
+            legLine={legLine}
+            destinationLabel={destinationLabel}
+          />
         ) : (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>
@@ -178,11 +200,15 @@ export function CardDeckScreen({
           style={styles.stepButton}
         />
         <View style={styles.stepSpacer} />
+        {/* Forward is always green, never the line colour. On the 1/2/3 the
+            accent is the same red as the danger button below it, and two red
+            slabs stacked is a choice nobody should have to make at speed. The
+            line's identity is carried by the ribbon and the card, which is
+            where it belongs. */}
         <PrimaryButton
           label="Next"
           onPress={onNext}
           disabled={!canNext}
-          tintColor={accent ?? SubwayTheme.colors.success}
           accessibilityHint="Shows the next step."
           style={styles.stepButtonWide}
         />
@@ -193,7 +219,7 @@ export function CardDeckScreen({
       <PrimaryButton
         label="I Messed Up / Where Am I?"
         onPress={onNeedHelp}
-        tone="danger"
+        tone="alert"
         accessibilityHint="Describe your surroundings and we will work out where you are."
         style={styles.help}
       />
@@ -244,20 +270,32 @@ function LegTab({ label, selected, onPress }: LegTabProps): ReactElement {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDark,
+    // A deeper ground than the card. The deck reads as one object lifted off
+    // the phone rather than as a dark screen with text arranged on it.
+    backgroundColor: SubwayTheme.colors.backgroundDeep,
     paddingHorizontal: SubwayTheme.spacing.md,
   },
   header: {
     paddingTop: SubwayTheme.spacing.sm,
-    paddingBottom: SubwayTheme.spacing.md,
+    paddingBottom: SubwayTheme.spacing.sm,
+  },
+  headerText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   legName: {
-    ...SubwayTheme.typography.metaLabel,
+    ...SubwayTheme.typography.microLabel,
     color: SubwayTheme.colors.textSecondary,
   },
+  duration: {
+    ...SubwayTheme.typography.microLabel,
+    color: SubwayTheme.colors.textTertiary,
+  },
   destination: {
-    ...SubwayTheme.typography.landmarkBody,
+    ...SubwayTheme.typography.sectionTitle,
     color: SubwayTheme.colors.textPrimary,
+    marginTop: SubwayTheme.spacing.xs,
     marginBottom: SubwayTheme.spacing.sm,
   },
   cardHolder: {
@@ -276,7 +314,7 @@ const styles = StyleSheet.create({
   },
   stepControls: {
     flexDirection: 'row',
-    marginTop: SubwayTheme.spacing.md,
+    marginTop: SubwayTheme.spacing.sm,
   },
   stepButton: {
     flex: 1,
@@ -290,33 +328,39 @@ const styles = StyleSheet.create({
   help: {
     marginTop: SubwayTheme.spacing.sm,
   },
+  // A segmented control rather than two loose buttons: the two legs are one
+  // choice with two positions, and drawing them inside a single track says so.
   tabs: {
     flexDirection: 'row',
-    marginTop: SubwayTheme.spacing.md,
+    marginTop: SubwayTheme.spacing.sm,
+    padding: SubwayTheme.spacing.xs,
+    borderRadius: SubwayTheme.radii.button + SubwayTheme.spacing.xs,
+    backgroundColor: SubwayTheme.colors.surfaceSunken,
+    borderWidth: SubwayTheme.borders.hairline,
+    borderColor: SubwayTheme.colors.hairline,
   },
   tab: {
     flex: 1,
-    minHeight: SubwayTheme.minTouchTarget + SubwayTheme.spacing.md,
+    minHeight: SubwayTheme.minTouchTarget,
     borderRadius: SubwayTheme.radii.button,
-    backgroundColor: SubwayTheme.colors.surfaceCard,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: SubwayTheme.spacing.xs,
     paddingHorizontal: SubwayTheme.spacing.sm,
   },
   tabSelected: {
     backgroundColor: SubwayTheme.colors.textPrimary,
+    boxShadow: SubwayTheme.elevation.raised,
   },
   tabPressed: {
     opacity: 0.7,
   },
   tabLabel: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     textAlign: 'center',
     color: SubwayTheme.colors.textSecondary,
   },
   tabLabelSelected: {
-    color: SubwayTheme.colors.backgroundDark,
+    color: SubwayTheme.colors.backgroundDeep,
   },
 });

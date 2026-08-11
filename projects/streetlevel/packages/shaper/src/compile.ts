@@ -170,6 +170,13 @@ function buildEntranceApproachCard(
   if (station) {
     anchors.push(`The station name on the sign reads "${station.name}".`);
   }
+  // A caveat about our own data is not a prohibition, and the client renders
+  // this field under a "DO NOT" heading. Putting "we have not surveyed the
+  // staircases here" there produced an alarm that read as an instruction not to
+  // use the entrance — so the caveat travels as an anchor and the alarm is kept
+  // for the thing that can actually go wrong.
+  if (entrance.avoidanceWarningText) anchors.push(entrance.avoidanceWarningText);
+
   const where = station
     ? `${entrance.streetIntersectionText} in ${BOROUGH_NAMES[station.borough]}`
     : entrance.streetIntersectionText;
@@ -181,9 +188,8 @@ function buildEntranceApproachCard(
       `to ${where}.`,
     visualAnchors: anchors,
     criticalAvoidanceNotes:
-      entrance.avoidanceWarningText ??
-      'Do not go down the first staircase you see. Walking down the wrong stairs can put you on the ' +
-        'far side of a station with no way across without leaving and paying again.',
+      'Do not go down the first staircase you see. The wrong stairs can put you on the far side of ' +
+      'a station with no way across without leaving and paying again.',
     hapticPatternTrigger: 'LIGHT_TAP',
   };
 }
@@ -325,16 +331,9 @@ function buildOnTrainCard(
     anchors.push(`The very next stop is ${nextStopName}. Seeing it means you boarded correctly.`);
   }
 
-  const wrongWay = firstStationTheWrongWay(ride);
-  if (wrongWay) {
-    anchors.push(
-      `If the first station you see is ${wrongWay} instead, you are on a train going the other way. ` +
-        'Get off at that station, cross to the opposite platform, and start this card again.',
-    );
-  }
-
   anchors.push(`Ride time is ${minutesText(ride.seconds)}.`);
 
+  const wrongWay = firstStationTheWrongWay(ride);
   const destination = isFinalRide ? trip.destination.label : (toStation?.name ?? ride.to);
 
   const stops = ride.stations.map((id) => getStation(id)?.name ?? id);
@@ -357,7 +356,13 @@ function buildOnTrainCard(
       `Ride ${pluralStops(stopCount)} and get off at **${toStation?.name ?? ride.to}**.` +
       (isFinalRide ? `\n\nThat is your stop for ${destination}.` : '\n\nYou change trains there.'),
     visualAnchors: anchors,
-    criticalAvoidanceNotes: `Count the stops. ${toStation?.name ?? ride.to} is stop number ${stopCount}.`,
+    // The stop ladder now does the counting, so this space belongs to the one
+    // thing that can still go badly wrong: being on the right line in the wrong
+    // direction. It is checkable through the window within about two minutes.
+    criticalAvoidanceNotes: wrongWay
+      ? `If the first station you see is ${wrongWay}, you are going the wrong way. Get off there, ` +
+        'cross to the opposite platform, and start this card again.'
+      : undefined,
     hapticPatternTrigger: isFinalRide ? 'CONTINUOUS_ALERT' : 'DOUBLE_JOLT',
     offlineSensorValidation: {
       expectedTunnelTransitCount: stopCount,
@@ -412,8 +417,8 @@ function buildExitCard(
       `${walk === 1 ? 'about a minute' : `about ${walk} minutes`} to ${trip.destination.label}.`,
     visualAnchors: anchors,
     criticalAvoidanceNotes:
-      'If you come up and nothing matches, go back down and try the other exit rather than walking on. ' +
-      'Two exits from one station can be a long block apart.',
+      'Do not keep walking if the street names do not match. Go back down and take the other exit — ' +
+      'two exits from one station can be a long block apart.',
     hapticPatternTrigger: 'CONTINUOUS_ALERT',
   };
 }

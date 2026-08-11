@@ -71,6 +71,23 @@ export function lineColourWord(line: LineID): string {
  */
 export function dimmedLinesSentence(target: LineID, dimmed: LineID[]): string | null {
   if (dimmed.length === 0) return null;
+
+  // Colour only disambiguates across trunks. The 1, 2 and 3 are all red and the
+  // N, Q, R and W are all yellow, so at Times Square "wait for the red train"
+  // is actively wrong advice. Where the colours collide, the number on the
+  // front is the only thing that separates them.
+  const sameColour = dimmed.filter((l) => LINE_COLOR_NAMES[l] === LINE_COLOR_NAMES[target]);
+  if (sameColour.length > 0) {
+    const list =
+      sameColour.length === 1
+        ? `The ${sameColour[0]}`
+        : `The ${sameColour.slice(0, -1).join(', ')} and ${sameColour.at(-1)}`;
+    return (
+      `${list} stop here too and are the same ${LINE_COLOR_NAMES[target]} as yours. ` +
+      `Do not go by colour on this platform — read the number on the front of the train.`
+    );
+  }
+
   const colours = [...new Set(dimmed.map((l) => LINE_COLOR_NAMES[l]))];
   const others = dimmed.join(', ');
   const colourPhrase =

@@ -170,8 +170,10 @@ export async function compilePacket(request: CompilePacketRequest): Promise<Tran
     // Capped deliberately. This card is read by someone deciding whether to
     // trust the app at all; three concrete differences land, a wall of eight
     // does not.
+    // Phrased as a prohibition on purpose: the client renders this field under
+    // a "DO NOT" heading, and the assumption itself is the hazard.
     first.criticalAvoidanceNotes = [
-      'Heads up — your way home is not simply your way out reversed.',
+      'Do not assume your way home is your way out reversed.',
       ...divergence.reasons.slice(0, 3),
     ].join(' ');
   }
