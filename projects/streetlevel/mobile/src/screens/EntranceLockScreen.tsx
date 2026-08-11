@@ -47,6 +47,17 @@ export function EntranceLockScreen({
   const accent = activeLineId ? LINE_COLORS[activeLineId] : SubwayTheme.colors.success;
   const target = entrance.geographicCornerCode;
 
+  /**
+   * Only draw the intersection when we actually know two streets.
+   *
+   * Where the station has not been surveyed the compiler sends a station name
+   * rather than a crossing, and the corner code is the side the traveller
+   * approaches from — not a surveyed staircase position. Rendering the
+   * four-corner plan anyway would put a confident marker on a corner nobody
+   * has checked, which is the exact mistake this screen exists to prevent.
+   */
+  const hasIntersection = crossStreet.length > 0;
+
   return (
     <ScrollView
       style={styles.root}
@@ -54,8 +65,11 @@ export function EntranceLockScreen({
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.legLabel}>{legLabel}</Text>
-      <Text style={styles.title}>Stand on this corner first.</Text>
+      <Text style={styles.title}>
+        {hasIntersection ? 'Stand on this corner first.' : 'Find this station first.'}
+      </Text>
 
+      {hasIntersection ? (
       <View
         style={styles.diagram}
         accessible
@@ -106,14 +120,32 @@ export function EntranceLockScreen({
           );
         })}
       </View>
+      ) : (
+        <View
+          style={styles.stationPlate}
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={`${primaryStreet}. The individual staircases here have not been surveyed.`}
+        >
+          <View style={[styles.stationPlateBar, { backgroundColor: accent }]} />
+          <Text style={styles.stationPlateName}>{primaryStreet}</Text>
+          {/* Kept to one line: the actionable version of this caveat is already
+              in the avoidance box below, and saying it twice reads as noise. */}
+          <Text style={styles.stationPlateNote}>
+            We have not surveyed the individual staircases here.
+          </Text>
+        </View>
+      )}
 
       <View style={styles.intersectionRow}>
         {activeLineId ? <LineBullet line={activeLineId} size={44} /> : null}
         <View style={styles.intersectionText}>
           <Text style={styles.intersection}>{entrance.streetIntersectionText}</Text>
-          <Text style={styles.cornerSentence}>
-            {cornerDescription(target, entrance.streetIntersectionText)}
-          </Text>
+          {hasIntersection ? (
+            <Text style={styles.cornerSentence}>
+              {cornerDescription(target, entrance.streetIntersectionText)}
+            </Text>
+          ) : null}
         </View>
       </View>
 
@@ -130,10 +162,10 @@ export function EntranceLockScreen({
       ) : null}
 
       <Text style={styles.why}>
-        Why we ask: this intersection has staircases on more than one corner, and underground they do
-        not connect. Going down the wrong one puts you behind a fare gate on the wrong platform, with
-        no signal and no way through except back up to the street. Thirty seconds of checking here
-        saves twenty minutes down there.
+        Why we ask: {hasIntersection ? 'this intersection has' : 'big stations have'} staircases on
+        more than one corner, and underground they do not always connect. Going down the wrong one
+        puts you behind a fare gate on the wrong platform, with no signal and no way through except
+        back up to the street. Thirty seconds of checking here saves twenty minutes down there.
       </Text>
 
       <PrimaryButton
@@ -261,6 +293,29 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: SubwayTheme.radii.bullet,
+  },
+  stationPlate: {
+    backgroundColor: SubwayTheme.colors.surfaceCard,
+    borderRadius: SubwayTheme.radii.card,
+    padding: SubwayTheme.spacing.lg,
+    marginTop: SubwayTheme.spacing.lg,
+  },
+  stationPlateBar: {
+    height: 6,
+    borderRadius: 3,
+    width: 64,
+    marginBottom: SubwayTheme.spacing.md,
+  },
+  stationPlateName: {
+    ...SubwayTheme.typography.macroActionTitle,
+    fontSize: 26,
+    lineHeight: 32,
+    color: SubwayTheme.colors.textPrimary,
+  },
+  stationPlateNote: {
+    ...SubwayTheme.typography.landmarkBody,
+    color: SubwayTheme.colors.textSecondary,
+    marginTop: SubwayTheme.spacing.md,
   },
   intersectionRow: {
     flexDirection: 'row',

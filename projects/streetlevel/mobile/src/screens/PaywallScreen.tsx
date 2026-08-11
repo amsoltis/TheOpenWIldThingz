@@ -128,8 +128,10 @@ function SkuRow({ sku, emphasised, onPress }: SkuRowProps): ReactElement {
         <Text style={[styles.skuTier, emphasised ? styles.onLight : styles.onDark]}>
           {sku.tierDescription || 'Lifetime access'}
         </Text>
+        {/* The store product id is plumbing. It was on screen; nobody buying a
+            subway app needs to read a reverse-DNS identifier. */}
         <Text style={[styles.skuId, emphasised ? styles.onLightMuted : styles.onDarkMuted]}>
-          {sku.platformSkuString}
+          One payment · works offline · no account needed
         </Text>
       </View>
       <Text style={[styles.skuPrice, emphasised ? styles.onLight : styles.onDark]}>

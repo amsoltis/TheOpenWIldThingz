@@ -15,6 +15,16 @@ The premise is that tourists do not get lost because they lack a map. They get
 lost in the last thirty metres — wrong staircase, wrong platform, wrong
 direction, wrong exit — and a 2D map is silent on every one of those.
 
+![Six screens of the Streetlevel client](tools/screenshot/generated/screens.png)
+
+Those are the real screen components rendered through react-native-web against a
+real compiled packet — `npm run screenshot` regenerates them. Not a native
+build: metrics and font rendering on a device will differ. It is still the
+fastest way to see what the app *says* before anyone has it on a phone, and it
+has already earned its keep — the first run showed the entrance screen drawing a
+confident four-corner diagram for a station nobody has surveyed, which is
+precisely the mistake that screen exists to prevent.
+
 ---
 
 ## What is real here, and what is not

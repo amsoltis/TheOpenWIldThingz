@@ -131,7 +131,11 @@ export function resolveEntrance(
   return {
     entranceId: `${idPrefix}-ENT-${stationId}`,
     associatedStationId: stationId,
-    streetIntersectionText: `${station.name} station, in ${BOROUGH_NAMES[station.borough]}`,
+    // Deliberately not shaped like an intersection. The client draws a
+    // four-corner plan whenever it can parse two street names out of this, and
+    // a fabricated crossing would put a confident marker on a corner nobody has
+    // surveyed.
+    streetIntersectionText: `${station.name} station`,
     geographicCornerCode: approach,
     visualLandmarkCue:
       `Look for a staircase with a green globe or lamp and a sign reading "${station.name}". ` +
@@ -166,12 +170,15 @@ function buildEntranceApproachCard(
   if (station) {
     anchors.push(`The station name on the sign reads "${station.name}".`);
   }
+  const where = station
+    ? `${entrance.streetIntersectionText} in ${BOROUGH_NAMES[station.borough]}`
+    : entrance.streetIntersectionText;
 
   return {
     phaseType: 'ENTRANCE_APPROACH',
     primaryInstructionMarkdown:
       `Walk ${walk === 1 ? 'about a minute' : `about ${walk} minutes`} from ${trip.origin.label} ` +
-      `to ${entrance.streetIntersectionText}.`,
+      `to ${where}.`,
     visualAnchors: anchors,
     criticalAvoidanceNotes:
       entrance.avoidanceWarningText ??

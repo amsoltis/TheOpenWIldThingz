@@ -14,13 +14,16 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "data:build": "npm run build:dataset --workspace=@streetlevel/data",
     "server:dev": "npm run dev --workspace=@streetlevel/server",
-    "demo": "tsx tools/demo.ts"
+    "demo": "tsx tools/demo.ts",
+    "screenshot": "tsx tools/screenshot/generate-fixtures.ts && tsx tools/screenshot/shoot.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
     "tsx": "^4.19.2",
     "vitest": "^2.1.8",
-    "@types/node": "^22.10.2"
+    "@types/node": "^22.10.2",
+    "esbuild": "^0.28.2",
+    "playwright": "^1.50.0"
   },
   "engines": {
     "node": ">=20"
