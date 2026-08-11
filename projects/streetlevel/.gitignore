@@ -23,3 +23,7 @@ tools/screenshot/generated/*
 # Design study build output; the comparison sheet is the artefact worth keeping.
 tools/design-study/generated/*
 !tools/design-study/generated/study.png
+
+# The system map is generated from the committed station graph; the template
+# and the build script are the source.
+tools/map/generated/

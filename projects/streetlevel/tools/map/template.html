@@ -1,0 +1,628 @@
+<title>The whole system — Streetlevel</title>
+<style>
+  :root {
+    --ground:   #0B0D10;
+    --panel:    rgba(18, 21, 26, 0.92);
+    --edge:     rgba(255, 255, 255, 0.13);
+    --ink:      #F2F4F7;
+    --ink-soft: #A8B0BB;
+    --ink-mute: #6E7681;
+    --station:  #0B0D10;
+    --halo:     #E8ECF1;
+    --accent:   #F6BC26;
+  }
+  :root:not([data-theme="dark"]) {
+    @media (prefers-color-scheme: light) {
+      --ground:   #F4F2ED;
+      --panel:    rgba(255, 255, 255, 0.94);
+      --edge:     rgba(12, 14, 18, 0.14);
+      --ink:      #14171C;
+      --ink-soft: #4A525E;
+      --ink-mute: #7B8590;
+      --station:  #FFFFFF;
+      --halo:     #14171C;
+      --accent:   #B07800;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground:   #F4F2ED;
+    --panel:    rgba(255, 255, 255, 0.94);
+    --edge:     rgba(12, 14, 18, 0.14);
+    --ink:      #14171C;
+    --ink-soft: #4A525E;
+    --ink-mute: #7B8590;
+    --station:  #FFFFFF;
+    --halo:     #14171C;
+    --accent:   #B07800;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: var(--ground); }
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  #map { display: block; width: 100vw; height: 100vh; cursor: grab; touch-action: none; }
+  #map.dragging { cursor: grabbing; }
+
+  .panel {
+    position: absolute;
+    background: var(--panel);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--edge);
+    padding: 16px 18px;
+    max-width: 330px;
+  }
+  #head { top: 18px; left: 18px; }
+  h1 { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: var(--ink-mute); line-height: 1.5; margin: 0; }
+  .feed { font-size: 10.5px; color: var(--ink-mute); letter-spacing: 0.06em; margin-top: 9px; font-variant-numeric: tabular-nums; }
+
+  #hint { margin-top: 13px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+  #hint b { color: var(--ink); font-weight: 700; }
+
+  #info { top: 18px; right: 18px; display: none; min-width: 250px; }
+  #info.on { display: block; }
+  .label { font-size: 10px; font-weight: 800; letter-spacing: 0.15em; color: var(--ink-mute); margin: 0 0 6px; }
+  .name { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 10px; line-height: 1.2; }
+  .bullets { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .bul {
+    width: 27px; height: 27px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; flex: none;
+  }
+  .meta { font-size: 12px; color: var(--ink-soft); line-height: 1.6; }
+
+  #route { bottom: 122px; left: 18px; display: none; max-width: 380px; max-height: 38vh; overflow-y: auto; }
+  #route.on { display: block; }
+  .leg { display: flex; gap: 11px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--edge); }
+  .leg:first-of-type { border-top: 0; }
+  .leg-text { font-size: 13px; line-height: 1.5; padding-top: 3px; }
+  .leg-text b { font-weight: 700; }
+  .leg-sub { color: var(--ink-mute); font-size: 11.5px; }
+  .walk { color: var(--ink-mute); font-size: 12px; padding: 8px 0; border-top: 1px solid var(--edge); }
+  #route-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 12px; }
+  #route-total { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+
+  #controls { bottom: 18px; right: 18px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  .seg { display: flex; border: 1px solid var(--edge); background: var(--panel); backdrop-filter: blur(14px); }
+  .seg button {
+    font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    padding: 9px 13px; background: none; border: 0; color: var(--ink-mute); cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
+  .seg button + button { border-left: 1px solid var(--edge); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  #lines { position: absolute; left: 18px; bottom: 18px; display: flex; flex-wrap: wrap; gap: 4px; max-width: 300px; }
+  #lines.hidden { display: none; }
+  .lb {
+    width: 25px; height: 25px; border-radius: 50%; border: 0; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 800; padding: 0;
+    opacity: 0.42; transition: opacity 0.14s;
+  }
+  .lb[aria-pressed="true"], #lines.none-selected .lb { opacity: 1; }
+  .lb:hover { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) { .lb { transition: none; } }
+  @media (max-width: 720px) {
+    .panel { max-width: 44vw; padding: 12px 13px; }
+    #route { max-width: 66vw; }
+    #lines { display: none; }
+  }
+</style>
+
+<canvas id="map"></canvas>
+
+<div class="panel" id="head">
+  <h1>The whole system</h1>
+  <p class="sub">Every station and every scheduled hop, drawn from the transit authority's own timetable.</p>
+  <div id="hint"><b>Click a station</b> to start a trip. Click a second to route it. Drag to pan, scroll to zoom.</div>
+  <p class="feed" id="feed"></p>
+</div>
+
+<div class="panel" id="info">
+  <p class="label" id="info-label">STATION</p>
+  <p class="name" id="info-name"></p>
+  <div class="bullets" id="info-bullets"></div>
+  <p class="meta" id="info-meta"></p>
+</div>
+
+<div class="panel" id="route">
+  <div id="route-head">
+    <div>
+      <p class="label" style="margin:0 0 3px">YOUR TRIP</p>
+      <div id="route-ends" class="leg-sub"></div>
+    </div>
+    <div id="route-total"></div>
+  </div>
+  <div id="route-legs"></div>
+</div>
+
+<div id="controls">
+  <div class="seg" role="group" aria-label="Timetable">
+    <button id="t-day" aria-pressed="true">WEEKDAY 2PM</button>
+    <button id="t-night" aria-pressed="false">LATE NIGHT</button>
+  </div>
+  <div class="seg">
+    <button id="clear">CLEAR</button>
+    <button id="fit">FIT</button>
+    <button id="theme">THEME</button>
+  </div>
+</div>
+
+<div id="lines" class="none-selected" role="group" aria-label="Isolate a line"></div>
+
+<script id="net" type="application/json">__DATA__</script>
+<script>
+(function () {
+  'use strict';
+
+  const DATA = JSON.parse(document.getElementById('net').textContent);
+  const S = DATA.stations;               // id -> [name, lat, lon, lines, complexId, borough]
+  const IDS = Object.keys(S);
+
+  const LINE_COLORS = {
+    '1':'#D82233','2':'#D82233','3':'#D82233','4':'#009952','5':'#009952','6':'#009952','7':'#9A38A1',
+    A:'#0062CF',C:'#0062CF',E:'#0062CF',B:'#EB6800',D:'#EB6800',F:'#EB6800',M:'#EB6800',
+    G:'#799534',J:'#8E5C33',Z:'#8E5C33',L:'#7C858C',N:'#F6BC26',Q:'#F6BC26',R:'#F6BC26',W:'#F6BC26',S:'#7C858C'
+  };
+  const LINE_INK = { N:'#000', Q:'#000', R:'#000', W:'#000' };
+  const ORDER = ['1','2','3','4','5','6','7','A','C','E','B','D','F','M','G','J','Z','L','N','Q','R','W','S'];
+  const BOROUGH = { M:'Manhattan', B:'Brooklyn', Q:'Queens', X:'the Bronx', SI:'Staten Island' };
+
+  /* ---------- projection ---------------------------------------------- */
+  // Equirectangular with a cosine correction at NYC's latitude. At this scale
+  // the distortion of a proper projection is invisible, and keeping it simple
+  // means screen space and the real geography stay trivially interconvertible.
+  const LAT0 = 40.75, LON0 = -73.95, KX = Math.cos(LAT0 * Math.PI / 180);
+  const px = (lon) => (lon - LON0) * KX;
+  const py = (lat) => -(lat - LAT0);
+
+  let bounds = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  for (const id of IDS) {
+    const x = px(S[id][2]), y = py(S[id][1]);
+    if (x < bounds.x0) bounds.x0 = x;
+    if (y < bounds.y0) bounds.y0 = y;
+    if (x > bounds.x1) bounds.x1 = x;
+    if (y > bounds.y1) bounds.y1 = y;
+  }
+
+  const view = { scale: 1, tx: 0, ty: 0 };
+  const canvas = document.getElementById('map');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, DPR = 1;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+    draw();
+  }
+
+  function fit() {
+    const pad = 46;
+    const sx = (W - pad * 2) / (bounds.x1 - bounds.x0);
+    const sy = (H - pad * 2) / (bounds.y1 - bounds.y0);
+    view.scale = Math.min(sx, sy);
+    view.tx = pad - bounds.x0 * view.scale + (W - pad * 2 - (bounds.x1 - bounds.x0) * view.scale) / 2;
+    view.ty = pad - bounds.y0 * view.scale + (H - pad * 2 - (bounds.y1 - bounds.y0) * view.scale) / 2;
+    draw();
+  }
+
+  const sx = (id) => px(S[id][2]) * view.scale + view.tx;
+  const sy = (id) => py(S[id][1]) * view.scale + view.ty;
+
+  /* ---------- segments: parallel offsets where lines share track -------- */
+  // Many pairs of stations carry several services. Drawing them on top of each
+  // other loses every line but the last, so each distinct colour on a segment
+  // gets its own offset — which is also how the printed map handles it.
+  const segments = new Map();
+  for (const e of DATA.edges) {
+    const key = e[0] < e[1] ? e[0] + '|' + e[1] : e[1] + '|' + e[0];
+    let seg = segments.get(key);
+    if (!seg) { seg = { a: e[0], b: e[1], lines: new Set() }; segments.set(key, seg); }
+    seg.lines.add(e[2]);
+  }
+  const SEGMENTS = [...segments.values()].map((s) => {
+    const lines = [...s.lines].sort((p, q) => ORDER.indexOf(p) - ORDER.indexOf(q));
+    const colors = [];
+    for (const l of lines) if (!colors.includes(LINE_COLORS[l])) colors.push(LINE_COLORS[l]);
+    return { a: s.a, b: s.b, lines, colors };
+  });
+
+  /* ---------- routing: the real engine's shape, in the browser ---------- */
+  const TRANSFER_PENALTY = 300, BOARDING_WAIT = 240, MIN_TRIPS = 4;
+  let period = 'weekday';
+
+  const outgoing = new Map();
+  for (const e of DATA.edges) {
+    if (!outgoing.has(e[0])) outgoing.set(e[0], []);
+    outgoing.get(e[0]).push(e);
+  }
+  const walks = new Map();
+  for (const t of DATA.transfers) {
+    if (!walks.has(t[0])) walks.set(t[0], []);
+    if (!walks.has(t[1])) walks.set(t[1], []);
+    walks.get(t[0]).push([t[1], t[2]]);
+    walks.get(t[1]).push([t[0], t[2]]);
+  }
+  const runs = (e) => (period === 'weekday' ? e[6] : e[8]) >= MIN_TRIPS;
+  const linesAt = (id) => {
+    const out = new Set();
+    for (const e of outgoing.get(id) || []) if (runs(e)) out.add(e[2]);
+    return out;
+  };
+
+  // Dijkstra over (station, line): staying on a train and changing to another
+  // are different moves, which is the only way a transfer can be priced.
+  function route(from, to) {
+    const dist = new Map(), prev = new Map();
+    const goal = new Set([to]);
+    for (const id of IDS) if (S[id][4] === S[to][4]) goal.add(id);
+
+    const start = from + '|@';
+    dist.set(start, 0);
+    const heap = [[0, start]];
+    const pop = () => {
+      let best = 0;
+      for (let i = 1; i < heap.length; i++) if (heap[i][0] < heap[best][0]) best = i;
+      return heap.splice(best, 1)[0];
+    };
+    const push = (k, d, p) => {
+      if (dist.has(k) && dist.get(k) <= d) return;
+      dist.set(k, d); prev.set(k, p); heap.push([d, k]);
+    };
+
+    const done = new Set();
+    let goalKey = null;
+    while (heap.length) {
+      const [d, key] = pop();
+      if (done.has(key)) continue;
+      done.add(key);
+      const cut = key.lastIndexOf('|');
+      const at = key.slice(0, cut), line = key.slice(cut + 1);
+      if (line !== '@' && goal.has(at)) { goalKey = key; break; }
+
+      if (line === '@') {
+        for (const l of linesAt(at)) push(at + '|' + l, d + BOARDING_WAIT, { key, kind: 'board', line: l });
+        for (const [nb, s] of walks.get(at) || []) push(nb + '|@', d + s, { key, kind: 'walk' });
+        continue;
+      }
+      for (const e of outgoing.get(at) || []) {
+        if (e[2] !== line || !runs(e)) continue;
+        push(e[1] + '|' + line, d + e[3], { key, kind: 'ride', line, edge: e });
+      }
+      for (const l of linesAt(at)) {
+        if (l === line) continue;
+        push(at + '|' + l, d + TRANSFER_PENALTY + BOARDING_WAIT, { key, kind: 'change', line: l });
+      }
+      for (const [nb, s] of walks.get(at) || []) {
+        for (const l of linesAt(nb)) {
+          push(nb + '|' + l, d + s + TRANSFER_PENALTY + BOARDING_WAIT, { key, kind: 'change', line: l });
+        }
+      }
+    }
+    if (!goalKey) return null;
+
+    const steps = [];
+    let k = goalKey;
+    while (prev.has(k)) {
+      const p = prev.get(k);
+      const cut = k.lastIndexOf('|');
+      steps.push({ ...p, to: k.slice(0, cut) });
+      k = p.key;
+    }
+    steps.reverse();
+
+    const legs = [];
+    for (const st of steps) {
+      if (st.kind !== 'ride') continue;
+      const last = legs[legs.length - 1];
+      if (last && last.line === st.line && last.stations[last.stations.length - 1] === st.edge[0]) {
+        last.stations.push(st.to); last.seconds += st.edge[3];
+      } else {
+        legs.push({ line: st.line, stations: [st.edge[0], st.to], seconds: st.edge[3], headsign: st.edge[5] });
+      }
+    }
+    return { legs, seconds: dist.get(goalKey), arrivedAt: goalKey.slice(0, goalKey.lastIndexOf('|')) };
+  }
+
+  /* ---------- state ----------------------------------------------------- */
+  let hover = null, origin = null, destination = null, plan = null, isolate = null;
+
+  /* ---------- drawing --------------------------------------------------- */
+  function draw() {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    const changeStations = new Set();
+    if (plan) for (let i = 1; i < plan.legs.length; i++) {
+      changeStations.add(plan.legs[i].stations[0]);
+    }
+
+    const onRoute = new Set();
+    if (plan) for (const leg of plan.legs) for (let i = 0; i < leg.stations.length - 1; i++) {
+      const a = leg.stations[i], b = leg.stations[i + 1];
+      onRoute.add(a < b ? a + '|' + b : b + '|' + a);
+    }
+
+    const z = view.scale;
+    const lw = Math.max(1.15, Math.min(z * 0.00055, 5.5));
+    const dimmed = plan || isolate;
+
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (const seg of SEGMENTS) {
+      const key = seg.a < seg.b ? seg.a + '|' + seg.b : seg.b + '|' + seg.a;
+      const lit = plan ? onRoute.has(key) : isolate ? seg.lines.includes(isolate) : true;
+      const x1 = sx(seg.a), y1 = sy(seg.a), x2 = sx(seg.b), y2 = sy(seg.b);
+      if (Math.max(x1, x2) < -60 || Math.min(x1, x2) > W + 60) continue;
+      if (Math.max(y1, y2) < -60 || Math.min(y1, y2) > H + 60) continue;
+
+      const dx = x2 - x1, dy = y2 - y1;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len, ny = dx / len;
+      const n = seg.colors.length;
+      const gap = lw * 1.05;
+
+      ctx.globalAlpha = lit ? 1 : dimmed ? 0.2 : 1;
+      ctx.lineWidth = lit && plan ? lw * 2.1 : lw;
+      for (let i = 0; i < n; i++) {
+        const off = (i - (n - 1) / 2) * gap;
+        ctx.strokeStyle = seg.colors[i];
+        ctx.beginPath();
+        ctx.moveTo(x1 + nx * off, y1 + ny * off);
+        ctx.lineTo(x2 + nx * off, y2 + ny * off);
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // Times Sq is five stations and Union Sq is two; at map scale they share a
+    // pixel. Labelling each one draws the same words on top of themselves.
+    const drawnLabels = [];
+    const labelIsFree = (name, x, y) => {
+      for (const l of drawnLabels) {
+        if (l.name === name && Math.abs(l.x - x) < 46 && Math.abs(l.y - y) < 26) return false;
+      }
+      return true;
+    };
+
+    const r = Math.max(1.5, Math.min(z * 0.00042, 4.6));
+    const showNames = z > 26000;
+    const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
+    const stationFill = getComputedStyle(document.documentElement).getPropertyValue('--station').trim();
+
+    for (const id of IDS) {
+      const x = sx(id), y = sy(id);
+      if (x < -30 || x > W + 30 || y < -30 || y > H + 30) continue;
+      const isChange = plan ? changeStations.has(id) : false;
+      const special = id === origin || id === destination || isChange;
+      const lit = plan ? planTouches(id) : isolate ? S[id][3].includes(isolate) : true;
+      ctx.globalAlpha = lit || special ? 1 : 0.16;
+
+      ctx.beginPath();
+      ctx.arc(x, y, special ? r * 2.3 : r, 0, Math.PI * 2);
+      ctx.fillStyle = stationFill;
+      ctx.fill();
+      ctx.lineWidth = special ? r * 1.1 : Math.max(0.9, r * 0.5);
+      ctx.strokeStyle = special ? ink : ink;
+      ctx.stroke();
+
+      // Label clears whatever radius was actually drawn — offsetting by the
+      // base radius put the origin's enlarged marker on top of its own first
+      // letter.
+      const onPath = plan ? planTouches(id) : false;
+      if (((showNames && lit) || special || onPath || id === hover) &&
+          labelIsFree(S[id][0], x, y)) {
+        drawnLabels.push({ name: S[id][0], x, y });
+        const drawn = special ? r * 2.3 : r;
+        ctx.globalAlpha = 1;
+        ctx.font = (special || id === hover ? '700 ' : '500 ') +
+          (special ? 14 : onPath ? 12.5 : 11.5) + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
+        ctx.textBaseline = 'middle';
+        const tx = x + drawn + 7, ty = y;
+        // A halo, because route labels land on top of the line they describe.
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--ground').trim();
+        ctx.lineJoin = 'round';
+        ctx.strokeText(S[id][0], tx, ty);
+        ctx.fillStyle = ink;
+        ctx.fillText(S[id][0], tx, ty);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function planTouches(id) {
+    if (!plan) return false;
+    for (const leg of plan.legs) if (leg.stations.includes(id)) return true;
+    return false;
+  }
+
+  /* ---------- hit testing ---------------------------------------------- */
+  function nearest(mx, my, maxPx) {
+    let best = null, bestD = maxPx * maxPx;
+    for (const id of IDS) {
+      const dx = sx(id) - mx, dy = sy(id) - my;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = id; }
+    }
+    return best;
+  }
+
+  /* ---------- panels ---------------------------------------------------- */
+  const $ = (id) => document.getElementById(id);
+  function bulletHtml(lines) {
+    return [...lines].map((l) =>
+      '<span class="bul" style="background:' + LINE_COLORS[l] + ';color:' + (LINE_INK[l] || '#fff') + '">' + l + '</span>'
+    ).join('');
+  }
+
+  function showInfo(id) {
+    if (!id) { $('info').classList.remove('on'); return; }
+    const st = S[id];
+    $('info-label').textContent = id === origin ? 'STARTING FROM' : id === destination ? 'GOING TO' : 'STATION';
+    $('info-name').textContent = st[0];
+    $('info-bullets').innerHTML = bulletHtml(st[3].split(''));
+    const siblings = IDS.filter((o) => o !== id && S[o][4] === st[4]).length;
+    $('info-meta').innerHTML =
+      BOROUGH[st[5]] +
+      (siblings ? ' · one of ' + (siblings + 1) + ' platforms you can walk between without leaving' : '') +
+      (period === 'lateNight' && linesAt(id).size === 0 ? '<br><b>No scheduled service overnight.</b>' : '');
+    $('info').classList.add('on');
+  }
+
+  function mins(s) { return Math.max(1, Math.round(s / 60)); }
+
+  function showRoute() {
+    if (!plan) { $('route').classList.remove('on'); return; }
+    $('route-ends').textContent = S[origin][0] + ' → ' + S[plan.arrivedAt][0];
+    $('route-total').textContent = mins(plan.seconds) + ' min';
+    $('route-legs').innerHTML = plan.legs.map((leg) => {
+      const stops = leg.stations.length - 1;
+      return '<div class="leg">' + bulletHtml([leg.line]) +
+        '<div class="leg-text">toward <b>' + leg.headsign + '</b><br>' +
+        '<span class="leg-sub">' + stops + ' stop' + (stops === 1 ? '' : 's') +
+        ' to ' + S[leg.stations[stops]][0] + ' · ' + mins(leg.seconds) + ' min</span></div></div>';
+    }).join('') + (plan.legs.length > 1
+      ? '<div class="walk">' + (plan.legs.length - 1) + ' change' + (plan.legs.length > 2 ? 's' : '') + ' of train</div>'
+      : '');
+    $('route').classList.add('on');
+  }
+
+  function recompute() {
+    plan = origin && destination && origin !== destination ? route(origin, destination) : null;
+    if (origin && destination && !plan) {
+      $('route-ends').textContent = S[origin][0] + ' → ' + S[destination][0];
+      $('route-total').textContent = '—';
+      $('route-legs').innerHTML = '<div class="walk">No scheduled service connects these two on this timetable.</div>';
+      $('route').classList.add('on');
+    } else showRoute();
+    draw();
+  }
+
+  /* ---------- interaction ----------------------------------------------- */
+  let dragging = false, moved = false, lastX = 0, lastY = 0;
+
+  canvas.addEventListener('pointerdown', (e) => {
+    dragging = true; moved = false; lastX = e.clientX; lastY = e.clientY;
+    canvas.classList.add('dragging'); canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (dragging) {
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+      view.tx += dx; view.ty += dy; lastX = e.clientX; lastY = e.clientY;
+      draw();
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const id = nearest(e.clientX - rect.left, e.clientY - rect.top, 13);
+    if (id !== hover) { hover = id; draw(); if (id) showInfo(id); else if (!origin) showInfo(null); }
+  });
+  canvas.addEventListener('pointerup', (e) => {
+    dragging = false; canvas.classList.remove('dragging');
+    if (moved) return;
+    const rect = canvas.getBoundingClientRect();
+    const id = nearest(e.clientX - rect.left, e.clientY - rect.top, 15);
+    if (!id) return;
+    if (!origin || (origin && destination)) { origin = id; destination = null; plan = null; }
+    else if (id !== origin) destination = id;
+    showInfo(id);
+    recompute();
+  });
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const k = Math.exp(-e.deltaY * 0.0016);
+    const next = Math.max(1, Math.min(view.scale * k, 900000));
+    const f = next / view.scale;
+    view.tx = mx - (mx - view.tx) * f;
+    view.ty = my - (my - view.ty) * f;
+    view.scale = next;
+    draw();
+  }, { passive: false });
+
+  $('clear').addEventListener('click', () => {
+    origin = destination = plan = null; isolate = null;
+    document.querySelectorAll('.lb').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    $('lines').classList.add('none-selected');
+    showInfo(null); $('route').classList.remove('on'); draw();
+  });
+  $('fit').addEventListener('click', fit);
+  $('theme').addEventListener('click', () => {
+    const root = document.documentElement;
+    const now = root.getAttribute('data-theme');
+    root.setAttribute('data-theme', now === 'light' ? 'dark' : 'light');
+    draw();
+  });
+
+  function setPeriod(p) {
+    period = p;
+    $('t-day').setAttribute('aria-pressed', String(p === 'weekday'));
+    $('t-night').setAttribute('aria-pressed', String(p === 'lateNight'));
+    recompute();
+  }
+  $('t-day').addEventListener('click', () => setPeriod('weekday'));
+  $('t-night').addEventListener('click', () => setPeriod('lateNight'));
+
+  const linesEl = $('lines');
+  for (const l of ORDER) {
+    const b = document.createElement('button');
+    b.className = 'lb'; b.textContent = l; b.setAttribute('aria-pressed', 'false');
+    b.setAttribute('aria-label', 'Isolate the ' + l + ' line');
+    b.style.background = LINE_COLORS[l];
+    b.style.color = LINE_INK[l] || '#fff';
+    b.addEventListener('click', () => {
+      isolate = isolate === l ? null : l;
+      document.querySelectorAll('.lb').forEach((o) => o.setAttribute('aria-pressed', String(o.textContent === isolate)));
+      linesEl.classList.toggle('none-selected', !isolate);
+      draw();
+    });
+    linesEl.appendChild(b);
+  }
+
+  $('feed').textContent = 'FEED ' + DATA.meta.feedVersion + ' · VALID TO ' + DATA.meta.feedEnd;
+
+  /**
+   * Deep link: ?from=<stationId>&to=<stationId>
+   *
+   * A shared route is more use than a shared map, and it is the only way to
+   * screenshot a particular trip without clicking two dots by hand.
+   */
+  function fitTo(ids) {
+    const pad = 110;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const id of ids) {
+      const x = px(S[id][2]), y = py(S[id][1]);
+      if (x < x0) x0 = x; if (y < y0) y0 = y;
+      if (x > x1) x1 = x; if (y > y1) y1 = y;
+    }
+    if (!isFinite(x0)) return fit();
+    view.scale = Math.min((W - pad * 2) / Math.max(x1 - x0, 1e-6), (H - pad * 2) / Math.max(y1 - y0, 1e-6));
+    view.tx = W / 2 - ((x0 + x1) / 2) * view.scale;
+    view.ty = H / 2 - ((y0 + y1) / 2) * view.scale;
+  }
+
+  function applyDeepLink() {
+    const q = new URLSearchParams(location.search);
+    const a = q.get('from'), b = q.get('to');
+    if (!a || !b || !S[a] || !S[b]) return false;
+    origin = a; destination = b;
+    recompute();
+    showInfo(null);
+    const touched = plan ? plan.legs.flatMap((l) => l.stations) : [a, b];
+    fitTo(touched);
+    draw();
+    return true;
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  if (!applyDeepLink()) fit();
+})();
+</script>

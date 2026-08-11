@@ -16,7 +16,8 @@
     "server:dev": "npm run dev --workspace=@streetlevel/server",
     "demo": "tsx tools/demo.ts",
     "screenshot": "tsx tools/screenshot/generate-fixtures.ts && tsx tools/screenshot/shoot.ts",
-    "design-study": "tsx tools/screenshot/shoot.ts --entry ../design-study/entry.tsx --html ../design-study/index.html --out ../design-study/generated --name study"
+    "design-study": "tsx tools/screenshot/shoot.ts --entry ../design-study/entry.tsx --html ../design-study/index.html --out ../design-study/generated --name study",
+    "map": "tsx tools/map/build.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
