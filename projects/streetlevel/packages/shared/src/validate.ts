@@ -155,6 +155,28 @@ export function validateRouteCard(v: unknown, path = 'card'): ValidationResult<R
     errors.push(`${path}: PLATFORM_WAIT cards must carry targetLineFocus (which train am I boarding?)`);
   }
 
+  if (v['stopLadder'] !== undefined) {
+    const ladder = v['stopLadder'];
+    if (!isRecord(ladder)) {
+      errors.push(`${path}.stopLadder: expected an object`);
+    } else {
+      const stops = checkStringArray(ladder['stops'], `${path}.stopLadder.stops`, errors, { minLength: 2 });
+      const alightIndex = ladder['alightIndex'];
+      if (typeof alightIndex !== 'number' || !Number.isInteger(alightIndex)) {
+        errors.push(`${path}.stopLadder.alightIndex: required integer`);
+      } else if (alightIndex <= 0 || alightIndex >= stops.length) {
+        // Off the end of the ladder means the UI would highlight nothing, or
+        // highlight the station they are standing in as their destination.
+        errors.push(
+          `${path}.stopLadder.alightIndex: ${alightIndex} is outside the ${stops.length} stops listed`,
+        );
+      }
+    }
+  }
+  if (v['phaseType'] === 'ON_TRAIN' && v['stopLadder'] === undefined) {
+    errors.push(`${path}: ON_TRAIN cards must carry stopLadder (which stops am I counting?)`);
+  }
+
   return errors.length ? { ok: false, errors } : { ok: true, value: v as unknown as RouteCard, errors: [] };
 }
 

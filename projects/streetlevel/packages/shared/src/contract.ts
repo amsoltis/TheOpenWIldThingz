@@ -67,6 +67,31 @@ export interface RouteCard {
   criticalAvoidanceNotes?: string;
   hapticPatternTrigger?: 'LIGHT_TAP' | 'DOUBLE_JOLT' | 'CONTINUOUS_ALERT';
   offlineSensorValidation?: SensorValidationConfig;
+  /** Present on ON_TRAIN cards. The stops, named and in order. */
+  stopLadder?: StopLadder;
+}
+
+/**
+ * Every stop the train makes on one leg.
+ *
+ * "Ride 14 stops" is the most anxious sentence in the product: it asks someone
+ * to hold a count in their head, in a language they may not read, while a train
+ * they are not sure about carries them somewhere they have never been. Naming
+ * the stops turns that count into a checklist they can tick off against the
+ * signs going past — the same reassurance a local gets for free from knowing
+ * the line.
+ */
+export interface StopLadder {
+  /** In order: the stop boarded at, every stop between, and the stop to get off at. */
+  stops: string[];
+  /** Index into `stops` of the station to leave the train at. */
+  alightIndex: number;
+  /**
+   * Stations the train runs through without stopping, keyed by the index of
+   * the stop they come before. Express riders watch these fly past and need to
+   * know that is expected rather than a missed stop.
+   */
+  passedThrough?: Record<string, string[]>;
 }
 
 export interface LineFocusConfig {

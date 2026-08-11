@@ -62,6 +62,49 @@ describe('validateRouteCard', () => {
   });
 });
 
+function onTrainCard(overrides: Partial<RouteCard> = {}): RouteCard {
+  return {
+    cardId: 'c9',
+    phaseOrder: 1,
+    phaseType: 'ON_TRAIN',
+    primaryInstructionMarkdown: 'Ride 2 stops and get off at **Wall St**.',
+    visualAnchors: ['The very next stop is Fulton St.'],
+    stopLadder: { stops: ['Park Place', 'Fulton St', 'Wall St'], alightIndex: 2 },
+    ...overrides,
+  };
+}
+
+describe('stop ladders', () => {
+  it('accepts a well-formed ladder', () => {
+    expect(validateRouteCard(onTrainCard()).ok).toBe(true);
+  });
+
+  it('rejects an on-train card with no ladder, because counting stops is the whole task', () => {
+    const card = onTrainCard();
+    delete card.stopLadder;
+    const result = validateRouteCard(card);
+    expect(result.ok).toBe(false);
+    expect(result.errors.join(' ')).toMatch(/stopLadder/);
+  });
+
+  it('rejects an alight index past the end of the ladder', () => {
+    // The UI would highlight nothing, and the rider would have no stop flagged.
+    const result = validateRouteCard(onTrainCard({ stopLadder: { stops: ['A', 'B'], alightIndex: 5 } }));
+    expect(result.ok).toBe(false);
+    expect(result.errors.join(' ')).toMatch(/outside the 2 stops/);
+  });
+
+  it('rejects alighting at the station you boarded at', () => {
+    const result = validateRouteCard(onTrainCard({ stopLadder: { stops: ['A', 'B'], alightIndex: 0 } }));
+    expect(result.ok).toBe(false);
+  });
+
+  it('rejects a one-stop ladder, which cannot describe a ride', () => {
+    const result = validateRouteCard(onTrainCard({ stopLadder: { stops: ['A'], alightIndex: 0 } }));
+    expect(result.ok).toBe(false);
+  });
+});
+
 function minimalPacket(): TransitPacket {
   const leg = {
     originAddress: 'A',

@@ -337,8 +337,22 @@ function buildOnTrainCard(
 
   const destination = isFinalRide ? trip.destination.label : (toStation?.name ?? ride.to);
 
+  const stops = ride.stations.map((id) => getStation(id)?.name ?? id);
+  const passedThrough: Record<string, string[]> = {};
+  ride.stations.forEach((id, i) => {
+    const flown = ride.passesWithoutStopping[id];
+    // Keyed by the stop these are seen before, which is the one after the
+    // departure they follow.
+    if (flown && flown.length > 0) passedThrough[String(i + 1)] = flown;
+  });
+
   return {
     phaseType: 'ON_TRAIN',
+    stopLadder: {
+      stops,
+      alightIndex: stops.length - 1,
+      ...(Object.keys(passedThrough).length > 0 ? { passedThrough } : {}),
+    },
     primaryInstructionMarkdown:
       `Ride ${pluralStops(stopCount)} and get off at **${toStation?.name ?? ride.to}**.` +
       (isFinalRide ? `\n\nThat is your stop for ${destination}.` : '\n\nYou change trains there.'),

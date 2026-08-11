@@ -82,6 +82,37 @@ describe('compilePacket', () => {
     }
   });
 
+  it('names every stop on the ride, not just how many there are', () => {
+    const onTrain = packet.outboundJourney.navigationCards.filter((c) => c.phaseType === 'ON_TRAIN');
+    expect(onTrain.length).toBeGreaterThan(0);
+    for (const card of onTrain) {
+      const ladder = card.stopLadder;
+      expect(ladder).toBeDefined();
+      // The ladder starts where they board and ends where they get off, so its
+      // length must agree with the stop count the card tells them to expect.
+      expect(ladder!.stops.length).toBe((card.offlineSensorValidation?.expectedTunnelTransitCount ?? 0) + 1);
+      expect(ladder!.alightIndex).toBe(ladder!.stops.length - 1);
+      expect(ladder!.stops.every((s) => s.trim().length > 0)).toBe(true);
+      // The instruction names the alight station; the ladder must agree with it.
+      expect(card.primaryInstructionMarkdown).toContain(ladder!.stops[ladder!.alightIndex]!);
+    }
+  });
+
+  it('flags express stations that fly past, against the stop they precede', () => {
+    // Times Square to Brooklyn on the 3 runs express past 28/23/18 St.
+    const withSkips = packet.outboundJourney.navigationCards.find(
+      (c) => c.phaseType === 'ON_TRAIN' && c.stopLadder?.passedThrough,
+    );
+    if (!withSkips) return; // not every routing of this trip is express
+    const ladder = withSkips.stopLadder!;
+    for (const [index, names] of Object.entries(ladder.passedThrough!)) {
+      const i = Number(index);
+      expect(i).toBeGreaterThan(0);
+      expect(i).toBeLessThan(ladder.stops.length);
+      expect(names.length).toBeGreaterThan(0);
+    }
+  });
+
   it('expires the packet rather than letting a stale deck be trusted', () => {
     expect(Date.parse(packet.expiresAt)).toBeGreaterThan(Date.parse(packet.compiledAt));
   });
