@@ -95,13 +95,24 @@ export function isSignAnchor(text: string): boolean {
 }
 
 /**
- * The dimming sentence the shaper writes into the anchors. The platform hero
- * draws the same reassurance with the actual bullets beside it, and printing
- * both leaves the traveller reading a paragraph that repeats the picture above
- * it — so the picture wins and the prose is dropped, not the meaning.
+ * The dimming sentence the shaper writes into the anchors.
+ *
+ * The platform card already prints this reassurance in full, next to the actual
+ * bullets, under a heading that says NOT YOURS. Leaving the anchor in the
+ * confirm-before-you-board list as well makes the traveller read the same
+ * warning twice in two slightly different wordings, which is worse than reading
+ * it once — a stranger cannot tell whether the second one is a new instruction.
+ * So the drawn version wins and the prose is dropped, not the meaning.
+ *
+ * Two phrasings are recognised because the shaper emits both: the older
+ * "dimmed on your screen" wording, and the current one that leads with the
+ * lines and the shared colour.
  */
 export function isPeripheralAnchor(text: string): boolean {
-  return /dimmed on your screen because they are not yours/i.test(text);
+  return (
+    /dimmed on your screen because they are not yours/i.test(text) ||
+    /stop here too and are the same .* as yours/i.test(text)
+  );
 }
 
 /**

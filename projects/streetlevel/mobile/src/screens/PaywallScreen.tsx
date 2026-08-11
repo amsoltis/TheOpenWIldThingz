@@ -3,12 +3,12 @@ import type { ReactElement } from 'react';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Application from 'expo-application';
 import type { PaywallExceptionResponse, PaywallSku } from '@streetlevel/shared';
-import { SubwayTheme } from '@streetlevel/shared';
+import { PaperTheme, SubwayTheme } from '@streetlevel/shared';
 
-import { AlertNote } from '../components/AlertNote';
+import { PaperList } from '../components/PaperList';
+import { PaperNotice } from '../components/PaperNotice';
+import { PaperSection } from '../components/PaperSection';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { SectionCaption } from '../components/SectionCaption';
-import { VerticalFade } from '../components/VerticalFade';
 import { TOP_INSET, BOTTOM_INSET } from '../lib/insets';
 import {
   downloadedTripsReassurance,
@@ -35,9 +35,8 @@ interface PaywallScreenProps {
  * It opens by showing the three keys, spent. A sentence saying the allowance is
  * gone is an accusation; three little tickets with their stubs torn is a record
  * of three trips that worked, which is the actual argument for buying a fourth.
- * The pass itself is then drawn as a thing you get rather than as a row in a
- * settings list — same MTA plate vernacular as the signs the product has been
- * teaching them to trust for the whole journey.
+ * The pass is then drawn as a thing you get rather than as a row in a settings
+ * list — on paper, a ticket is finally allowed to look like a ticket.
  */
 export function PaywallScreen({
   response,
@@ -61,13 +60,8 @@ export function PaywallScreen({
 
   return (
     <View style={styles.root}>
-      <VerticalFade
-        color={SubwayTheme.colors.success}
-        height={280}
-        anchor="top"
-        maxAlpha={0.14}
-      />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.headRule} />
         <SpentKeys allowance={freeAllowance} />
 
         <Text style={styles.headline}>{headline}</Text>
@@ -75,14 +69,16 @@ export function PaywallScreen({
 
         {serverMessage ? <Text style={styles.serverMessage}>{serverMessage}</Text> : null}
 
-        <View style={styles.benefits}>
-          <SectionCaption label="WHAT LIFETIME ACCESS GIVES YOU" />
-          <View style={styles.benefitWell}>
-            <Benefit text="Every trip compiled for both directions, before you go underground." first />
-            <Benefit text="Street-corner entrance checks so you take the right staircase the first time." />
-            <Benefit text="The lost-and-found button, any time, anywhere on the system." />
-          </View>
-        </View>
+        <PaperSection label="WHAT LIFETIME ACCESS GIVES YOU">
+          <PaperList
+            ordered={false}
+            rows={[
+              { text: 'Every trip compiled for both directions, before you go underground.' },
+              { text: 'Street-corner entrance checks so you take the right staircase the first time.' },
+              { text: 'The lost-and-found button, any time, anywhere on the system.' },
+            ]}
+          />
+        </PaperSection>
 
         {response.targetSkus.length > 0 ? (
           <View style={styles.skus}>
@@ -107,7 +103,7 @@ export function PaywallScreen({
             not unlock the ones they already have. Holding a downloaded trip
             hostage underground would be indefensible. */}
         <View style={styles.keepBox}>
-          <AlertNote
+          <PaperNotice
             tone="success"
             caption="WHAT YOU ALREADY HAVE STAYS YOURS"
             text={downloadedTripsReassurance(downloadedTripCount)}
@@ -158,19 +154,6 @@ function SpentKeys({ allowance }: { allowance: number }): ReactElement | null {
   );
 }
 
-function Benefit({ text, first = false }: { text: string; first?: boolean }): ReactElement {
-  return (
-    <View style={[styles.benefitRow, first ? null : styles.benefitDivided]}>
-      <View style={styles.benefitMark} accessibilityElementsHidden>
-        <Text style={styles.benefitTick} allowFontScaling={false}>
-          ✓
-        </Text>
-      </View>
-      <Text style={styles.benefitText}>{text}</Text>
-    </View>
-  );
-}
-
 interface SkuTicketProps {
   sku: PaywallSku;
   emphasised: boolean;
@@ -194,36 +177,32 @@ function SkuTicket({ sku, emphasised, onPress }: SkuTicketProps): ReactElement {
     >
       <View style={styles.ticketHead}>
         <View style={styles.ticketTitle}>
-          <Text style={[styles.ticketName, emphasised ? styles.onLight : styles.onDark]}>
-            {name}
-          </Text>
+          <Text style={[styles.ticketName, emphasised ? styles.onInk : styles.onPaper]}>{name}</Text>
           {detail ? (
-            <Text style={[styles.ticketDetail, emphasised ? styles.onLightMuted : styles.onDarkMuted]}>
+            <Text style={[styles.ticketDetail, emphasised ? styles.onInkMuted : styles.onPaperMuted]}>
               {detail}
             </Text>
           ) : null}
         </View>
-        <View style={[styles.pricePill, emphasised ? styles.pricePillOnLight : styles.pricePillOnDark]}>
-          <Text style={[styles.price, emphasised ? styles.onDark : styles.onLight]}>
-            {sku.localizedPriceText}
-          </Text>
-        </View>
+        <Text style={[styles.price, emphasised ? styles.onInk : styles.onPaper]}>
+          {sku.localizedPriceText}
+        </Text>
       </View>
 
       {/* The perforation. It is the difference between a row in a list and a
           ticket you are about to be handed. */}
       <View style={styles.perforation} accessibilityElementsHidden>
-        {Array.from({ length: 22 }, (_, i) => (
+        {Array.from({ length: 26 }, (_, i) => (
           <View
             key={i}
-            style={[styles.perfDot, emphasised ? styles.perfOnLight : styles.perfOnDark]}
+            style={[styles.perfDot, emphasised ? styles.perfOnInk : styles.perfOnPaper]}
           />
         ))}
       </View>
 
       {/* The store product id is plumbing. It was on screen; nobody buying a
           subway app needs to read a reverse-DNS identifier. */}
-      <Text style={[styles.ticketTerms, emphasised ? styles.onLightMuted : styles.onDarkMuted]}>
+      <Text style={[styles.ticketTerms, emphasised ? styles.onInkMuted : styles.onPaperMuted]}>
         One payment · works offline · no account needed
       </Text>
     </Pressable>
@@ -233,222 +212,165 @@ function SkuTicket({ sku, emphasised, onPress }: SkuTicketProps): ReactElement {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDeep,
+    backgroundColor: PaperTheme.colors.paper,
   },
   content: {
-    paddingTop: TOP_INSET + SubwayTheme.spacing.lg,
-    paddingBottom: BOTTOM_INSET + SubwayTheme.spacing.xxl,
-    paddingHorizontal: SubwayTheme.spacing.lg,
+    paddingTop: TOP_INSET + 24,
+    paddingBottom: BOTTOM_INSET + 56,
+    paddingHorizontal: PaperTheme.margin,
+  },
+  headRule: {
+    height: PaperTheme.rules.head,
+    backgroundColor: PaperTheme.colors.ink,
+    marginBottom: 24,
   },
   keys: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SubwayTheme.spacing.lg,
+    marginBottom: 26,
   },
   key: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: SubwayTheme.spacing.sm,
-    opacity: 0.5,
+    marginRight: 8,
+    opacity: 0.55,
   },
   keyStub: {
     width: 12,
     height: 26,
-    borderTopLeftRadius: 3,
-    borderBottomLeftRadius: 3,
-    backgroundColor: SubwayTheme.colors.textTertiary,
+    backgroundColor: PaperTheme.colors.ink,
   },
   keyBody: {
     width: 34,
     height: 26,
     marginLeft: 3,
-    borderTopRightRadius: 3,
-    borderBottomRightRadius: 3,
-    borderWidth: SubwayTheme.borders.emphasis,
-    borderColor: SubwayTheme.colors.textTertiary,
+    borderWidth: 2,
+    borderColor: PaperTheme.colors.ink,
     justifyContent: 'center',
   },
   keyStripe: {
     height: 5,
-    backgroundColor: SubwayTheme.colors.textTertiary,
-    opacity: 0.6,
+    backgroundColor: PaperTheme.colors.ink,
+    opacity: 0.5,
   },
   keyStrike: {
     position: 'absolute',
     left: 0,
     right: 0,
     height: 2,
-    borderRadius: 1,
-    backgroundColor: SubwayTheme.colors.textSecondary,
+    backgroundColor: PaperTheme.colors.ink,
     transform: [{ rotate: '-24deg' }],
   },
   keysLabel: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textTertiary,
-    marginLeft: SubwayTheme.spacing.sm,
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.inkMuted,
+    marginLeft: 8,
   },
   headline: {
-    ...SubwayTheme.typography.macroActionTitle,
-    color: SubwayTheme.colors.textPrimary,
+    ...PaperTheme.type.headline,
+    fontSize: 38,
+    lineHeight: 42,
+    color: PaperTheme.colors.ink,
   },
   subline: {
-    ...SubwayTheme.typography.sectionTitle,
-    fontSize: 19,
-    lineHeight: 26,
-    color: SubwayTheme.colors.textSecondary,
-    marginTop: SubwayTheme.spacing.sm,
+    ...PaperTheme.type.body,
+    color: PaperTheme.colors.inkMuted,
+    marginTop: 12,
   },
   serverMessage: {
-    ...SubwayTheme.typography.supportBody,
-    color: SubwayTheme.colors.textTertiary,
-    marginTop: SubwayTheme.spacing.md,
-  },
-  benefits: {
-    marginTop: SubwayTheme.spacing.xl,
-  },
-  benefitWell: {
-    marginTop: SubwayTheme.spacing.sm,
-    backgroundColor: SubwayTheme.colors.surfaceCard,
-    borderRadius: SubwayTheme.radii.chip,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.hairline,
-    paddingHorizontal: SubwayTheme.spacing.md,
-  },
-  benefitRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: SubwayTheme.spacing.md,
-  },
-  benefitDivided: {
-    borderTopWidth: SubwayTheme.borders.hairline,
-    borderTopColor: SubwayTheme.colors.hairline,
-  },
-  benefitMark: {
-    width: 22,
-    height: 22,
-    borderRadius: SubwayTheme.radii.bullet,
-    backgroundColor: SubwayTheme.colors.successWash,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.success,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SubwayTheme.spacing.md,
-  },
-  benefitTick: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: SubwayTheme.colors.success,
-    includeFontPadding: false,
-  },
-  benefitText: {
-    ...SubwayTheme.typography.supportBody,
-    fontSize: 16,
-    lineHeight: 22,
-    color: SubwayTheme.colors.textPrimary,
-    flexShrink: 1,
+    ...PaperTheme.type.aside,
+    color: PaperTheme.colors.inkMuted,
+    marginTop: 14,
   },
   skus: {
-    marginTop: SubwayTheme.spacing.xl,
+    marginTop: 28,
   },
   ticket: {
-    minHeight: SubwayTheme.minTouchTarget + SubwayTheme.spacing.lg,
-    borderRadius: SubwayTheme.radii.card,
-    padding: SubwayTheme.spacing.md,
-    marginBottom: SubwayTheme.spacing.md,
+    minHeight: SubwayTheme.minTouchTarget + 24,
+    padding: 18,
+    marginBottom: 14,
     overflow: 'hidden',
   },
   ticketEmphasised: {
-    backgroundColor: SubwayTheme.colors.success,
-    boxShadow: '0px 14px 30px rgba(48,209,88,0.25)',
+    backgroundColor: PaperTheme.colors.ink,
   },
   ticketPlain: {
-    backgroundColor: SubwayTheme.colors.surfaceCard,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.hairline,
+    backgroundColor: PaperTheme.colors.paperShade,
+    borderWidth: 2,
+    borderColor: PaperTheme.colors.rule,
   },
   ticketPressed: {
     opacity: 0.8,
   },
   ticketHead: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   ticketTitle: {
     flex: 1,
-    paddingRight: SubwayTheme.spacing.md,
+    paddingRight: 16,
   },
   ticketName: {
-    fontSize: 22,
-    fontWeight: '900',
-    letterSpacing: -0.3,
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: -0.6,
   },
   ticketDetail: {
-    ...SubwayTheme.typography.supportBody,
-    marginTop: SubwayTheme.spacing.xs,
-  },
-  pricePill: {
-    borderRadius: SubwayTheme.radii.bullet,
-    paddingHorizontal: SubwayTheme.spacing.md,
-    paddingVertical: SubwayTheme.spacing.sm,
-  },
-  pricePillOnLight: {
-    backgroundColor: SubwayTheme.colors.backgroundDeep,
-  },
-  pricePillOnDark: {
-    backgroundColor: SubwayTheme.colors.textPrimary,
+    ...PaperTheme.type.aside,
+    marginTop: 5,
   },
   price: {
-    fontSize: 22,
-    fontWeight: '900',
+    fontSize: 26,
+    fontWeight: '800',
+    letterSpacing: -0.6,
   },
   perforation: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: SubwayTheme.spacing.md,
+    marginVertical: 16,
   },
   perfDot: {
     width: 6,
     height: 2,
-    borderRadius: 1,
   },
-  perfOnLight: {
-    backgroundColor: SubwayTheme.colors.backgroundDeep,
-    opacity: 0.35,
+  perfOnInk: {
+    backgroundColor: PaperTheme.colors.paper,
+    opacity: 0.4,
   },
-  perfOnDark: {
-    backgroundColor: SubwayTheme.colors.textTertiary,
-    opacity: 0.6,
+  perfOnPaper: {
+    backgroundColor: PaperTheme.colors.ink,
+    opacity: 0.3,
   },
   ticketTerms: {
-    ...SubwayTheme.typography.microLabel,
+    ...PaperTheme.type.micro,
   },
-  onLight: {
-    color: SubwayTheme.colors.backgroundDeep,
+  onInk: {
+    color: PaperTheme.colors.paper,
   },
-  onLightMuted: {
-    color: SubwayTheme.colors.backgroundDeep,
-    opacity: 0.72,
+  onInkMuted: {
+    color: PaperTheme.colors.paper,
+    opacity: 0.75,
   },
-  onDark: {
-    color: SubwayTheme.colors.textPrimary,
+  onPaper: {
+    color: PaperTheme.colors.ink,
   },
-  onDarkMuted: {
-    color: SubwayTheme.colors.textSecondary,
+  onPaperMuted: {
+    color: PaperTheme.colors.inkMuted,
   },
   noSkus: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.textSecondary,
-    marginTop: SubwayTheme.spacing.md,
+    ...PaperTheme.type.body,
+    color: PaperTheme.colors.inkMuted,
+    marginTop: 20,
   },
   linkError: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.danger,
-    marginTop: SubwayTheme.spacing.md,
+    ...PaperTheme.type.item,
+    color: PaperTheme.colors.danger,
+    marginTop: 18,
   },
   keepBox: {
-    marginTop: SubwayTheme.spacing.md,
+    marginTop: 18,
   },
   dismiss: {
-    marginTop: SubwayTheme.spacing.xl,
+    marginTop: 34,
   },
 });

@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { SubwayTheme, withAlpha } from '@streetlevel/shared';
+import { PaperTheme, withAlpha } from '@streetlevel/shared';
 
 /**
  * The green glass globe on a post that marks an always-open staircase.
@@ -26,23 +26,23 @@ export function StreetGlobe(): ReactElement {
 
 const styles = StyleSheet.create({
   holder: {
-    width: 44,
+    width: 40,
     alignItems: 'center',
   },
   glow: {
     position: 'absolute',
     top: 0,
-    width: 40,
-    height: 40,
-    borderRadius: SubwayTheme.radii.bullet,
-    backgroundColor: withAlpha(SubwayTheme.colors.streetGlobe, 0.28),
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    backgroundColor: withAlpha(PaperTheme.colors.streetGlobe, 0.22),
   },
   globe: {
     width: 26,
     height: 26,
-    borderRadius: SubwayTheme.radii.bullet,
-    backgroundColor: SubwayTheme.colors.streetGlobe,
-    marginTop: 7,
+    borderRadius: 999,
+    backgroundColor: PaperTheme.colors.streetGlobe,
+    marginTop: 6,
     overflow: 'hidden',
   },
   highlight: {
@@ -51,24 +51,22 @@ const styles = StyleSheet.create({
     left: 5,
     width: 9,
     height: 7,
-    borderRadius: SubwayTheme.radii.bullet,
-    backgroundColor: 'rgba(255,255,255,0.45)',
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.5)',
   },
   collar: {
     width: 12,
     height: 4,
-    borderRadius: 1,
-    backgroundColor: SubwayTheme.colors.textTertiary,
+    backgroundColor: PaperTheme.colors.ink,
   },
   post: {
     width: 5,
     height: 16,
-    backgroundColor: SubwayTheme.colors.textTertiary,
+    backgroundColor: PaperTheme.colors.ink,
   },
   base: {
     width: 18,
     height: 4,
-    borderRadius: 2,
-    backgroundColor: SubwayTheme.colors.textTertiary,
+    backgroundColor: PaperTheme.colors.ink,
   },
 });

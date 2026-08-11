@@ -1,32 +1,30 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { RouteCard } from '@streetlevel/shared';
-import { SubwayTheme } from '@streetlevel/shared';
+import { PaperTheme } from '@streetlevel/shared';
 
-import { LookForList } from '../LookForList';
-import { SectionCaption } from '../SectionCaption';
+import { PaperList } from '../PaperList';
+import { PaperSection } from '../PaperSection';
 import { StreetGlobe } from '../StreetGlobe';
 import { mentionsStreetGlobe, stationNameFrom } from '../../lib/cardFacts';
 
 interface EntranceApproachBodyProps {
   card: RouteCard;
-  accent: string | undefined;
 }
 
 /**
  * Street level, before anything is underground.
  *
  * At this moment the traveller is standing on a pavement comparing a phone
- * against a city. The only two things that help are the name bolted to the
- * building and the shape of the thing they are looking for, so the station
- * identity is the hero and the surveyor's landmark cue is given a plate of its
- * own rather than being demoted to a bullet in a list. Everything the card says
- * about *walking* is already in the instruction above; this is about arriving.
+ * against a city, and the only two things that help are the name bolted to the
+ * building — already four feet tall in the statement above — and the shape of
+ * the thing they are looking for. So the surveyor's landmark cue is drawn
+ * rather than listed, and everything else becomes a short "also check".
  */
-export function EntranceApproachBody({ card, accent }: EntranceApproachBodyProps): ReactElement {
+export function EntranceApproachBody({ card }: EntranceApproachBodyProps): ReactElement {
   const landmark = card.visualAnchors.find((anchor) => mentionsStreetGlobe(anchor));
-  // The station-name anchor is already the hero above the instruction; leaving
-  // it in the list underneath would have the card say the name three times.
+  // The station-name anchor is already the statement; leaving it in the list
+  // underneath would have the card say the name three times.
   const named = card.visualAnchors.find(
     (anchor) => anchor !== landmark && stationNameFrom([anchor]) !== null,
   );
@@ -35,38 +33,32 @@ export function EntranceApproachBody({ card, accent }: EntranceApproachBodyProps
   return (
     <View>
       {landmark ? (
-        <View style={styles.section}>
-          <SectionCaption label="AT STREET LEVEL" accent={accent} />
-          <View style={styles.landmarkPlate}>
+        <PaperSection label="AT STREET LEVEL">
+          <View style={styles.landmarkRow}>
             <StreetGlobe />
             <Text style={styles.landmarkText}>{landmark}</Text>
           </View>
-        </View>
+        </PaperSection>
       ) : null}
 
-      <LookForList anchors={rest} accent={accent} label="ALSO CHECK" />
+      {rest.length > 0 ? (
+        <PaperSection label="ALSO CHECK">
+          <PaperList rows={rest.map((text) => ({ text }))} />
+        </PaperSection>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  section: {
-    marginTop: SubwayTheme.spacing.md,
-  },
-  landmarkPlate: {
+  landmarkRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: SubwayTheme.spacing.sm,
-    padding: SubwayTheme.spacing.md,
-    borderRadius: SubwayTheme.radii.chip,
-    backgroundColor: SubwayTheme.colors.surfaceSunken,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.hairline,
+    alignItems: 'flex-start',
   },
   landmarkText: {
-    ...SubwayTheme.typography.bodyStrong,
-    color: SubwayTheme.colors.textPrimary,
+    ...PaperTheme.type.item,
+    color: PaperTheme.colors.ink,
     flexShrink: 1,
-    marginLeft: SubwayTheme.spacing.md,
+    marginLeft: 16,
   },
 });

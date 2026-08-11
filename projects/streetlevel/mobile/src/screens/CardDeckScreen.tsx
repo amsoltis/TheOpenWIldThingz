@@ -10,9 +10,9 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import type { RouteCard } from '@streetlevel/shared';
-import { SubwayTheme } from '@streetlevel/shared';
+import { PaperTheme, SubwayTheme } from '@streetlevel/shared';
 
-import { PrimaryButton } from '../components/PrimaryButton';
+import { PaperSection } from '../components/PaperSection';
 import { RouteRibbon } from '../components/RouteRibbon';
 import { RouteCardView } from '../components/RouteCardView';
 import { playHapticPattern } from '../lib/haptics';
@@ -36,6 +36,23 @@ const SWIPE_COMMIT_RATIO = 0.28;
 /** A fast flick counts even when it is short — the train is moving, so is the thumb. */
 const SWIPE_VELOCITY_THRESHOLD = 0.4;
 
+/**
+ * The deck.
+ *
+ * There used to be five slabs under every card: Back, Next, I Messed Up, and a
+ * pair of leg tabs. That stack was the product's worst habit made visible —
+ * each capability had been given a button rather than a place — and it cost a
+ * third of the screen on a device whose whole job is to hold one instruction up
+ * at arm's length.
+ *
+ * It is gone. Moving through the deck is a swipe, and how far through you are
+ * is the segmented rail printed at the foot of the colour. What remains below
+ * is a single quiet strip: a back and a next that keep the deck operable with
+ * gloves, a cracked screen, or a screen reader, and the lost-and-found, which
+ * is the one thing that must never be more than one tap away from a frightened
+ * person. Choosing between the two legs is reference, not navigation, so it is
+ * printed at the foot of the paper with the rest of the reference material.
+ */
 export function CardDeckScreen({
   cards,
   index,
@@ -52,9 +69,9 @@ export function CardDeckScreen({
   const isAnimating = useRef(false);
 
   const card = cards[index];
-  // The deck resolves which line every card belongs to once, so the ribbon, the
-  // card chrome and the Next button all tint from the same answer — a mezzanine
-  // card carrying no focus of its own still belongs to the train it leads to.
+  // The deck resolves which line every card belongs to once, so the statement
+  // zone and the ribbon tint from the same answer — a mezzanine card carrying
+  // no focus of its own still belongs to the train it leads to.
   const lines = useMemo(() => cardLines(cards), [cards]);
   const spine = useMemo(() => journeySpine(cards), [cards]);
   const cardLine = lines[index] ?? null;
@@ -143,30 +160,8 @@ export function CardDeckScreen({
     return playHapticPattern(trigger);
   }, [cardId, trigger]);
 
-  const stepLabel = `STEP ${Math.min(index + 1, cards.length)} OF ${cards.length}`;
-
   return (
     <View style={styles.root}>
-      <View style={styles.header}>
-        <View style={styles.headerText}>
-          <Text style={styles.legName} allowFontScaling={false}>
-            {activeLeg === 'outbound' ? 'HEADING OUT' : 'HEADING HOME'}
-          </Text>
-          {durationLabel.length > 0 ? (
-            <Text style={styles.duration} allowFontScaling={false}>
-              {durationLabel}
-            </Text>
-          ) : null}
-        </View>
-        <Text style={styles.destination} numberOfLines={1}>
-          {destinationLabel}
-        </Text>
-        {/* The one place the whole trip is visible at once. Everything else in
-            this product is deliberately one step at a time, which leaves
-            "how much of this is left" unanswerable without it. */}
-        <RouteRibbon segments={spine} currentIndex={index} totalCards={cards.length} />
-      </View>
-
       <Animated.View
         style={[styles.cardHolder, { transform: [{ translateX }] }]}
         {...panResponder.panHandlers}
@@ -174,10 +169,22 @@ export function CardDeckScreen({
         {card ? (
           <RouteCardView
             card={card}
-            stepLabel={stepLabel}
+            stepIndex={index}
+            stepTotal={cards.length}
             line={cardLine}
             legLine={legLine}
             destinationLabel={destinationLabel}
+            trailing={
+              <TripBand
+                activeLeg={activeLeg}
+                destinationLabel={destinationLabel}
+                durationLabel={durationLabel}
+                spine={spine}
+                index={index}
+                total={cards.length}
+                onSelectLeg={onSelectLeg}
+              />
+            }
           />
         ) : (
           <View style={styles.emptyCard}>
@@ -189,53 +196,146 @@ export function CardDeckScreen({
       </Animated.View>
 
       {/* Swiping is never the only way forward. Gestures fail with gloves, wet
-          hands, a cracked screen, or a screen reader — the buttons do not. */}
-      <View style={styles.stepControls}>
-        <PrimaryButton
-          label="Back"
+          hands, a cracked screen, or a screen reader — this strip does not. */}
+      <View style={styles.strip}>
+        <StepControl
+          label="BACK"
+          glyph="‹"
           onPress={onPrev}
-          tone="secondary"
           disabled={!canPrev}
-          accessibilityHint="Shows the previous step."
-          style={styles.stepButton}
+          hint="Shows the previous step."
         />
-        <View style={styles.stepSpacer} />
-        {/* Forward is always green, never the line colour. On the 1/2/3 the
-            accent is the same red as the danger button below it, and two red
-            slabs stacked is a choice nobody should have to make at speed. The
-            line's identity is carried by the ribbon and the card, which is
-            where it belongs. */}
-        <PrimaryButton
-          label="Next"
+
+        {/* Anchored on every single card. Someone who is lost must never have to
+            find their way back to a menu to say so — but a full-width red slab
+            on every screen said "press me", which is the wrong thing to say to
+            somebody who is not lost yet. */}
+        <Pressable
+          onPress={onNeedHelp}
+          accessibilityRole="button"
+          accessibilityLabel="I Messed Up / Where Am I?"
+          accessibilityHint="Describe your surroundings and we will work out where you are."
+          hitSlop={SubwayTheme.spacing.sm}
+          style={({ pressed }) => [styles.lost, pressed ? styles.pressed : null]}
+        >
+          <Text style={styles.lostLabel} allowFontScaling={false}>
+            I'M LOST
+          </Text>
+        </Pressable>
+
+        <StepControl
+          label="NEXT"
+          glyph="›"
           onPress={onNext}
           disabled={!canNext}
-          accessibilityHint="Shows the next step."
-          style={styles.stepButtonWide}
+          hint="Shows the next step."
+          trailing
         />
       </View>
+    </View>
+  );
+}
 
-      {/* Anchored on every single card. Someone who is lost must never have to
-          find their way back to a menu to say so. */}
-      <PrimaryButton
-        label="I Messed Up / Where Am I?"
-        onPress={onNeedHelp}
-        tone="alert"
-        accessibilityHint="Describe your surroundings and we will work out where you are."
-        style={styles.help}
-      />
+interface StepControlProps {
+  label: string;
+  glyph: string;
+  onPress: () => void;
+  disabled: boolean;
+  hint: string;
+  trailing?: boolean;
+}
 
-      <View style={styles.tabs}>
-        <LegTab
-          label="My Outbound Trip"
-          selected={activeLeg === 'outbound'}
-          onPress={() => onSelectLeg('outbound')}
-        />
-        <LegTab
-          label="My Return Home"
-          selected={activeLeg === 'return'}
-          onPress={() => onSelectLeg('return')}
-        />
-      </View>
+/**
+ * Set as a word and a chevron rather than as a filled rectangle. It is still a
+ * 56pt target — it simply stops claiming to be the thing the screen is for.
+ */
+function StepControl({ label, glyph, onPress, disabled, hint, trailing }: StepControlProps): ReactElement {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label === 'BACK' ? 'Back' : 'Next'}
+      accessibilityHint={hint}
+      accessibilityState={{ disabled }}
+      hitSlop={SubwayTheme.spacing.sm}
+      style={({ pressed }) => [
+        styles.step,
+        pressed ? styles.pressed : null,
+        disabled ? styles.stepDisabled : null,
+      ]}
+    >
+      {trailing ? null : (
+        <Text style={styles.stepGlyph} allowFontScaling={false}>
+          {glyph}
+        </Text>
+      )}
+      <Text style={styles.stepLabel} allowFontScaling={false}>
+        {label}
+      </Text>
+      {trailing ? (
+        <Text style={styles.stepGlyph} allowFontScaling={false}>
+          {glyph}
+        </Text>
+      ) : null}
+    </Pressable>
+  );
+}
+
+interface TripBandProps {
+  activeLeg: LegKey;
+  destinationLabel: string;
+  durationLabel: string;
+  spine: ReturnType<typeof journeySpine>;
+  index: number;
+  total: number;
+  onSelectLeg: (leg: LegKey) => void;
+}
+
+/**
+ * The reference block at the foot of the paper: which trip this is, how long it
+ * takes, its whole shape, and the switch to the other leg.
+ *
+ * Printed at the end rather than pinned to the chrome because none of it is an
+ * instruction. Both legs were compiled and cached together, so the switch is a
+ * synchronous read with no spinner — a traveller checking how they get home
+ * should never feel they left the trip they are on.
+ */
+function TripBand({
+  activeLeg,
+  destinationLabel,
+  durationLabel,
+  spine,
+  index,
+  total,
+  onSelectLeg,
+}: TripBandProps): ReactElement {
+  return (
+    <View style={styles.band}>
+      <PaperSection
+        label={activeLeg === 'outbound' ? 'HEADING OUT' : 'HEADING HOME'}
+        trailing={durationLabel.length > 0 ? durationLabel.toUpperCase() : undefined}
+      >
+        <Text style={styles.bandDestination} numberOfLines={2}>
+          {destinationLabel}
+        </Text>
+        <View style={styles.bandRibbon}>
+          <RouteRibbon segments={spine} currentIndex={index} totalCards={total} />
+        </View>
+
+        <View style={styles.legTabs}>
+          <LegTab
+            label="My Outbound Trip"
+            selected={activeLeg === 'outbound'}
+            onPress={() => onSelectLeg('outbound')}
+          />
+          <LegTab
+            label="My Return Home"
+            selected={activeLeg === 'return'}
+            onPress={() => onSelectLeg('return')}
+          />
+        </View>
+      </PaperSection>
     </View>
   );
 }
@@ -246,11 +346,6 @@ interface LegTabProps {
   onPress: () => void;
 }
 
-/**
- * Oversized and always present. Both legs were compiled and cached together, so
- * this switch is a synchronous read — there is no spinner here by design, and
- * a traveller checking how they get home should never feel they left the trip.
- */
 function LegTab({ label, selected, onPress }: LegTabProps): ReactElement {
   return (
     <Pressable
@@ -258,11 +353,15 @@ function LegTab({ label, selected, onPress }: LegTabProps): ReactElement {
       accessibilityRole="tab"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
-      style={({ pressed }) => [styles.tab, selected ? styles.tabSelected : null, pressed ? styles.tabPressed : null]}
+      style={({ pressed }) => [styles.legTab, pressed ? styles.pressed : null]}
     >
-      <Text style={[styles.tabLabel, selected ? styles.tabLabelSelected : null]} numberOfLines={2}>
+      <Text
+        style={[styles.legTabLabel, selected ? styles.legTabLabelSelected : null]}
+        numberOfLines={2}
+      >
         {label}
       </Text>
+      <View style={[styles.legTabRule, selected ? styles.legTabRuleSelected : null]} />
     </Pressable>
   );
 }
@@ -270,97 +369,105 @@ function LegTab({ label, selected, onPress }: LegTabProps): ReactElement {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    // A deeper ground than the card. The deck reads as one object lifted off
-    // the phone rather than as a dark screen with text arranged on it.
-    backgroundColor: SubwayTheme.colors.backgroundDeep,
-    paddingHorizontal: SubwayTheme.spacing.md,
-  },
-  header: {
-    paddingTop: SubwayTheme.spacing.sm,
-    paddingBottom: SubwayTheme.spacing.sm,
-  },
-  headerText: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  legName: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textSecondary,
-  },
-  duration: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textTertiary,
-  },
-  destination: {
-    ...SubwayTheme.typography.sectionTitle,
-    color: SubwayTheme.colors.textPrimary,
-    marginTop: SubwayTheme.spacing.xs,
-    marginBottom: SubwayTheme.spacing.sm,
+    backgroundColor: PaperTheme.colors.paper,
   },
   cardHolder: {
     flex: 1,
   },
   emptyCard: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.surfaceCard,
-    borderRadius: SubwayTheme.radii.card,
-    padding: SubwayTheme.spacing.lg,
+    padding: PaperTheme.margin,
     justifyContent: 'center',
   },
   emptyText: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.textSecondary,
+    ...PaperTheme.type.body,
+    color: PaperTheme.colors.inkMuted,
   },
-  stepControls: {
+  /**
+   * One strip, one rule above it, nothing filled. The card ends where the paper
+   * ends and this reads as the foot of the page rather than as a toolbar.
+   */
+  strip: {
     flexDirection: 'row',
-    marginTop: SubwayTheme.spacing.sm,
+    alignItems: 'stretch',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: PaperTheme.colors.rule,
+    paddingHorizontal: PaperTheme.margin - 8,
   },
-  stepButton: {
-    flex: 1,
-  },
-  stepButtonWide: {
-    flex: 2,
-  },
-  stepSpacer: {
-    width: SubwayTheme.spacing.sm,
-  },
-  help: {
-    marginTop: SubwayTheme.spacing.sm,
-  },
-  // A segmented control rather than two loose buttons: the two legs are one
-  // choice with two positions, and drawing them inside a single track says so.
-  tabs: {
+  step: {
+    minHeight: SubwayTheme.minTouchTarget,
+    minWidth: 84,
     flexDirection: 'row',
-    marginTop: SubwayTheme.spacing.sm,
-    padding: SubwayTheme.spacing.xs,
-    borderRadius: SubwayTheme.radii.button + SubwayTheme.spacing.xs,
-    backgroundColor: SubwayTheme.colors.surfaceSunken,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.hairline,
+    alignItems: 'center',
+    paddingHorizontal: 8,
   },
-  tab: {
+  stepDisabled: {
+    opacity: 0.25,
+  },
+  stepGlyph: {
+    fontSize: 26,
+    fontWeight: '700',
+    lineHeight: 30,
+    color: PaperTheme.colors.ink,
+    marginHorizontal: 5,
+    includeFontPadding: false,
+  },
+  stepLabel: {
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.ink,
+  },
+  lost: {
+    minHeight: SubwayTheme.minTouchTarget,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    borderWidth: 2,
+    borderColor: PaperTheme.colors.danger,
+    marginVertical: 8,
+  },
+  lostLabel: {
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.danger,
+  },
+  pressed: {
+    opacity: 0.6,
+  },
+  band: {
+    marginTop: 30,
+  },
+  bandDestination: {
+    ...PaperTheme.type.nameSmall,
+    color: PaperTheme.colors.ink,
+  },
+  bandRibbon: {
+    marginTop: 14,
+  },
+  legTabs: {
+    flexDirection: 'row',
+    marginTop: 22,
+  },
+  legTab: {
     flex: 1,
     minHeight: SubwayTheme.minTouchTarget,
-    borderRadius: SubwayTheme.radii.button,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: SubwayTheme.spacing.sm,
+    justifyContent: 'flex-end',
+    paddingBottom: 8,
+    marginRight: 16,
   },
-  tabSelected: {
-    backgroundColor: SubwayTheme.colors.textPrimary,
-    boxShadow: SubwayTheme.elevation.raised,
+  legTabLabel: {
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.inkMuted,
+    marginBottom: 8,
   },
-  tabPressed: {
-    opacity: 0.7,
+  legTabLabelSelected: {
+    color: PaperTheme.colors.ink,
   },
-  tabLabel: {
-    fontSize: 16,
-    fontWeight: '800',
-    textAlign: 'center',
-    color: SubwayTheme.colors.textSecondary,
+  legTabRule: {
+    height: 2,
+    backgroundColor: PaperTheme.colors.rule,
   },
-  tabLabelSelected: {
-    color: SubwayTheme.colors.backgroundDeep,
+  legTabRuleSelected: {
+    height: 3,
+    backgroundColor: PaperTheme.colors.ink,
   },
 });

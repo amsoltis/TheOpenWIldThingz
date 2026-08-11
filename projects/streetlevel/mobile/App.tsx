@@ -3,7 +3,7 @@ import type { ReactElement } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import type { PacketRequest, RecoveryRequest } from '@streetlevel/shared';
-import { SubwayTheme } from '@streetlevel/shared';
+import { LINE_TEXT_COLORS, PaperTheme } from '@streetlevel/shared';
 
 import { requestPacket, requestRecovery } from './src/api/client';
 import { PacketValidationError, isPaywallError, travellerFacingMessage } from './src/api/errors';
@@ -142,10 +142,22 @@ export default function App(): ReactElement {
   const cards = orderedCards(leg);
   const activeLine = primaryLineOf(leg);
 
+  /**
+   * The status bar has to agree with whatever is under it. Every navigating
+   * screen opens with the line's own colour, so the icons take the same ink the
+   * MTA puts on that bullet — which is black on the Broadway yellow and white
+   * on everything else. Getting this wrong hides the clock and the battery on
+   * exactly one line, which is the sort of bug nobody finds until they are on
+   * the N.
+   */
+  const onColour = state.screen === 'NAVIGATING' || state.screen === 'ENTRANCE_LOCK';
+  const barStyle =
+    onColour && activeLine ? (LINE_TEXT_COLORS[activeLine] === '#000000' ? 'dark' : 'light') : 'dark';
+
   if (state.screen === 'PAYWALL' && state.paywall) {
     return (
       <View style={styles.bleed}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <PaywallScreen
           response={state.paywall}
           intendedDestination={state.intendedDestinationAddress}
@@ -159,7 +171,7 @@ export default function App(): ReactElement {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
       {state.screen === 'PLANNING' ? (
         <PlanTripScreen
           billing={state.billing}
@@ -229,26 +241,31 @@ export default function App(): ReactElement {
 }
 
 const styles = StyleSheet.create({
+  /**
+   * No top padding. The statement zone is the line's colour floor to ceiling,
+   * and a strip of paper above it would turn a room into a header — so every
+   * screen carries the status-bar inset inside its own first surface instead.
+   */
   root: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDeep,
-    paddingTop: TOP_INSET,
+    backgroundColor: PaperTheme.colors.paper,
     paddingBottom: BOTTOM_INSET,
   },
   bleed: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDeep,
+    backgroundColor: PaperTheme.colors.paper,
   },
   fallback: {
     flex: 1,
     justifyContent: 'center',
-    padding: SubwayTheme.spacing.lg,
+    padding: PaperTheme.margin,
+    paddingTop: TOP_INSET,
   },
   fallbackText: {
-    ...SubwayTheme.typography.landmarkBody,
-    color: SubwayTheme.colors.textSecondary,
+    ...PaperTheme.type.body,
+    color: PaperTheme.colors.inkMuted,
   },
   fallbackButton: {
-    marginTop: SubwayTheme.spacing.lg,
+    marginTop: 24,
   },
 });

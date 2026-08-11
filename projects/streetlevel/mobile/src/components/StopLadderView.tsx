@@ -1,19 +1,19 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { LineID, StopLadder } from '@streetlevel/shared';
-import { LINE_COLORS, SubwayTheme, withAlpha } from '@streetlevel/shared';
+import { LINE_COLORS, LINE_TEXT_COLORS, PaperTheme } from '@streetlevel/shared';
 
-import { SectionCaption } from './SectionCaption';
+import { PaperSection } from './PaperSection';
 
 interface StopLadderViewProps {
   ladder: StopLadder;
   line: LineID | null;
-  /** Where the alight stop is actually taking them, shown on the destination flag. */
+  /** Where the alight stop is actually taking them, printed under the last row. */
   destinationLabel?: string | undefined;
 }
 
 /**
- * Every stop, in order, as a ladder.
+ * Every stop, in order.
  *
  * "Ride 14 stops" asks a stranger to hold a number in their head for
  * twenty-six minutes while doubting it the whole way. Nobody can do that, and
@@ -22,25 +22,31 @@ interface StopLadderViewProps {
  * against a row and struck off, and being on the right train stops being a
  * belief and becomes an observation.
  *
+ * Set as a numbered list rather than as a diagram of nodes and spines. The old
+ * drawing spent most of its width rendering a subway line nobody needed to see
+ * — the traveller is *on* it — and squeezed the station names, which are the
+ * only part that can be matched against a platform sign.
+ *
  * The passed-through stations matter just as much. On an express, watching four
  * lit platforms fly by is indistinguishable from missing four stops unless
- * somebody told you in advance — so they are drawn, ghosted, between the nodes,
- * and labelled as expected.
+ * somebody said so in advance, so they are printed between the rows in italic
+ * and explicitly labelled as expected.
  */
 export function StopLadderView({ ladder, line, destinationLabel }: StopLadderViewProps): ReactElement {
-  const colour = line ? LINE_COLORS[line] : SubwayTheme.colors.textSecondary;
-  const lastIndex = ladder.stops.length - 1;
+  const colour = line ? LINE_COLORS[line] : PaperTheme.colors.ink;
+  // The GET OFF HERE flag is a line-coloured fill, so its text has to come from
+  // the MTA's own pairing rather than being assumed light. On the N, Q, R and W
+  // that pairing is black, and a paper-coloured flag on Broadway yellow would
+  // be the one unreadable thing on the most important row of the list.
+  const flagInk = line ? LINE_TEXT_COLORS[line] : PaperTheme.colors.paper;
   const rideLength = Math.max(ladder.alightIndex, 0);
 
   return (
-    <View style={styles.container}>
-      <SectionCaption
-        label="EVERY STOP, IN ORDER"
-        accent={colour}
-        trailing={`${rideLength} ${rideLength === 1 ? 'STOP' : 'STOPS'}`}
-      />
-
-      <View style={styles.ladder}>
+    <PaperSection
+      label="EVERY STOP, IN ORDER"
+      trailing={`${rideLength} ${rideLength === 1 ? 'STOP' : 'STOPS'}`}
+    >
+      <View>
         {ladder.stops.map((stop, index) => {
           const isBoarding = index === 0;
           const isAlight = index === ladder.alightIndex;
@@ -50,38 +56,35 @@ export function StopLadderView({ ladder, line, destinationLabel }: StopLadderVie
           return (
             <View key={`${stop}-${index}`}>
               {flyPast.length > 0 ? (
-                <FlyPastGroup names={flyPast} colour={colour} />
+                <View
+                  style={styles.flyRow}
+                  accessible
+                  accessibilityRole="text"
+                  accessibilityLabel={`The train passes ${flyPast.join(', ')} without stopping.`}
+                >
+                  <View style={styles.markColumn} />
+                  <Text style={styles.flyText}>
+                    passes {flyPast.join(', ')} without stopping
+                  </Text>
+                </View>
               ) : null}
 
               <View style={styles.row} accessible accessibilityRole="text">
-                <Text style={styles.count} allowFontScaling={false}>
-                  {isBoarding ? '' : String(index)}
-                </Text>
-
-                <View style={styles.rail}>
-                  {index > 0 || flyPast.length > 0 ? (
-                    <View style={[styles.spineTop, { backgroundColor: colour }]} />
-                  ) : null}
-                  {index < lastIndex ? (
-                    <View style={[styles.spineBottom, { backgroundColor: colour }]} />
-                  ) : null}
-
-                  {isAlight ? (
-                    <View style={[styles.alightNode, { borderColor: colour, boxShadow: `0px 0px 0px 6px ${withAlpha(colour, 0.22)}` }]}>
-                      <View style={[styles.alightCore, { backgroundColor: colour }]} />
-                    </View>
-                  ) : isBoarding ? (
-                    <View style={[styles.boardNode, { backgroundColor: colour }]} />
-                  ) : (
-                    <View style={[styles.node, { borderColor: colour }]} />
-                  )}
+                <View style={styles.markColumn}>
+                  <Text
+                    style={[styles.ordinal, isBoarding || isAlight ? { color: colour } : null]}
+                    allowFontScaling={false}
+                  >
+                    {isBoarding ? '—' : String(index)}
+                  </Text>
                 </View>
 
                 <View style={styles.body}>
                   <Text
                     style={[
-                      isAlight ? styles.alightName : styles.stopName,
-                      isPast ? styles.pastName : null,
+                      styles.name,
+                      isBoarding || isAlight ? styles.nameStrong : null,
+                      isPast ? styles.namePast : null,
                     ]}
                     numberOfLines={2}
                   >
@@ -89,21 +92,21 @@ export function StopLadderView({ ladder, line, destinationLabel }: StopLadderVie
                   </Text>
 
                   {isBoarding ? (
-                    <Text style={styles.boardTag} allowFontScaling={false}>
+                    <Text style={styles.tag} allowFontScaling={false}>
                       YOU GET ON HERE
                     </Text>
                   ) : null}
 
                   {isAlight ? (
-                    <View style={[styles.alightFlag, { backgroundColor: colour }]}>
-                      <Text style={styles.alightFlagText} allowFontScaling={false}>
+                    <View style={[styles.flag, { backgroundColor: colour }]}>
+                      <Text style={[styles.flagText, { color: flagInk }]} allowFontScaling={false}>
                         GET OFF HERE
                       </Text>
                     </View>
                   ) : null}
 
                   {isAlight && destinationLabel ? (
-                    <Text style={styles.alightFor}>for {destinationLabel}</Text>
+                    <Text style={styles.forWhat}>for {destinationLabel}</Text>
                   ) : null}
                 </View>
               </View>
@@ -111,181 +114,74 @@ export function StopLadderView({ ladder, line, destinationLabel }: StopLadderVie
           );
         })}
       </View>
-    </View>
+    </PaperSection>
   );
 }
 
-interface FlyPastGroupProps {
-  names: readonly string[];
-  colour: string;
-}
-
-/**
- * Drawn as a dashed rail rather than as more nodes: the visual difference has
- * to be obvious from across the carriage, because the whole point is "these are
- * not stops you are counting".
- */
-function FlyPastGroup({ names, colour }: FlyPastGroupProps): ReactElement {
-  return (
-    <View
-      style={styles.flyRow}
-      accessible
-      accessibilityRole="text"
-      accessibilityLabel={`The train passes ${names.join(', ')} without stopping.`}
-    >
-      <View style={styles.countSpacer} />
-      <View style={styles.rail}>
-        {[0, 1, 2].map((dash) => (
-          <View key={dash} style={[styles.dash, { backgroundColor: colour }]} />
-        ))}
-      </View>
-      <View style={styles.body}>
-        <Text style={styles.flyNames}>{names.join('  ·  ')}</Text>
-        <Text style={styles.flyCaption} allowFontScaling={false}>
-          DOES NOT STOP HERE
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-const RAIL_WIDTH = 34;
-const SPINE_WIDTH = 5;
+const MARK_WIDTH = 26;
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: SubwayTheme.spacing.md,
-  },
-  ladder: {
-    marginTop: SubwayTheme.spacing.sm,
-    backgroundColor: SubwayTheme.colors.surfaceSunken,
-    borderRadius: SubwayTheme.radii.chip,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.hairline,
-    paddingVertical: SubwayTheme.spacing.md,
-    paddingRight: SubwayTheme.spacing.md,
-  },
   row: {
     flexDirection: 'row',
-    alignItems: 'stretch',
-    minHeight: 36,
+    minHeight: 34,
   },
   flyRow: {
     flexDirection: 'row',
-    alignItems: 'stretch',
-    minHeight: 46,
+    minHeight: 26,
   },
-  count: {
-    ...SubwayTheme.typography.numeric,
-    width: 30,
-    textAlign: 'right',
-    color: SubwayTheme.colors.textTertiary,
-    paddingTop: 11,
+  markColumn: {
+    width: MARK_WIDTH,
   },
-  countSpacer: {
-    width: 30,
-  },
-  rail: {
-    width: RAIL_WIDTH,
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    paddingVertical: 6,
-  },
-  spineTop: {
-    position: 'absolute',
-    top: 0,
-    bottom: '50%',
-    width: SPINE_WIDTH,
-    left: (RAIL_WIDTH - SPINE_WIDTH) / 2,
-  },
-  spineBottom: {
-    position: 'absolute',
-    top: '50%',
-    bottom: 0,
-    width: SPINE_WIDTH,
-    left: (RAIL_WIDTH - SPINE_WIDTH) / 2,
-  },
-  node: {
-    width: 15,
-    height: 15,
-    borderRadius: SubwayTheme.radii.bullet,
-    borderWidth: 4,
-    backgroundColor: SubwayTheme.colors.surfaceSunken,
-  },
-  boardNode: {
-    width: 17,
-    height: 17,
-    borderRadius: SubwayTheme.radii.bullet,
-    borderWidth: 3,
-    borderColor: SubwayTheme.colors.textPrimary,
-  },
-  alightNode: {
-    width: 26,
-    height: 26,
-    borderRadius: SubwayTheme.radii.bullet,
-    borderWidth: 5,
-    backgroundColor: SubwayTheme.colors.textPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  alightCore: {
-    width: 8,
-    height: 8,
-    borderRadius: SubwayTheme.radii.bullet,
-  },
-  dash: {
-    width: 4,
-    height: 5,
-    borderRadius: 2,
-    opacity: SubwayTheme.colors.ghostOpacity,
+  /**
+   * No spine. A drawn rail down the side of a printed list is a diagram of a
+   * subway line the traveller is already sitting on — it spends width on
+   * information they have, and takes it from the station names, which are the
+   * only part that can be matched against a platform sign. The ordinals
+   * enumerate perfectly well on their own.
+   */
+  ordinal: {
+    ...PaperTheme.type.ordinal,
+    color: PaperTheme.colors.inkMuted,
+    width: MARK_WIDTH,
   },
   body: {
     flex: 1,
-    paddingVertical: 6,
-    paddingLeft: SubwayTheme.spacing.xs,
+    paddingBottom: 12,
   },
-  stopName: {
-    ...SubwayTheme.typography.bodyStrong,
-    fontSize: 17,
-    color: SubwayTheme.colors.textPrimary,
+  name: {
+    ...PaperTheme.type.item,
+    color: PaperTheme.colors.ink,
   },
-  pastName: {
-    color: SubwayTheme.colors.textTertiary,
+  nameStrong: {
+    fontSize: 19,
+    fontWeight: '800',
   },
-  alightName: {
-    ...SubwayTheme.typography.sectionTitle,
-    color: SubwayTheme.colors.textPrimary,
+  namePast: {
+    color: PaperTheme.colors.inkMuted,
   },
-  boardTag: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textTertiary,
-    marginTop: SubwayTheme.spacing.xxs,
+  tag: {
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.inkMuted,
+    marginTop: 3,
   },
-  alightFlag: {
+  flag: {
     alignSelf: 'flex-start',
-    borderRadius: SubwayTheme.radii.plate,
-    paddingHorizontal: SubwayTheme.spacing.sm,
+    paddingHorizontal: 9,
     paddingVertical: 5,
-    marginTop: SubwayTheme.spacing.sm,
+    marginTop: 7,
   },
-  alightFlagText: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textPrimary,
+  flagText: {
+    ...PaperTheme.type.micro,
   },
-  alightFor: {
-    ...SubwayTheme.typography.supportBody,
-    color: SubwayTheme.colors.textSecondary,
-    marginTop: SubwayTheme.spacing.xs,
+  forWhat: {
+    ...PaperTheme.type.aside,
+    color: PaperTheme.colors.inkMuted,
+    marginTop: 5,
   },
-  flyNames: {
-    ...SubwayTheme.typography.supportBody,
-    color: SubwayTheme.colors.textTertiary,
-    opacity: 0.9,
-  },
-  flyCaption: {
-    ...SubwayTheme.typography.microLabel,
-    fontSize: 10,
-    color: SubwayTheme.colors.textTertiary,
-    marginTop: SubwayTheme.spacing.xxs,
+  flyText: {
+    ...PaperTheme.type.aside,
+    color: PaperTheme.colors.inkMuted,
+    fontStyle: 'italic',
+    flexShrink: 1,
   },
 });

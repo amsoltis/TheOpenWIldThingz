@@ -2,85 +2,113 @@
  * Design tokens for a screen that will be read one-handed, at arm's length, in
  * a dark tunnel, by someone who is already anxious. Every value here is a
  * legibility decision, not a taste decision.
+ *
+ * The interface is built from exactly two materials and they never blend:
+ *
+ *   1. THE STATEMENT — the active line's own colour, floor to ceiling, carrying
+ *      one sentence set at a size that can be read without focusing. A traveller
+ *      hunting the 3 is hunting a red circle; the screen becomes that circle.
+ *   2. THE ENUMERATION — warm paper and near-black ink, carrying the list. Ink
+ *      on paper beats every dark-on-dark pairing this product could invent
+ *      (16:1 versus the 4-5:1 a "surface on a surface" achieves), and it makes
+ *      the line colour precious because it is the only colour on the page.
+ *
+ * A third material would mean a third thing for a frightened person to learn,
+ * so there is not one.
  */
-export const SubwayTheme = {
+
+/** The warm paper the enumeration is printed on. */
+const PAPER = '#F2EEE4';
+/** Near-black rather than black: pure #000 on warm paper reads as a hole in it. */
+const INK = '#14110E';
+
+/**
+ * Ink at a given alpha, as a literal so the value can be reasoned about.
+ *
+ * Nothing carrying words is allowed below 0.62 here. Ink at 0.62 on this paper
+ * measures about 5.2:1, which survives a dim carriage; 0.45 measures 3:1 and
+ * does not, however good it looks in a well-lit room.
+ */
+function ink(alpha: number): string {
+  return `rgba(20, 17, 14, ${alpha})`;
+}
+
+export const PaperTheme = {
   colors: {
-    backgroundDark: '#121212',       // Prevents harsh screen glare inside dark tunnels
-    // One step darker than the card, used behind the deck. Depth here is not
-    // decoration: a card that visibly floats above its background is read as
-    // "the thing to act on now", which is the entire premise of the deck.
-    backgroundDeep: '#0A0A0B',
-    surfaceCard: '#1E1E1E',          // High-contrast container layer
-    surfaceRaised: '#272729',        // Sits on top of a card — sign plates, ladders, strips
-    surfaceSunken: '#151517',        // Recessed wells inside a card
-    surfaceInset: '#0D0D0E',         // Deepest well: the platform trough, the ladder gutter
-    hairline: 'rgba(255,255,255,0.08)',       // Separation without drawing a line the eye stops on
-    hairlineStrong: 'rgba(255,255,255,0.18)',
-    textPrimary: '#FFFFFF',          // Bold visibility labels
-    textSecondary: '#A0A0A0',        // Supporting metadata
-    textTertiary: '#6E6E75',         // Ghosted: stations flying past, spent credits
-    // The MTA's own sign vernacular. Black plate, white Helvetica. A traveller
-    // hunting the ceiling for a sign recognises this before they read it, so it
-    // is a colour pair rather than a style choice.
-    signPlate: '#0B0B0B',
-    signInk: '#FFFFFF',
-    // The green glass globe over an always-open staircase. Street furniture,
-    // not a line and not a status, so it is deliberately its own token rather
-    // than borrowed from `success` — a globe tinted "confirmed green" would be
-    // read as the app agreeing with you rather than as a thing on the pavement.
+    paper: PAPER,
+    /** One step down from the paper: notice washes, sunken wells, input fields. */
+    paperShade: '#E8E2D4',
+    /** Deeper still, for the trough the platform diagram sits in. */
+    paperWell: '#DED7C6',
+    ink: INK,
+    /** Body text that is deliberately secondary. 5.2:1 — the floor. */
+    inkMuted: ink(0.66),
+    /** Micro-labels and captions. */
+    inkQuiet: ink(0.82),
+    /** Rules. Separation without a line the eye stops on. */
+    rule: ink(0.2),
+    ruleStrong: ink(0.45),
+    /**
+     * Red that works as ink rather than as light. The dark-mode #FF453A drops to
+     * 2.2:1 on paper — bright, and unreadable. This measures 6.3:1 and still
+     * reads as an alarm.
+     */
+    danger: '#A81E14',
+    dangerWash: 'rgba(168, 30, 20, 0.10)',
+    /** Confirmation. Same treatment: a printer's green, not a screen's green. */
+    success: '#1F6B3B',
+    successWash: 'rgba(31, 107, 59, 0.10)',
+    /**
+     * The MTA's own sign vernacular. Black plate, white Helvetica. A traveller
+     * hunting the ceiling for a sign recognises this before they read it, so it
+     * is a colour pair rather than a style choice — and a black plate on warm
+     * paper is exactly how it appears in every station map ever printed.
+     */
+    plate: '#0B0B0B',
+    plateInk: '#FFFFFF',
+    /**
+     * The green glass globe over an always-open staircase. Street furniture, not
+     * a line and not a status, so it keeps its own token — a globe tinted
+     * "confirmed green" would read as the app agreeing with you rather than as a
+     * thing on the pavement.
+     */
     streetGlobe: '#3E8E41',
-    dimmedOpacity: 0.25,             // 75% visual suppression for peripheral noise line items
-    ghostOpacity: 0.42,              // Present but explicitly not yours — passed-through stops
-    activeFocusOpacity: 1.0,         // Crisp focus configuration
-    danger: '#FF453A',               // Avoidance notes and the wrong-direction warning
-    dangerWash: 'rgba(255,69,58,0.13)',
-    success: '#30D158',              // Confirmation that they are in the right place
-    successWash: 'rgba(48,209,88,0.13)',
-    scrim: 'rgba(0,0,0,0.72)',       // Behind the entrance-lock gate
   },
   /**
-   * A real scale rather than "whatever font size looked right". Sizes step by
-   * roughly a fourth so two adjacent levels are never mistakable for each other
-   * at arm's length on a moving train — hierarchy has to survive vibration.
+   * The paper scale. Smaller and quieter than the statement scale on purpose:
+   * these two are never in competition, because one is read at a glance and the
+   * other is read deliberately, with the phone held closer.
    */
-  typography: {
-    display: {
-      fontSize: 44,
-      fontWeight: '900' as const,
-      lineHeight: 46,
-      letterSpacing: -1.4,
-    },
-    macroActionTitle: {
-      fontSize: 32,
+  type: {
+    /** Uppercase section labels. The only voice the paper zone uses to shout. */
+    micro: {
+      fontSize: 11,
       fontWeight: '800' as const,
-      lineHeight: 40,
-      letterSpacing: -0.5,
+      lineHeight: 15,
+      letterSpacing: 1.7,
     },
-    /**
-     * The instruction on a route card. Smaller than the screen-owning
-     * `macroActionTitle` because a card has to hold the instruction *and* the
-     * thing the instruction is about — a headline that pushes the stop ladder
-     * or the sign plate below the fold has won an argument it should have lost.
-     */
-    cardInstruction: {
-      fontSize: 25,
+    /** A paper headline, where a section needs one. */
+    headline: {
+      fontSize: 42,
       fontWeight: '800' as const,
-      lineHeight: 31,
-      letterSpacing: -0.4,
+      lineHeight: 45,
+      letterSpacing: -1.6,
     },
-    stationName: {
+    /** Station names and other proper nouns that must be matched against a sign. */
+    name: {
       fontSize: 27,
       fontWeight: '800' as const,
       lineHeight: 32,
-      letterSpacing: -0.5,
+      letterSpacing: -0.7,
     },
-    sectionTitle: {
+    nameSmall: {
       fontSize: 21,
       fontWeight: '800' as const,
-      lineHeight: 27,
-      letterSpacing: -0.2,
+      lineHeight: 26,
+      letterSpacing: -0.4,
     },
-    landmarkBody: {
+    /** Running prose. */
+    body: {
       fontSize: 18,
       fontWeight: '500' as const,
       lineHeight: 26,
@@ -90,45 +118,98 @@ export const SubwayTheme = {
       fontWeight: '700' as const,
       lineHeight: 25,
     },
-    supportBody: {
-      fontSize: 15,
-      fontWeight: '500' as const,
-      lineHeight: 21,
-    },
-    metaLabel: {
-      fontSize: 13,
+    /** List entries — the "this, this, this". */
+    item: {
+      fontSize: 17,
       fontWeight: '600' as const,
-      lineHeight: 18,
-      letterSpacing: 0.8,
+      lineHeight: 24,
     },
-    microLabel: {
-      fontSize: 11,
+    /** The ordinal in front of a list entry. */
+    ordinal: {
+      fontSize: 15,
       fontWeight: '800' as const,
-      lineHeight: 14,
-      letterSpacing: 1.2,
+      lineHeight: 22,
     },
-    /** Counters — stop numbers, car numbers — that must read as data, not prose. */
-    numeric: {
-      fontSize: 14,
+    /** Asides: what the train passes without stopping, what we did not survey. */
+    aside: {
+      fontSize: 13.5,
+      fontWeight: '500' as const,
+      lineHeight: 19,
+    },
+  },
+  /** The page margin. Generous, and the same on every paper surface. */
+  margin: 26,
+  rules: { hair: 1, head: 5, bar: 4 },
+} as const;
+
+/**
+ * The statement scale — Transit Authority type.
+ *
+ * One weight, one case, tight negative tracking, left-ranged on a hard grid.
+ * These sizes are not "big for impact": they are the sizes at which a sentence
+ * survives being glanced at from the far side of a moving carriage, which is
+ * the only reading condition this zone is designed for.
+ */
+export const StatementTheme = {
+  type: {
+    /** The kicker across the top: which phase, and how far through. */
+    kicker: {
+      fontSize: 12,
       fontWeight: '800' as const,
       lineHeight: 16,
-      letterSpacing: 0.4,
+      letterSpacing: 1.6,
+    },
+    /**
+     * The statement itself. Auto-fitted down from here when the words are long
+     * — see `statementFontSize`. Never set larger: 82pt is already wider than
+     * the thumb that will be covering part of the screen.
+     */
+    headlineMax: 82,
+    headlineTracking: -4.5,
+    /** Ratio of line height to font size for the headline. Tighter than 1. */
+    headlineLeading: 0.93,
+    /** "for the 3 toward" — the connective tissue under the statement. */
+    sub: {
+      fontSize: 20,
+      fontWeight: '600' as const,
+      lineHeight: 26,
+    },
+    /** The proper noun the statement is about: a headsign, a station. */
+    name: {
+      fontSize: 34,
+      fontWeight: '800' as const,
+      lineHeight: 38,
+      letterSpacing: -1,
+    },
+    /** The count on the train card. Its own size because it is its own idea. */
+    counter: {
+      fontSize: 250,
+      fontWeight: '800' as const,
+      lineHeight: 230,
+      letterSpacing: -16,
+    },
+    counterLabel: {
+      fontSize: 34,
+      fontWeight: '800' as const,
+      lineHeight: 34,
+      letterSpacing: -0.8,
     },
   },
-  spacing: { xxs: 2, xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48, xxxl: 64 },
-  radii: { card: 20, bullet: 999, button: 14, chip: 10, plate: 6, sheet: 28 },
-  borders: { hairline: 1, emphasis: 2, plate: 3 },
+  /** The page margin in the statement zone. */
+  margin: 28,
   /**
-   * Shadows as `boxShadow` strings so one token works on both the native and
-   * the web renderer. Depth is used sparingly and always to answer the same
-   * question — which layer is the traveller supposed to act on right now.
+   * The bullet is the subject of the screen, not an icon sitting inside a
+   * layout, so it is drawn at a size that cannot fit and allowed to bleed off
+   * the right edge.
    */
-  elevation: {
-    card: '0px 18px 38px rgba(0,0,0,0.55)',
-    raised: '0px 6px 18px rgba(0,0,0,0.45)',
-    plate: '0px 3px 0px rgba(0,0,0,0.65)',
-    sunken: 'inset 0px 2px 6px rgba(0,0,0,0.5)',
-  },
+  bullet: { size: 226, overhang: 68, glyphRatio: 0.62 },
+} as const;
+
+export const SubwayTheme = {
+  colors: PaperTheme.colors,
+  spacing: { xxs: 2, xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48, xxxl: 64 },
+  radii: { bullet: 999, button: 10, chip: 8, plate: 3 },
+  borders: { hairline: 1, emphasis: 2, plate: 3 },
   hapticSequences: {
     // Direct configurations passed to expo-haptics notification methods
     STATION_APPROACH_PATTERN: [0, 100, 50, 100],            // Short sequence warning to stand up
@@ -143,13 +224,29 @@ export const SubwayTheme = {
 
 export type SubwayThemeType = typeof SubwayTheme;
 
+/**
+ * The point size a statement can be set at without clipping.
+ *
+ * The statement zone gives the headline a fixed column so the bullet bleeding
+ * in from the right overlaps empty field rather than eating a word. A fixed
+ * point size would mean "WAIT HERE" fits and "UP AND OUT" does not, and a
+ * clipped instruction underground is a wrong instruction — so the longest word
+ * decides the size for the whole statement. 0.62em is the advance width of
+ * uppercase Helvetica-family caps at weight 800, measured rather than guessed.
+ */
+export function statementFontSize(lines: readonly string[], columnWidth: number): number {
+  const longest = lines.reduce((max, line) => Math.max(max, line.length), 1);
+  const fitted = Math.floor(columnWidth / (longest * 0.62));
+  return Math.max(34, Math.min(StatementTheme.type.headlineMax, fitted));
+}
+
 /* ------------------------------------------------------------------ *
- * Line-colour accents
+ * Line-colour derivations
  *
  * The MTA colours are fixed and must never be adjusted (see lines.ts). What we
- * *can* do is derive translucent treatments from them, so a card can carry the
- * identity of the line the traveller is riding without repainting the bullet
- * into some softer, wrong shade.
+ * *can* do is derive translucent treatments from them, so a surface can carry
+ * the identity of the line the traveller is riding without repainting the
+ * bullet into some softer, wrong shade.
  * ------------------------------------------------------------------ */
 
 function channels(hex: string): [number, number, number] | null {
@@ -181,12 +278,11 @@ export function withAlpha(hex: string, alpha: number): string {
   return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${clamped})`;
 }
 
-/** The tinted header wash on an active card: enough to name the line, never enough to read as a surface of its own. */
+/**
+ * A line colour laid over the paper as a wash. Kept faint on purpose: the
+ * paper zone's job is to be quiet, and a saturated band of the line's colour
+ * inside it starts a second argument with the statement zone above.
+ */
 export function lineWash(hex: string): string {
-  return withAlpha(hex, 0.16);
-}
-
-/** The edge glow that lifts the active card off the deck in the line's own colour. */
-export function lineGlow(hex: string): string {
-  return `0px 14px 34px ${withAlpha(hex, 0.22)}`;
+  return withAlpha(hex, 0.12);
 }

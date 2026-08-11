@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { TextStyle } from 'react-native';
-import { SubwayTheme } from '@streetlevel/shared';
+import { PaperTheme, SubwayTheme } from '@streetlevel/shared';
 
 import { markdownToPlainText, parseMarkdownBlocks } from '../lib/markdown';
 
@@ -32,7 +32,7 @@ export function MarkdownText({
   secondaryColor,
 }: MarkdownTextProps): ReactElement {
   const blocks = parseMarkdownBlocks(source);
-  const baseColor = color ?? SubwayTheme.colors.textPrimary;
+  const baseColor = color ?? PaperTheme.colors.ink;
 
   return (
     <View accessible accessibilityLabel={markdownToPlainText(source)}>

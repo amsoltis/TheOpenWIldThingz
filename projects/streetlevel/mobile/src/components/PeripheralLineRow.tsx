@@ -1,10 +1,10 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { LineFocusConfig } from '@streetlevel/shared';
-import { LINE_COLORS, SubwayTheme, withAlpha } from '@streetlevel/shared';
+import { PaperTheme } from '@streetlevel/shared';
 
 import { LineBullet } from './LineBullet';
-import { VerticalFade } from './VerticalFade';
+import { PaperSection } from './PaperSection';
 import { peripheralReassuranceText, targetLineReassuranceText } from '../lib/lineCopy';
 
 interface PeripheralLineRowProps {
@@ -14,115 +14,70 @@ interface PeripheralLineRowProps {
 /**
  * Contextual Peripheral Dimming.
  *
- * The co-located lines are drawn at 25% opacity and explicitly named, never
- * removed. A traveller standing on a shared platform will watch three trains
- * they must not board pull in; an interface that shows only their line makes
- * every one of those arrivals a moment of doubt ("is the app wrong, or am I on
- * the wrong platform?"). Naming the intruders and telling them to let them pass
- * converts each arrival into a confirmation instead of a scare.
+ * The co-located lines are drawn faded and explicitly named, never removed. A
+ * traveller standing on a shared platform will watch three trains they must not
+ * board pull in; an interface that shows only their line makes every one of
+ * those arrivals a moment of doubt ("is the app wrong, or am I on the wrong
+ * platform?"). Naming the intruders and telling them to let them pass converts
+ * each arrival into a confirmation instead.
  *
- * The scale gap is doing the same work as the opacity gap. Their bullet is
- * drawn at the size it hangs at on the platform and lit by a halo of its own
- * colour; the others are small, flat and pushed below a rule. The right answer
- * should be findable without reading a word of it.
+ * On paper the separation is carried by scale and by a rule rather than by
+ * opacity alone — dimming to 25% was a dark-screen trick, and at 25% on warm
+ * paper the bullets stopped being identifiable, which defeats the point of
+ * showing them.
  */
 export function PeripheralLineRow({ focus }: PeripheralLineRowProps): ReactElement {
   const dimmed = focus.coLocatedLinesToDim;
   const reassurance = peripheralReassuranceText(dimmed, focus.activeLineId);
-  const colour = LINE_COLORS[focus.activeLineId];
 
   return (
-    <View style={[styles.container, { borderColor: withAlpha(colour, 0.35) }]}>
-      <VerticalFade color={colour} height={126} anchor="top" maxAlpha={0.2} />
-
-      <View style={styles.activeRow}>
-        <View style={[styles.halo, { backgroundColor: withAlpha(colour, 0.22) }]}>
-          <LineBullet line={focus.activeLineId} size={72} />
-        </View>
-        <View style={styles.activeText}>
-          <Text style={styles.activeCaption} allowFontScaling={false}>
-            BOARD ONLY THIS ONE
+    <View>
+      <PaperSection label="BOARD ONLY THIS ONE">
+        <View style={styles.activeRow}>
+          <LineBullet line={focus.activeLineId} size={64} />
+          <Text style={styles.activeSentence}>
+            {targetLineReassuranceText(focus.activeLineId, dimmed)}
           </Text>
-          <Text style={styles.activeSentence}>{targetLineReassuranceText(focus.activeLineId, dimmed)}</Text>
         </View>
-      </View>
+      </PaperSection>
 
       {dimmed.length > 0 ? (
-        <View style={styles.dimmedBlock}>
+        <PaperSection label="ALSO STOPS HERE — NOT YOURS">
           <View style={styles.dimmedRow}>
-            <Text style={styles.dimmedCaption} allowFontScaling={false}>
-              ALSO STOPS HERE{'\n'}NOT YOURS
-            </Text>
             {dimmed.map((line) => (
               <View key={line} style={styles.dimmedSlot}>
                 <LineBullet line={line} size={38} dimmed />
               </View>
             ))}
           </View>
-          {reassurance.length > 0 ? (
-            <Text style={styles.reassuranceText} accessibilityRole="text">
-              {reassurance}
-            </Text>
-          ) : null}
-        </View>
+          {reassurance.length > 0 ? <Text style={styles.reassurance}>{reassurance}</Text> : null}
+        </PaperSection>
       ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: SubwayTheme.spacing.md,
-    borderRadius: SubwayTheme.radii.card,
-    borderWidth: SubwayTheme.borders.hairline,
-    backgroundColor: SubwayTheme.colors.surfaceRaised,
-    overflow: 'hidden',
-    boxShadow: SubwayTheme.elevation.raised,
-  },
   activeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SubwayTheme.spacing.md,
-  },
-  halo: {
-    padding: SubwayTheme.spacing.sm,
-    borderRadius: SubwayTheme.radii.bullet,
-  },
-  activeText: {
-    flex: 1,
-    marginLeft: SubwayTheme.spacing.md,
-  },
-  activeCaption: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textSecondary,
-    marginBottom: SubwayTheme.spacing.xs,
   },
   activeSentence: {
-    ...SubwayTheme.typography.bodyStrong,
-    color: SubwayTheme.colors.textPrimary,
-  },
-  dimmedBlock: {
-    borderTopWidth: SubwayTheme.borders.hairline,
-    borderTopColor: SubwayTheme.colors.hairline,
-    backgroundColor: SubwayTheme.colors.surfaceSunken,
-    padding: SubwayTheme.spacing.md,
-  },
-  dimmedCaption: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textTertiary,
-    flex: 1,
-    marginRight: SubwayTheme.spacing.sm,
+    ...PaperTheme.type.item,
+    color: PaperTheme.colors.ink,
+    flexShrink: 1,
+    marginLeft: 18,
   },
   dimmedRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   dimmedSlot: {
-    marginLeft: SubwayTheme.spacing.sm,
+    marginRight: 10,
   },
-  reassuranceText: {
-    ...SubwayTheme.typography.supportBody,
-    color: SubwayTheme.colors.textSecondary,
-    marginTop: SubwayTheme.spacing.md,
+  reassurance: {
+    ...PaperTheme.type.item,
+    color: PaperTheme.colors.inkMuted,
+    marginTop: 14,
   },
 });

@@ -1,14 +1,13 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { RouteCard } from '@streetlevel/shared';
-import { SubwayTheme } from '@streetlevel/shared';
+import { PaperTheme } from '@streetlevel/shared';
 
-import { LookForList } from '../LookForList';
-import { SectionCaption } from '../SectionCaption';
+import { PaperList } from '../PaperList';
+import { PaperSection } from '../PaperSection';
 
 interface ExitSurfacingBodyProps {
   card: RouteCard;
-  accent: string | undefined;
   destinationLabel?: string | undefined;
 }
 
@@ -17,40 +16,38 @@ interface ExitSurfacingBodyProps {
  *
  * The instinct at this point is to relax, and it is the wrong moment for it:
  * two exits from one station can put you a long block apart, facing the wrong
- * way, at the end of a trip you thought was over. The EXIT plate is the hero
- * above the instruction; what is left down here is the part people forget —
- * that surfacing is not arriving, and there is still a walk. Drawing the walk
- * as a path from a staircase to a pin is what stops someone stepping onto the
- * pavement and assuming they are done.
+ * way, at the end of a trip you thought was over. So the part people forget
+ * gets drawn — that surfacing is not arriving, and there is still a walk.
+ * Drawing it as a path from a staircase to a pin is what stops someone stepping
+ * onto the pavement and assuming they are done.
  */
-export function ExitSurfacingBody({
-  card,
-  accent,
-  destinationLabel,
-}: ExitSurfacingBodyProps): ReactElement {
+export function ExitSurfacingBody({ card, destinationLabel }: ExitSurfacingBodyProps): ReactElement {
   return (
     <View>
       {destinationLabel ? (
-        <View style={styles.section}>
-          <SectionCaption label="THEN THE WALK" accent={accent} />
+        <PaperSection label="THEN THE WALK">
           <View style={styles.walkRow}>
             <Staircase />
-            <View style={styles.walkPath} accessibilityElementsHidden>
-              {[0, 1, 2, 3, 4].map((dot) => (
-                <View key={dot} style={styles.walkDot} />
+            <View style={styles.path} accessibilityElementsHidden>
+              {[0, 1, 2, 3, 4, 5].map((dot) => (
+                <View key={dot} style={styles.dot} />
               ))}
             </View>
-            <View style={styles.walkTarget}>
+            <View style={styles.target}>
               <View style={styles.pin} />
-              <Text style={styles.walkLabel} numberOfLines={2}>
+              <Text style={styles.targetLabel} numberOfLines={2}>
                 {destinationLabel}
               </Text>
             </View>
           </View>
-        </View>
+        </PaperSection>
       ) : null}
 
-      <LookForList anchors={card.visualAnchors} accent={accent} label="AT THE TOP OF THE STAIRS" />
+      {card.visualAnchors.length > 0 ? (
+        <PaperSection label="AT THE TOP OF THE STAIRS">
+          <PaperList rows={card.visualAnchors.map((text) => ({ text }))} />
+        </PaperSection>
+      ) : null}
     </View>
   );
 }
@@ -67,59 +64,48 @@ function Staircase(): ReactElement {
 }
 
 const styles = StyleSheet.create({
-  section: {
-    marginTop: SubwayTheme.spacing.md,
-  },
   walkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: SubwayTheme.spacing.sm,
-    padding: SubwayTheme.spacing.md,
-    borderRadius: SubwayTheme.radii.chip,
-    backgroundColor: SubwayTheme.colors.surfaceSunken,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.hairline,
   },
   stairs: {
     flexDirection: 'row',
     alignItems: 'flex-end',
   },
+  /** Butted together, not spaced: separated bars read as a chart, not stairs. */
   tread: {
-    width: 6,
-    marginRight: 2,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-    backgroundColor: SubwayTheme.colors.textSecondary,
+    width: 8,
+    backgroundColor: PaperTheme.colors.ink,
   },
-  walkPath: {
+  path: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: SubwayTheme.spacing.sm,
+    marginHorizontal: 12,
   },
-  walkDot: {
+  dot: {
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: SubwayTheme.colors.textTertiary,
-    marginRight: 5,
+    backgroundColor: PaperTheme.colors.ruleStrong,
+    marginRight: 6,
   },
-  walkTarget: {
+  target: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
   pin: {
-    width: 13,
-    height: 13,
-    borderRadius: SubwayTheme.radii.bullet,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     borderWidth: 4,
-    borderColor: SubwayTheme.colors.textPrimary,
-    marginRight: SubwayTheme.spacing.sm,
+    borderColor: PaperTheme.colors.ink,
+    marginRight: 10,
   },
-  walkLabel: {
-    ...SubwayTheme.typography.bodyStrong,
-    fontSize: 16,
-    color: SubwayTheme.colors.textPrimary,
+  targetLabel: {
+    ...PaperTheme.type.item,
+    fontWeight: '800',
+    color: PaperTheme.colors.ink,
     flexShrink: 1,
   },
 });

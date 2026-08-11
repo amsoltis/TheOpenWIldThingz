@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { LINE_COLORS, SubwayTheme, withAlpha } from '@streetlevel/shared';
+import { StyleSheet, View } from 'react-native';
+import { LINE_COLORS, PaperTheme } from '@streetlevel/shared';
 
 import { LineBullet } from './LineBullet';
 import type { SpineSegment } from '../lib/journey';
@@ -13,17 +13,20 @@ interface RouteRibbonProps {
 }
 
 /**
- * The whole journey, always on screen.
+ * The whole journey, on one line.
  *
  * The deck is deliberately one card at a time, and the cost of that is losing
  * the shape of the trip: a traveller six minutes into a transfer has no way to
- * tell whether the hard part is behind them or ahead. This ribbon is the
- * answer — walk, train, transfer, train, walk — in the colours of the lines
- * they will actually be riding, with the part already done filled in and a
- * marker under where they stand now.
+ * tell whether the hard part is behind them or ahead. This is the answer —
+ * walk, train, transfer, train, walk — in the colours of the lines they will
+ * actually be riding, with a marker under where they stand now.
  *
- * It is drawn from the cards themselves, so it can never disagree with the
- * deck it sits above.
+ * It belongs on the paper rather than in the colour, because it is reference
+ * material: something to consult, not something to obey. It is also the one
+ * place the line colours get to be small, and on a neutral page they still read
+ * from across a carriage.
+ *
+ * Drawn from the cards themselves, so it can never disagree with the deck.
  */
 export function RouteRibbon({ segments, currentIndex, totalCards }: RouteRibbonProps): ReactElement | null {
   if (segments.length === 0) return null;
@@ -32,38 +35,35 @@ export function RouteRibbon({ segments, currentIndex, totalCards }: RouteRibbonP
 
   return (
     <View
-      style={styles.container}
+      style={styles.track}
       accessible
       accessibilityRole="progressbar"
       accessibilityLabel={ribbonLabel(segments, active, currentIndex, totalCards)}
       accessibilityValue={{ min: 1, max: Math.max(totalCards, 1), now: currentIndex + 1 }}
     >
-      <View style={styles.track}>
-        <EndCap kind="origin" done={currentIndex > 0} />
+      <EndCap kind="origin" done={currentIndex > 0} />
 
-        {segments.map((segment, index) => {
-          const previous = segments[index - 1];
-          const isTransfer =
-            index > 0 && segment.kind === 'ride' && previous?.kind === 'ride';
-          const state = index < active ? 'done' : index === active ? 'here' : 'ahead';
+      {segments.map((segment, index) => {
+        const previous = segments[index - 1];
+        const isTransfer = index > 0 && segment.kind === 'ride' && previous?.kind === 'ride';
+        const state = index < active ? 'done' : index === active ? 'here' : 'ahead';
 
-          return (
-            <Segment
-              key={`${segment.kind}-${segment.from}`}
-              segment={segment}
-              state={state}
-              showTransfer={isTransfer}
-              positionRatio={
-                index === active
-                  ? (currentIndex - segment.from + 0.5) / (segment.to - segment.from + 1)
-                  : null
-              }
-            />
-          );
-        })}
+        return (
+          <Segment
+            key={`${segment.kind}-${segment.from}`}
+            segment={segment}
+            state={state}
+            showTransfer={isTransfer}
+            positionRatio={
+              index === active
+                ? (currentIndex - segment.from + 0.5) / (segment.to - segment.from + 1)
+                : null
+            }
+          />
+        );
+      })}
 
-        <EndCap kind="destination" done={currentIndex >= totalCards - 1} />
-      </View>
+      <EndCap kind="destination" done={currentIndex >= totalCards - 1} />
     </View>
   );
 }
@@ -76,10 +76,10 @@ interface SegmentProps {
 }
 
 function Segment({ segment, state, showTransfer, positionRatio }: SegmentProps): ReactElement {
-  const colour = segment.line ? LINE_COLORS[segment.line] : SubwayTheme.colors.textTertiary;
+  const colour = segment.line ? LINE_COLORS[segment.line] : PaperTheme.colors.ruleStrong;
   // Everything still to come is held back rather than hidden. The traveller is
   // allowed to see how much is left; they should not read it as "now".
-  const opacity = state === 'ahead' ? 0.34 : 1;
+  const opacity = state === 'ahead' ? 0.4 : 1;
 
   return (
     <>
@@ -97,14 +97,12 @@ function Segment({ segment, state, showTransfer, positionRatio }: SegmentProps):
 
         {segment.line ? (
           <View style={[styles.bulletHolder, { opacity }]}>
-            <LineBullet line={segment.line} size={26} />
+            <LineBullet line={segment.line} size={24} />
           </View>
         ) : null}
 
         {positionRatio !== null ? (
-          <View
-            style={[styles.here, { left: `${Math.min(Math.max(positionRatio, 0), 1) * 100}%` }]}
-          >
+          <View style={[styles.here, { left: `${Math.min(Math.max(positionRatio, 0), 1) * 100}%` }]}>
             <View style={styles.hereCaret} />
           </View>
         ) : null}
@@ -113,9 +111,9 @@ function Segment({ segment, state, showTransfer, positionRatio }: SegmentProps):
   );
 }
 
-/** The white ring the map uses for a transfer: two lines, one platform change. */
+/** The open ring the map uses for a transfer: two lines, one platform change. */
 function TransferNode({ done }: { done: boolean }): ReactElement {
-  return <View style={[styles.transfer, done ? null : { opacity: 0.34 }]} />;
+  return <View style={[styles.transfer, done ? null : { opacity: 0.4 }]} />;
 }
 
 function EndCap({ kind, done }: { kind: 'origin' | 'destination'; done: boolean }): ReactElement {
@@ -150,19 +148,10 @@ function ribbonLabel(
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: SubwayTheme.colors.surfaceSunken,
-    borderRadius: SubwayTheme.radii.chip,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.hairline,
-    paddingHorizontal: SubwayTheme.spacing.md,
-    paddingTop: SubwayTheme.spacing.sm,
-    paddingBottom: SubwayTheme.spacing.sm,
-  },
   track: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 32,
+    height: 30,
   },
   segment: {
     height: '100%',
@@ -173,8 +162,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 9,
-    borderRadius: 5,
+    height: 7,
   },
   walkBar: {
     position: 'absolute',
@@ -185,61 +173,59 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   walkDot: {
-    width: 4,
-    height: 4,
+    width: 3,
+    height: 3,
     borderRadius: 2,
-    backgroundColor: SubwayTheme.colors.textTertiary,
+    backgroundColor: PaperTheme.colors.ruleStrong,
   },
   bulletHolder: {
     borderWidth: 3,
-    borderColor: SubwayTheme.colors.surfaceSunken,
-    borderRadius: SubwayTheme.radii.bullet,
+    borderColor: PaperTheme.colors.paper,
+    borderRadius: 999,
   },
   transfer: {
-    width: 15,
-    height: 15,
-    borderRadius: SubwayTheme.radii.bullet,
+    width: 13,
+    height: 13,
+    borderRadius: 999,
     borderWidth: 3,
-    borderColor: SubwayTheme.colors.textPrimary,
-    backgroundColor: SubwayTheme.colors.surfaceSunken,
+    borderColor: PaperTheme.colors.ink,
+    backgroundColor: PaperTheme.colors.paper,
     marginHorizontal: 3,
   },
   // Origin is a square kerb stone, destination a ring: the two ends of a trip
   // are different kinds of place and the map says so before the eye reads it.
   endCap: {
-    width: 10,
-    height: 10,
-    borderRadius: 2,
-    backgroundColor: SubwayTheme.colors.textTertiary,
+    width: 9,
+    height: 9,
+    backgroundColor: PaperTheme.colors.ruleStrong,
   },
   endCapDestination: {
-    width: 13,
-    height: 13,
-    borderRadius: SubwayTheme.radii.bullet,
+    width: 12,
+    height: 12,
+    borderRadius: 999,
     borderWidth: 3,
-    borderColor: SubwayTheme.colors.textTertiary,
+    borderColor: PaperTheme.colors.ruleStrong,
     backgroundColor: 'transparent',
   },
   endCapDone: {
-    backgroundColor: SubwayTheme.colors.textPrimary,
-    borderColor: SubwayTheme.colors.textPrimary,
+    backgroundColor: PaperTheme.colors.ink,
+    borderColor: PaperTheme.colors.ink,
   },
   here: {
     position: 'absolute',
-    bottom: -6,
-    marginLeft: -9,
-    width: 18,
+    bottom: -5,
+    marginLeft: -8,
+    width: 16,
     alignItems: 'center',
   },
   hereCaret: {
     width: 0,
     height: 0,
-    borderLeftWidth: 7,
-    borderRightWidth: 7,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
     borderBottomWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderBottomColor: SubwayTheme.colors.textPrimary,
-    boxShadow: `0px 0px 10px ${withAlpha('#FFFFFF', 0.55)}`,
+    borderBottomColor: PaperTheme.colors.ink,
   },
 });

@@ -16,9 +16,16 @@ interface LineBulletProps {
  * never adjusted for contrast or taste. The entire point is that the circle on
  * this screen is the same circle hanging from the ceiling above the traveller's
  * head — a "nicer" orange is a different train.
+ *
+ * `dimmed` no longer dims. The dark theme faded a peripheral bullet to 25%,
+ * which read as suppression against near-black; against warm paper the same
+ * treatment leaves a pastel smudge nobody can identify, and a bullet that
+ * cannot be identified defeats the only reason peripheral trains are drawn at
+ * all — so the traveller can name the train they are about to let go past.
+ * Suppression is carried instead by scale and by the heading the bullets sit
+ * under, and the flag still reaches a screen reader through the label.
  */
 export function LineBullet({ line, size = 48, dimmed = false }: LineBulletProps): ReactElement {
-  const diameter = size;
   return (
     <View
       accessibilityRole="image"
@@ -26,11 +33,10 @@ export function LineBullet({ line, size = 48, dimmed = false }: LineBulletProps)
       style={[
         styles.bullet,
         {
-          width: diameter,
-          height: diameter,
+          width: size,
+          height: size,
           borderRadius: SubwayTheme.radii.bullet,
           backgroundColor: LINE_COLORS[line],
-          opacity: dimmed ? SubwayTheme.colors.dimmedOpacity : SubwayTheme.colors.activeFocusOpacity,
         },
       ]}
     >
@@ -38,7 +44,7 @@ export function LineBullet({ line, size = 48, dimmed = false }: LineBulletProps)
         allowFontScaling={false}
         style={[
           styles.label,
-          { color: LINE_TEXT_COLORS[line], fontSize: Math.round(diameter * 0.55) },
+          { color: LINE_TEXT_COLORS[line], fontSize: Math.round(size * 0.55) },
         ]}
       >
         {line}

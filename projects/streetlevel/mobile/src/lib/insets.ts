@@ -20,3 +20,16 @@ export const BOTTOM_INSET = Platform.select({
   android: 12,
   default: 0,
 });
+
+/**
+ * Where a statement zone starts its type.
+ *
+ * The colour runs to the top of the display — that is the whole point of it —
+ * so the zone owns the status-bar clearance rather than being pushed down by a
+ * padded root. The floor of 50 is the composition talking rather than the
+ * hardware: the kicker needs air above it even on a phone with no notch.
+ */
+export const STATEMENT_TOP = Math.max((TOP_INSET ?? 0) + 10, 50);
+
+/** Top padding for the paper screens, which have no colour to bleed. */
+export const PAPER_TOP = (TOP_INSET ?? 0) + 26;

@@ -11,11 +11,12 @@ import {
   View,
 } from 'react-native';
 import type { PacketRequest, UserBillingProfile } from '@streetlevel/shared';
-import { SubwayTheme } from '@streetlevel/shared';
+import { PaperTheme, SubwayTheme } from '@streetlevel/shared';
 
-import { AlertNote } from '../components/AlertNote';
+import { PaperNotice } from '../components/PaperNotice';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { resolveTripWindow } from '../lib/clock';
+import { PAPER_TOP } from '../lib/insets';
 
 interface PlanTripScreenProps {
   billing: UserBillingProfile | null;
@@ -35,6 +36,15 @@ function creditsSentence(billing: UserBillingProfile | null): string {
   return `${billing.creditsRemaining} free navigation keys left.`;
 }
 
+/**
+ * The front door, before any trip exists.
+ *
+ * There is no line yet, so there is no colour to state anything in — and
+ * inventing a brand accent for the sake of a coloured header would teach the
+ * traveller that the colour means nothing, which is precisely the lesson that
+ * has to not be taught. The screen is therefore all paper: a form on a page,
+ * set the way a form on a page is set.
+ */
 export function PlanTripScreen({
   billing,
   isBusy,
@@ -78,6 +88,11 @@ export function PlanTripScreen({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.headRule} />
+        <Text style={styles.kicker} allowFontScaling={false}>
+          STREETLEVEL · NEW YORK CITY SUBWAY
+        </Text>
+
         <Text style={styles.title}>Where are you going today?</Text>
         <Text style={styles.subtitle}>
           We compile the whole trip now — both directions — so it works underground with no signal.
@@ -133,7 +148,7 @@ export function PlanTripScreen({
             accessibilityLabel={`Error: ${errorMessage}. Tap to dismiss.`}
             style={styles.errorBox}
           >
-            <AlertNote caption="THAT DID NOT WORK" text={errorMessage} />
+            <PaperNotice caption="THAT DID NOT WORK" text={errorMessage} />
             <Text style={styles.errorDismiss}>Tap to dismiss</Text>
           </Pressable>
         ) : null}
@@ -175,15 +190,24 @@ interface FieldProps {
   keyboard?: 'default' | 'numbers-and-punctuation';
 }
 
+/**
+ * A ruled line rather than a box.
+ *
+ * Boxes are how a dark interface makes an input findable; on paper a rule under
+ * a label is how every form ever printed did it, and it leaves the value itself
+ * as the largest thing in the field — which is what the traveller is checking.
+ */
 function Field({ label, placeholder, value, onChange, autoFocus, keyboard }: FieldProps): ReactElement {
   return (
     <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldLabel} allowFontScaling={false}>
+        {label}
+      </Text>
       <TextInput
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
-        placeholderTextColor={SubwayTheme.colors.textSecondary}
+        placeholderTextColor={PaperTheme.colors.inkMuted}
         style={styles.input}
         accessibilityLabel={label}
         autoCorrect={false}
@@ -192,6 +216,7 @@ function Field({ label, placeholder, value, onChange, autoFocus, keyboard }: Fie
         keyboardType={keyboard === 'numbers-and-punctuation' ? 'numbers-and-punctuation' : 'default'}
         returnKeyType="next"
       />
+      <View style={styles.fieldRule} />
     </View>
   );
 }
@@ -199,47 +224,51 @@ function Field({ label, placeholder, value, onChange, autoFocus, keyboard }: Fie
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: SubwayTheme.colors.backgroundDeep,
+    backgroundColor: PaperTheme.colors.paper,
   },
   content: {
-    padding: SubwayTheme.spacing.lg,
-    paddingBottom: SubwayTheme.spacing.xxl,
+    paddingHorizontal: PaperTheme.margin,
+    paddingTop: PAPER_TOP,
+    paddingBottom: 64,
+  },
+  headRule: {
+    height: PaperTheme.rules.head,
+    backgroundColor: PaperTheme.colors.ink,
+    marginBottom: 14,
+  },
+  kicker: {
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.inkMuted,
   },
   title: {
-    ...SubwayTheme.typography.macroActionTitle,
-    color: SubwayTheme.colors.textPrimary,
-    marginTop: SubwayTheme.spacing.lg,
+    ...PaperTheme.type.headline,
+    color: PaperTheme.colors.ink,
+    marginTop: 22,
   },
   subtitle: {
-    ...SubwayTheme.typography.sectionTitle,
-    fontSize: 18,
-    lineHeight: 25,
-    color: SubwayTheme.colors.textSecondary,
-    marginTop: SubwayTheme.spacing.sm,
-    marginBottom: SubwayTheme.spacing.lg,
+    ...PaperTheme.type.body,
+    color: PaperTheme.colors.inkMuted,
+    marginTop: 12,
+    marginBottom: 34,
   },
   field: {
-    marginBottom: SubwayTheme.spacing.lg,
+    marginBottom: 26,
   },
   fieldLabel: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textSecondary,
-    marginBottom: SubwayTheme.spacing.sm,
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.inkMuted,
+    marginBottom: 6,
   },
-  // Bordered rather than a bare fill: an unlabelled dark rectangle on a dark
-  // screen is invisible until you tap it, and this is the first thing a new
-  // user is asked to do.
   input: {
-    minHeight: SubwayTheme.minTouchTarget,
-    backgroundColor: SubwayTheme.colors.surfaceCard,
-    borderRadius: SubwayTheme.radii.button,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.hairlineStrong,
-    paddingHorizontal: SubwayTheme.spacing.md,
-    paddingVertical: SubwayTheme.spacing.md,
-    color: SubwayTheme.colors.textPrimary,
-    fontSize: 20,
-    fontWeight: '600',
+    minHeight: SubwayTheme.minTouchTarget - 8,
+    paddingVertical: 8,
+    color: PaperTheme.colors.ink,
+    fontSize: 21,
+    fontWeight: '700',
+  },
+  fieldRule: {
+    height: 2,
+    backgroundColor: PaperTheme.colors.ruleStrong,
   },
   timeRow: {
     flexDirection: 'row',
@@ -248,38 +277,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   timeSpacer: {
-    width: SubwayTheme.spacing.md,
+    width: 20,
   },
   hint: {
-    ...SubwayTheme.typography.supportBody,
-    color: SubwayTheme.colors.textTertiary,
-    padding: SubwayTheme.spacing.md,
-    borderRadius: SubwayTheme.radii.chip,
-    backgroundColor: SubwayTheme.colors.surfaceSunken,
-    borderWidth: SubwayTheme.borders.hairline,
-    borderColor: SubwayTheme.colors.hairline,
-    marginBottom: SubwayTheme.spacing.lg,
+    ...PaperTheme.type.aside,
+    color: PaperTheme.colors.inkMuted,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: PaperTheme.colors.rule,
+    marginBottom: 28,
   },
   errorBox: {
-    marginBottom: SubwayTheme.spacing.lg,
+    marginBottom: 24,
     minHeight: SubwayTheme.minTouchTarget,
   },
   errorDismiss: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textTertiary,
-    marginTop: SubwayTheme.spacing.sm,
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.inkMuted,
+    marginTop: 10,
     textAlign: 'center',
   },
   submit: {
-    marginTop: SubwayTheme.spacing.sm,
+    marginTop: 4,
   },
   credits: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.textSecondary,
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.inkMuted,
     textAlign: 'center',
-    marginTop: SubwayTheme.spacing.md,
+    marginTop: 16,
   },
   saved: {
-    marginTop: SubwayTheme.spacing.xl,
+    marginTop: 34,
   },
 });

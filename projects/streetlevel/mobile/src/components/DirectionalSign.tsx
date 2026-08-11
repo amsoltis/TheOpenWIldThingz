@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { LineID } from '@streetlevel/shared';
-import { SubwayTheme } from '@streetlevel/shared';
+import { PaperTheme } from '@streetlevel/shared';
 
 import { LineBullet } from './LineBullet';
 
@@ -22,13 +22,18 @@ interface DirectionalSignProps {
  * bullets inline, same arrow — means the match happens in peripheral vision
  * before any reading takes place. A paragraph describing the sign asks them to
  * translate, and translating is the slow, anxious step we are removing.
+ *
+ * Sitting on paper it finally looks like what it is. A black plate on a warm
+ * page is how every station map ever printed drew this; against the old dark
+ * card it was a slightly different black on black and needed a border to exist
+ * at all.
  */
 export function DirectionalSign({ lines, legends, banner }: DirectionalSignProps): ReactElement {
   const spoken =
     `Overhead sign: ${lines.join(' ')} ${legends.join(', ')}`.replace(/\s+/g, ' ').trim();
 
   return (
-    <View style={styles.wrapper}>
+    <View>
       <View style={styles.plate} accessible accessibilityRole="image" accessibilityLabel={spoken}>
         {banner ? (
           <View style={styles.banner}>
@@ -42,7 +47,7 @@ export function DirectionalSign({ lines, legends, banner }: DirectionalSignProps
           <View style={styles.bullets}>
             {lines.map((line) => (
               <View key={line} style={styles.bulletSlot}>
-                <LineBullet line={line} size={62} />
+                <LineBullet line={line} size={58} />
               </View>
             ))}
           </View>
@@ -93,68 +98,61 @@ function SignArrow(): ReactElement {
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    marginTop: SubwayTheme.spacing.md,
-  },
   plate: {
-    backgroundColor: SubwayTheme.colors.signPlate,
-    borderRadius: SubwayTheme.radii.plate,
-    borderWidth: SubwayTheme.borders.emphasis,
-    borderColor: SubwayTheme.colors.hairlineStrong,
+    backgroundColor: PaperTheme.colors.plate,
     overflow: 'hidden',
-    boxShadow: SubwayTheme.elevation.card,
   },
   banner: {
-    borderBottomWidth: SubwayTheme.borders.hairline,
-    borderBottomColor: 'rgba(255,255,255,0.22)',
-    paddingHorizontal: SubwayTheme.spacing.md,
-    paddingVertical: SubwayTheme.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.24)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   bannerText: {
-    ...SubwayTheme.typography.microLabel,
-    color: SubwayTheme.colors.signInk,
+    ...PaperTheme.type.micro,
+    color: PaperTheme.colors.plateInk,
     opacity: 0.72,
   },
   face: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SubwayTheme.spacing.md,
-    paddingVertical: SubwayTheme.spacing.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
   },
   bullets: {
     flexDirection: 'row',
   },
   bulletSlot: {
-    marginRight: SubwayTheme.spacing.xs,
+    marginRight: 4,
   },
   legends: {
     flex: 1,
-    marginLeft: SubwayTheme.spacing.md,
+    marginLeft: 16,
   },
   legendPrimary: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '800',
-    lineHeight: 34,
+    lineHeight: 32,
     letterSpacing: -0.5,
-    color: SubwayTheme.colors.signInk,
+    color: PaperTheme.colors.plateInk,
   },
   legendSecondary: {
     fontSize: 16,
     fontWeight: '700',
     lineHeight: 22,
-    color: SubwayTheme.colors.signInk,
+    color: PaperTheme.colors.plateInk,
     opacity: 0.75,
-    marginTop: SubwayTheme.spacing.xxs,
+    marginTop: 2,
   },
   arrow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: SubwayTheme.spacing.md,
+    marginLeft: 12,
   },
   arrowShaft: {
-    width: 18,
+    width: 16,
     height: 7,
-    backgroundColor: SubwayTheme.colors.signInk,
+    backgroundColor: PaperTheme.colors.plateInk,
   },
   arrowHead: {
     width: 0,
@@ -164,12 +162,11 @@ const styles = StyleSheet.create({
     borderLeftWidth: 17,
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderLeftColor: SubwayTheme.colors.signInk,
+    borderLeftColor: PaperTheme.colors.plateInk,
   },
   disclaimer: {
-    ...SubwayTheme.typography.supportBody,
-    color: SubwayTheme.colors.textTertiary,
-    marginTop: SubwayTheme.spacing.sm,
+    ...PaperTheme.type.aside,
+    color: PaperTheme.colors.inkMuted,
+    marginTop: 12,
   },
 });

@@ -329,6 +329,12 @@ describe('card facts', () => {
         'You will also see red trains (1, 2) stopping here. They are dimmed on your screen because they are not yours.',
       ),
     ).toBe(true);
+    expect(
+      isPeripheralAnchor(
+        'The 1 and 2 stop here too and are the same red as yours. Do not go by colour on this ' +
+          'platform — read the number on the front of the train.',
+      ),
+    ).toBe(true);
     expect(isPeripheralAnchor('Platform signs show the 3 bullet.')).toBe(false);
     expect(mentionsStreetGlobe(entranceAnchors[0] ?? '')).toBe(true);
     expect(mentionsStreetGlobe('Walk past the bank.')).toBe(false);
